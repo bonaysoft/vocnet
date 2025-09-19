@@ -1,0 +1,55 @@
+linters:
+  enable:
+    - gofmt
+    - goimports
+    - govet
+    - golint
+    - ineffassign
+    - misspell
+    - goconst
+    - gocyclo
+    - gosec
+    - unconvert
+    - dupl
+    - gocritic
+    - gocognit
+    - bodyclose
+    - gosimple
+    - staticcheck
+    - unused
+    - typecheck
+    - errcheck
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+  gocognit:
+    min-complexity: 20
+  dupl:
+    threshold: 100
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - gosec
+        - dupl
+    - path: internal/mocks/
+      linters:
+        - golint
+        - unused
+    - path: api/gen/
+      linters:
+        - golint
+        - gofmt
+        - goimports
+
+run:
+  timeout: 5m
+  skip-dirs:
+    - api/gen
+    - internal/mocks
