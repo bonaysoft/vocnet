@@ -29,6 +29,18 @@ vocnet = “词汇图谱 + 掌握进度 + 例句关联 + 关系网络 + 复习�
 
 ## 核心接口能力 (What It Provides)
 
+### Phase 1: 核心词汇管理 ✅ (设计完成)
+
+- **词汇收藏与掌握度管理**: `CollectWord`, `UpdateUserWordMastery`
+- **词汇关系网络**: 同义词、反义词、助记关联等
+- **例句关联与语料管理**: 支持来源标注和个人化标记
+- **学习统计与分析**: 掌握度分布、困难词汇识别
+- **RESTful + gRPC 双协议**: 通过 grpc-gateway 自动生成 HTTP API
+
+📖 **API 设计文档**: [docs/api-design-phase1.md](docs/api-design-phase1.md)  
+�️ **Buf 工具链指南**: [docs/buf-quickstart.md](docs/buf-quickstart.md)  
+�🗺️ **完整路线图**: [docs/roadmap.md](docs/roadmap.md)
+
 专注“数据 + 状态”层，核心接口聚焦以下领域：
 
 | 能力 | 说明 |

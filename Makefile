@@ -25,8 +25,9 @@ help: ## Display this help message
 .PHONY: install-tools
 install-tools: ## Install development tools
 	@echo "Installing development tools..."
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+	# Install buf
+	go install github.com/bufbuild/buf/cmd/buf@latest
+	# Install sqlc and other tools
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@v$(SQLC_VERSION)
 	go install github.com/golang/mock/mockgen@v$(MOCKGEN_VERSION)
 	go install github.com/golang-migrate/migrate/v4/cmd/migrate@v$(MIGRATE_VERSION)
@@ -38,14 +39,28 @@ deps: ## Download and tidy dependencies
 	go mod download
 	go mod tidy
 
+.PHONY: buf-deps
+buf-deps: ## Download and update buf dependencies
+	@echo "Updating buf dependencies..."
+	buf dep update api/proto
+
+.PHONY: buf-lint
+buf-lint: ## Lint protobuf files with buf
+	@echo "Linting protobuf files..."
+	buf lint api/proto
+
+.PHONY: buf-breaking
+buf-breaking: ## Check for breaking changes in protobuf files
+	@echo "Checking for breaking changes..."
+	buf breaking api/proto --against '.git#branch=main'
+
 .PHONY: generate
-generate: ## Generate code from protobuf and database schemas
-	@echo "Generating protobuf files..."
+generate: buf-deps ## Generate code from protobuf files using buf
+	@echo "Generating protobuf files with buf..."
 	@mkdir -p $(GEN_DIR) $(OPENAPI_DIR)
-	protoc --proto_path=$(PROTO_DIR) \
-		--go_out=$(GEN_DIR) --go_opt=paths=source_relative \
-		--go-grpc_out=$(GEN_DIR) --go-grpc_opt=paths=source_relative \
-		$(PROTO_DIR)/user/v1/user.proto
+	buf generate
+	
+	@echo "Protobuf generation completed"
 
 .PHONY: sqlc
 sqlc: ## Generate type-safe database code
@@ -90,6 +105,16 @@ fmt: ## Format code
 	go fmt ./...
 	goimports -w .
 
+.PHONY: buf-format
+buf-format: ## Format protobuf files
+	@echo "Formatting protobuf files..."
+	buf format -w
+
+.PHONY: verify-buf
+verify-buf: ## Verify buf configuration
+	@echo "Verifying buf configuration..."
+	@./scripts/verify-buf-config.sh
+
 .PHONY: clean
 clean: ## Clean build artifacts
 	@echo "Cleaning..."
@@ -98,6 +123,7 @@ clean: ## Clean build artifacts
 	rm -rf $(OPENAPI_DIR)
 	rm -rf internal/infrastructure/database/db
 	rm -f coverage.out coverage.html
+	@echo "Clean completed"
 
 .PHONY: docker-build
 docker-build: ## Build Docker image

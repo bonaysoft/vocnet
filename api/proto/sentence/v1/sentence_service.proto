@@ -1,0 +1,176 @@
+syntax = "proto3";
+
+package sentence.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "common/v1/enums.proto";
+import "common/v1/types.proto";
+import "sentence/v1/sentence.proto";
+import "validate/validate.proto";
+
+option go_package = "github.com/bonaysoft/vocnet/api/gen/sentence/v1;sentencev1";
+
+// Sentence management service for example sentences and language materials
+service SentenceService {
+  // Add a new sentence (creates global sentence if needed)
+  rpc AddSentence(AddSentenceRequest) returns (AddSentenceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/sentences"
+      body: "*"
+    };
+  }
+  
+  // Attach a sentence to a user word
+  rpc AttachSentenceToWord(AttachSentenceToWordRequest) returns (AttachSentenceToWordResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/user-words/{user_word_id}/sentences"
+      body: "*"
+    };
+  }
+  
+  // Get sentences associated with a user word
+  rpc ListWordSentences(ListWordSentencesRequest) returns (ListWordSentencesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/user-words/{user_word_id}/sentences"
+    };
+  }
+  
+  // Get user's sentence collection
+  rpc ListUserSentences(ListUserSentencesRequest) returns (ListUserSentencesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/user-sentences"
+    };
+  }
+  
+  // Update user's relationship with a sentence
+  rpc UpdateUserSentence(UpdateUserSentenceRequest) returns (UpdateUserSentenceResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/user-sentences/{user_sentence_id}"
+      body: "*"
+    };
+  }
+  
+  // Create or update source information
+  rpc ManageSource(ManageSourceRequest) returns (ManageSourceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/sources"
+      body: "*"
+    };
+  }
+}
+
+// AddSentence request
+message AddSentenceRequest {
+  int64 user_id = 1 [(validate.rules).int64.gt = 0];
+  string content = 2 [(validate.rules).string.min_len = 1];
+  common.v1.Language language = 3 [(validate.rules).enum.defined_only = true];
+  
+  // Optional source information
+  int64 source_id = 4;                                    // Reference existing source
+  SourceInfo source_info = 5;                             // Create new source
+  
+  // Initial user sentence settings
+  bool is_starred = 6;
+  int32 familiarity = 7 [(validate.rules).int32 = {gte: 0, lte: 5}];
+  string private_note = 8;
+}
+
+message AddSentenceResponse {
+  UserSentence user_sentence = 1;
+  Sentence global_sentence = 2;                           // If new sentence was created
+  Source source = 3;                                      // If new source was created
+}
+
+// AttachSentenceToWord request
+message AttachSentenceToWordRequest {
+  int64 user_word_id = 1 [(validate.rules).int64.gt = 0];
+  int64 user_id = 2 [(validate.rules).int64.gt = 0];
+  int64 sentence_id = 3 [(validate.rules).int64.gt = 0];
+  
+  // Word usage details within the sentence
+  int32 start_offset = 4 [(validate.rules).int32.gte = 0];
+  int32 end_offset = 5 [(validate.rules).int32.gt = 0];
+  string original_text = 6 [(validate.rules).string.min_len = 1];
+  string grammatical_role = 7;
+  string usage_type = 8;
+  string note = 9;
+}
+
+message AttachSentenceToWordResponse {
+  WordUsage word_usage = 1;
+}
+
+// ListWordSentences request
+message ListWordSentencesRequest {
+  int64 user_word_id = 1 [(validate.rules).int64.gt = 0];
+  int64 user_id = 2 [(validate.rules).int64.gt = 0];
+  common.v1.PaginationRequest pagination = 3;
+  bool include_usage_details = 4;                         // Include WordUsage info
+}
+
+message ListWordSentencesResponse {
+  repeated WordSentenceInfo sentences = 1;
+  common.v1.PaginationResponse pagination = 2;
+}
+
+// ListUserSentences request
+message ListUserSentencesRequest {
+  int64 user_id = 1 [(validate.rules).int64.gt = 0];
+  common.v1.PaginationRequest pagination = 2;
+  
+  // Filtering options
+  bool starred_only = 3;
+  int32 min_familiarity = 4 [(validate.rules).int32 = {gte: 0, lte: 5}];
+  string search_text = 5;                                 // Search in content or notes
+  common.v1.Language language = 6;
+}
+
+message ListUserSentencesResponse {
+  repeated UserSentence user_sentences = 1;
+  common.v1.PaginationResponse pagination = 2;
+}
+
+// UpdateUserSentence request
+message UpdateUserSentenceRequest {
+  int64 user_sentence_id = 1 [(validate.rules).int64.gt = 0];
+  int64 user_id = 2 [(validate.rules).int64.gt = 0];
+  
+  bool is_starred = 3;
+  int32 familiarity = 4 [(validate.rules).int32 = {gte: 0, lte: 5}];
+  string private_note = 5;
+  
+  // Optional review timing
+  google.protobuf.Timestamp next_review_at = 6;
+  int32 interval_days = 7;
+}
+
+message UpdateUserSentenceResponse {
+  UserSentence user_sentence = 1;
+}
+
+// ManageSource request
+message ManageSourceRequest {
+  int64 user_id = 1 [(validate.rules).int64.gt = 0];
+  int64 source_id = 2;                                    // 0 for new source
+  SourceInfo source_info = 3;
+}
+
+message ManageSourceResponse {
+  Source source = 1;
+}
+
+// Helper messages
+message SourceInfo {
+  common.v1.SourceType type = 1 [(validate.rules).enum.defined_only = true];
+  string title = 2;
+  string author = 3;
+  string url = 4;
+  string reference = 5;
+  repeated string tags = 6;
+}
+
+message WordSentenceInfo {
+  UserSentence user_sentence = 1;
+  repeated WordUsage word_usages = 2;                     // How words are used in this sentence
+}

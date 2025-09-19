@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package word.v1;
+
+import "google/api/annotations.proto";
+import "common/v1/enums.proto";
+import "common/v1/types.proto";
+import "word/v1/word.proto";
+import "validate/validate.proto";
+
+option go_package = "github.com/bonaysoft/vocnet/api/gen/word/v1;wordv1";
+
+// Word management service for global vocabulary
+service WordService {
+  // Create a new word in the global vocabulary (admin/system use)
+  rpc CreateWord(CreateWordRequest) returns (CreateWordResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/words"
+      body: "*"
+    };
+  }
+  
+  // Get word details by ID
+  rpc GetWord(GetWordRequest) returns (GetWordResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/words/{id}"
+    };
+  }
+  
+  // List words with filtering and pagination
+  rpc ListWords(ListWordsRequest) returns (ListWordsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/words"
+    };
+  }
+  
+  // Search words by text prefix or full-text search
+  rpc SearchWords(SearchWordsRequest) returns (SearchWordsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/words/search"
+    };
+  }
+}
+
+// CreateWord request
+message CreateWordRequest {
+  string lemma = 1 [(validate.rules).string.min_len = 1];
+  common.v1.Language language = 2 [(validate.rules).enum.defined_only = true];
+  string phonetic = 3;
+  string pos = 4;
+  string definition = 5;
+}
+
+message CreateWordResponse {
+  Word word = 1;
+}
+
+// GetWord request
+message GetWordRequest {
+  int64 id = 1 [(validate.rules).int64.gt = 0];
+}
+
+message GetWordResponse {
+  Word word = 1;
+}
+
+// ListWords request
+message ListWordsRequest {
+  common.v1.PaginationRequest pagination = 1;
+  common.v1.Language language = 2;              // Filter by language
+  string lemma_prefix = 3;                      // Filter by lemma prefix
+}
+
+message ListWordsResponse {
+  repeated Word words = 1;
+  common.v1.PaginationResponse pagination = 2;
+}
+
+// SearchWords request
+message SearchWordsRequest {
+  string query = 1 [(validate.rules).string.min_len = 1];
+  common.v1.Language language = 2;
+  common.v1.PaginationRequest pagination = 3;
+}
+
+message SearchWordsResponse {
+  repeated Word words = 1;
+  common.v1.PaginationResponse pagination = 2;
+}

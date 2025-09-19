@@ -1,0 +1,165 @@
+syntax = "proto3";
+
+package word.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "common/v1/enums.proto";
+import "common/v1/types.proto";
+import "word/v1/word.proto";
+import "validate/validate.proto";
+
+option go_package = "github.com/bonaysoft/vocnet/api/gen/word/v1;wordv1";
+
+// User word management service for personal vocabulary learning
+service UserWordService {
+  // Collect/add a word to user's vocabulary (creates global word if needed)
+  rpc CollectWord(CollectWordRequest) returns (CollectWordResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/user-words"
+      body: "*"
+    };
+  }
+  
+  // Update mastery level and learning status
+  rpc UpdateUserWordMastery(UpdateUserWordMasteryRequest) returns (UpdateUserWordMasteryResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/user-words/{user_word_id}/mastery"
+      body: "*"
+    };
+  }
+  
+  // Get user word details
+  rpc GetUserWord(GetUserWordRequest) returns (GetUserWordResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/user-words/{id}"
+    };
+  }
+  
+  // List user's words with filtering and sorting
+  rpc ListUserWords(ListUserWordsRequest) returns (ListUserWordsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/user-words"
+    };
+  }
+  
+  // Delete/deactivate a user word
+  rpc DeleteUserWord(DeleteUserWordRequest) returns (DeleteUserWordResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/user-words/{id}"
+    };
+  }
+  
+  // Get learning statistics for user
+  rpc GetUserWordStats(GetUserWordStatsRequest) returns (GetUserWordStatsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/user-words/stats"
+    };
+  }
+}
+
+// CollectWord request - main API for adding words to user vocabulary
+message CollectWordRequest {
+  int64 user_id = 1 [(validate.rules).int64.gt = 0];
+  
+  // Option 1: Reference existing global word
+  int64 word_id = 2;
+  
+  // Option 2: Create new word on-the-fly
+  string custom_text = 3;
+  common.v1.Language language = 4;
+  string phonetic = 5;
+  string definition = 6;
+  
+  // Initial learning context
+  common.v1.MasteryLevel initial_mastery_level = 7;
+  common.v1.WordStatus status = 8;
+  string notes = 9;
+}
+
+message CollectWordResponse {
+  UserWord user_word = 1;
+  Word global_word = 2;                           // If a new global word was created
+}
+
+// UpdateUserWordMastery request
+message UpdateUserWordMasteryRequest {
+  int64 user_word_id = 1 [(validate.rules).int64.gt = 0];
+  common.v1.MasteryBreakdown mastery = 2;
+  common.v1.WordStatus status = 3;
+  string notes = 4;
+  
+  // Optional: update review timing
+  google.protobuf.Timestamp next_review_at = 5;
+  int32 interval_days = 6;
+}
+
+message UpdateUserWordMasteryResponse {
+  UserWord user_word = 1;
+}
+
+// GetUserWord request
+message GetUserWordRequest {
+  int64 id = 1 [(validate.rules).int64.gt = 0];
+  int64 user_id = 2 [(validate.rules).int64.gt = 0];
+}
+
+message GetUserWordResponse {
+  UserWord user_word = 1;
+}
+
+// ListUserWords request with comprehensive filtering
+message ListUserWordsRequest {
+  int64 user_id = 1 [(validate.rules).int64.gt = 0];
+  common.v1.PaginationRequest pagination = 2;
+  
+  // Filtering options
+  common.v1.MasteryLevel mastery_level = 3;       // Filter by specific mastery level
+  common.v1.WordStatus status = 4;                // Filter by learning status
+  string search_text = 5;                         // Search in word text or notes
+  bool review_due_only = 6;                       // Only words due for review
+  
+  // Sorting options
+  SortField sort_by = 7;
+  SortOrder sort_order = 8;
+}
+
+message ListUserWordsResponse {
+  repeated UserWord user_words = 1;
+  common.v1.PaginationResponse pagination = 2;
+}
+
+// DeleteUserWord request (soft delete)
+message DeleteUserWordRequest {
+  int64 id = 1 [(validate.rules).int64.gt = 0];
+  int64 user_id = 2 [(validate.rules).int64.gt = 0];
+}
+
+message DeleteUserWordResponse {
+  bool success = 1;
+}
+
+// GetUserWordStats request
+message GetUserWordStatsRequest {
+  int64 user_id = 1 [(validate.rules).int64.gt = 0];
+}
+
+message GetUserWordStatsResponse {
+  common.v1.LearningStats stats = 1;
+}
+
+// Sorting enums for ListUserWords
+enum SortField {
+  SORT_FIELD_UNSPECIFIED = 0;
+  SORT_FIELD_CREATED_AT = 1;
+  SORT_FIELD_UPDATED_AT = 2;
+  SORT_FIELD_MASTERY_OVERALL = 3;
+  SORT_FIELD_NEXT_REVIEW_AT = 4;
+  SORT_FIELD_WORD_TEXT = 5;
+}
+
+enum SortOrder {
+  SORT_ORDER_UNSPECIFIED = 0;
+  SORT_ORDER_ASC = 1;
+  SORT_ORDER_DESC = 2;
+}

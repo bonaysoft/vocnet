@@ -48,6 +48,9 @@ api/gen/
 api/openapi/
 internal/infrastructure/database/db/
 
+# Buf build cache (optional - you may want to cache this)
+.buf/
+
 # Build artifacts
 bin/
 dist/
