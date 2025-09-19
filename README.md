@@ -1,260 +1,135 @@
-# Rockd
+<div align="center">
 
-A Go backend application built with Clean Architecture principles, featuring gRPC services, HTTP/JSON API, and PostgreSQL database.
+# vocnet
 
-## Features
+面向词汇学习/语言素材管理的后端服务。提供统一的词汇、例句、使用场景等数据管理能力，支持 gRPC 与 HTTP/JSON 访问，便于集成到学习产品、语言分析工具或教学平台中。
 
-- **Clean Architecture**: Well-structured codebase following Clean Architecture principles
-- **gRPC & HTTP**: Dual API support with gRPC primary and HTTP/JSON via grpc-gateway
-- **Type-safe Database**: Using sqlc for type-safe database operations
-- **PostgreSQL**: Robust relational database with migrations
-- **Protocol Buffers**: API-first design with protobuf definitions
-- **Comprehensive Testing**: Unit tests with mocks and integration tests
-- **Docker Support**: Containerized deployment with Docker and docker-compose
-- **Development Tools**: Makefile with common development tasks
+</div>
 
-## Architecture
+## 核心功能 (What It Does)
 
-The project follows Clean Architecture with these layers:
+- 词汇与用户词表管理（生词本、熟练度等扩展字段可拓展）
+- 例句与使用场景存储与关联
+- 词与词之间的关系（同义 / 反义 / 派生 等拓展空间）
+- 用户与句子、词汇之间的交互记录模型（便于统计与记忆曲线拓展）
+- 双协议访问：gRPC（高性能） + HTTP/JSON（易调试）
+- 明确的分层架构，易于二次开发或裁剪
 
-```
-├── cmd/                    # Application entry points
-├── api/
-│   ├── proto/             # Protocol Buffer definitions
-│   ├── gen/               # Generated gRPC and gateway code
-│   └── openapi/           # Auto-generated OpenAPI documentation
-├── internal/
-│   ├── entity/            # Business entities
-│   ├── usecase/           # Business logic use cases
-│   ├── adapter/
-│   │   ├── grpc/          # gRPC service implementations
-│   │   └── repository/    # Data access implementations
-│   ├── infrastructure/
-│   │   ├── database/      # Database connections
-│   │   ├── config/        # Configuration management
-│   │   └── server/        # Server setup
-│   └── mocks/             # Generated mock files
-├── sql/
-│   ├── schema/            # Database schema files
-│   ├── queries/           # SQL query files for sqlc
-│   └── migrations/        # Database migration files
-└── docs/                  # Project documentation
-```
+> 技术实现、架构细节请查看：`docs/technical-overview.md`
 
-## Prerequisites
+## 为什么使用 vocnet
 
-- Go 1.21 or later
+| 需求场景 | vocnet 提供的价值 |
+|----------|--------------------|
+| 语言学习产品需要统一后端 | 现成的词汇 / 例句 / 关系 / 用户交互模型 |
+| 需要高性能与多语言客户端 | gRPC 接口 + 自动生成的 HTTP 网关 |
+| 想自定义业务逻辑 | Clean Architecture 便于替换/扩展 UseCase 与 Repository |
+| 需要严格类型与数据库安全 | sqlc 生成类型安全访问代码 |
+
+## 快速开始
+
+### 前置要求
+
+- Go 1.23+
 - PostgreSQL 13+
-- Protocol Buffers compiler (protoc)
-- Docker and Docker Compose (optional)
+- protoc (Protocol Buffers 编译器)
+- 可选：Docker / Docker Compose
 
-## Quick Start
-
-### 1. Setup Development Environment
-
+### 1. 获取代码
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd rockd
-
-# Install development tools and dependencies
+git clone https://github.com/eslsoft/vocnet.git
+cd vocnet
 make setup
 ```
 
-### 2. Start Database
-
+### 2. 启动数据库并迁移
 ```bash
-# Start PostgreSQL using Docker
 make db-up
-
-# Run migrations
 make migrate-up
 ```
 
-### 3. Generate Code
-
+### 3. 生成代码（如需要）
 ```bash
-# Generate protobuf code
-make generate
-
-# Generate database code
-make sqlc
-
-# Generate mocks
-make mocks
+make generate sqlc mocks
 ```
 
-### 4. Run the Application
-
+### 4. 启动服务
 ```bash
-# Run in development mode
 make run
-
-# Or build and run binary
-make build
-./bin/rockd-server
+# 或
+make build && ./bin/rockd-server
 ```
 
-The application will start with:
-- gRPC server on port 9090
-- HTTP gateway on port 8080
+默认端口：
+- gRPC: 9090
+- HTTP: 8080
 
-### 5. Test the API
-
+### 5. 调用示例
 ```bash
-# Create a user
 curl -X POST http://localhost:8080/api/v1/users \
-  -H "Content-Type: application/json" \
-  -d '{"name": "John Doe", "email": "john@example.com"}'
+  -H 'Content-Type: application/json' \
+  -d '{"name":"John Doe","email":"john@example.com"}'
 
-# Get a user
 curl http://localhost:8080/api/v1/users/1
-
-# List users
-curl http://localhost:8080/api/v1/users?page=1&per_page=10
 ```
 
-## Development
+## 配置 (Environment)
 
-### Available Make Commands
-
-```bash
-make help                 # Show all available commands
-make setup               # Setup development environment
-make build               # Build the application
-make run                 # Run the application
-make test                # Run tests
-make test-coverage       # Generate test coverage report
-make generate            # Generate protobuf code
-make sqlc                # Generate database code
-make mocks               # Generate mock files
-make lint                # Run linter
-make fmt                 # Format code
-make clean               # Clean build artifacts
-```
-
-### Database Management
-
-```bash
-make db-up               # Start PostgreSQL database
-make db-down             # Stop PostgreSQL database
-make migrate-up          # Run migrations up
-make migrate-down        # Run migrations down
-make migrate-force       # Force migration version
-```
-
-### Docker Support
-
-```bash
-# Build Docker image
-make docker-build
-
-# Run with Docker Compose
-docker-compose up
-
-# Run with Docker Compose in background
-docker-compose up -d
-```
-
-## Configuration
-
-The application uses environment variables for configuration. See `.env` file for available options:
-
+在运行前可通过环境变量覆盖默认配置，详见示例：
 ```env
-# Server configuration
 SERVER_HOST=localhost
 GRPC_PORT=9090
 HTTP_PORT=8080
-
-# Database configuration
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=rockd
+DB_NAME=vocnet
 DB_USER=postgres
 DB_PASSWORD=postgres
-DB_SSLMODE=disable
-
-# Logging configuration
 LOG_LEVEL=info
-LOG_FORMAT=json
 ```
 
-## API Documentation
-
-### gRPC
-
-The gRPC API is defined in Protocol Buffer files located in `api/proto/`. The generated Go code is in `api/gen/`.
-
-### HTTP/JSON
-
-The HTTP API is automatically generated from gRPC definitions using grpc-gateway. OpenAPI documentation is generated in `api/openapi/`.
-
-#### User Service Endpoints
-
-- `POST /api/v1/users` - Create a user
-- `GET /api/v1/users/{id}` - Get a user by ID
-- `PUT /api/v1/users/{id}` - Update a user
-- `DELETE /api/v1/users/{id}` - Delete a user
-- `GET /api/v1/users` - List users with pagination
-
-## Testing
-
-### Unit Tests
-
+## 开发常用命令
 ```bash
-# Run all tests
+make help
+make run            # 启动服务
+make test           # 运行测试
+make generate       # 生成 gRPC / Gateway / OpenAPI
+make sqlc           # 生成数据库访问代码
+make mocks          # 生成 gomock
+make migrate-up     # 迁移上
+make migrate-down   # 迁移回滚
+```
+
+## 相关文档
+
+- 技术架构：`docs/technical-overview.md`
+- 贡献指南：`CONTRIBUTING.md`
+- OpenAPI 文档：`api/openapi/` (生成后)
+
+## 测试
+```bash
 make test
-
-# Run tests with coverage
 make test-coverage
-
-# Run specific test
-go test ./internal/usecase -v
 ```
 
-### Integration Tests
+## 路线图 (Roadmap 摘要)
 
-Integration tests require a running PostgreSQL database:
+- [ ] 用户词汇熟练度算法
+- [ ] 统计 / 报告 API
+- [ ] 词汇关系扩展（同义/派生/音标）
+- [ ] 鉴权与多用户隔离
+- [ ] OpenTelemetry 集成
 
-```bash
-# Start test database
-make db-up
+欢迎通过 Issue / PR 参与！
 
-# Run integration tests
-go test ./tests/integration -v
-```
+## 贡献
 
-## Contributing
+请阅读 `CONTRIBUTING.md` 获取分支、提交、测试及代码生成规范。
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Add tests for your changes
-5. Ensure tests pass (`make test`)
-6. Format code (`make fmt`)
-7. Commit your changes (`git commit -am 'Add amazing feature'`)
-8. Push to the branch (`git push origin feature/amazing-feature`)
-9. Open a Pull Request
+## 许可证
 
-## Code Generation
+本项目基于 MIT License 发布，详见 `LICENSE`。
 
-This project uses several code generation tools:
+---
 
-- **protoc**: Generates gRPC and HTTP gateway code from `.proto` files
-- **sqlc**: Generates type-safe Go code from SQL queries
-- **mockgen**: Generates mock implementations for testing
-
-Run `make generate sqlc mocks` to regenerate all code.
-
-## Project Structure
-
-The project follows Clean Architecture principles:
-
-- **Entities**: Core business entities and rules (`internal/entity/`)
-- **Use Cases**: Application business rules (`internal/usecase/`)
-- **Interface Adapters**: gRPC services and repositories (`internal/adapter/`)
-- **Frameworks & Drivers**: External frameworks and database (`internal/infrastructure/`)
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+如果你在使用中发现改进点，欢迎提交 Issue 或 PR。🙌
