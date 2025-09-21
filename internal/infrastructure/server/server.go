@@ -8,8 +8,16 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
+	commonv1 "github.com/eslsoft/vocnet/api/gen/common/v1"
+	wordv1 "github.com/eslsoft/vocnet/api/gen/word/v1"
+	adaptergrpc "github.com/eslsoft/vocnet/internal/adapter/grpc"
+	"github.com/eslsoft/vocnet/internal/adapter/repository"
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
+	dbpkg "github.com/eslsoft/vocnet/internal/infrastructure/database/db"
+	"github.com/eslsoft/vocnet/internal/usecase"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,12 +30,29 @@ type Server struct {
 }
 
 // NewServer creates a new server instance
-func NewServer(cfg *config.Config, logger *logrus.Logger) *Server {
+func NewServer(cfg *config.Config, logger *logrus.Logger, pool *pgxpool.Pool) *Server {
 	// Create gRPC server
 	grpcServer := grpc.NewServer()
 
 	// Create gRPC-Gateway mux
 	mux := runtime.NewServeMux()
+
+	// Setup dependencies for WordService
+	queries := dbpkg.New(pool)
+	wordRepo := repository.NewWordRepository(queries)
+	wordUC := usecase.NewWordUsecase(wordRepo, "en")
+	wordSvc := adaptergrpc.NewWordServiceServer(wordUC)
+	wordv1.RegisterWordServiceServer(grpcServer, wordSvc)
+
+	// Register gateway handler for WordService
+	ctx := context.Background()
+	dialOpts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	// We assume same host different port for grpc
+	endpoint := fmt.Sprintf("localhost:%d", cfg.Server.GRPCPort)
+	_ = commonv1.Language_LANGUAGE_UNSPECIFIED // reference to keep imported commonv1 (maybe unused otherwise)
+	if err := wordv1.RegisterWordServiceHandlerFromEndpoint(ctx, mux, endpoint, dialOpts); err != nil {
+		logger.Errorf("failed to register word service handler: %v", err)
+	}
 
 	// Create HTTP server
 	httpServer := &http.Server{

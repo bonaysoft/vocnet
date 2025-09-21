@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "common/v1/enums.proto";
 import "common/v1/types.proto";
 
-option go_package = "github.com/bonaysoft/vocnet/api/gen/sentence/v1;sentencev1";
+option go_package = "github.com/eslsoft/vocnet/api/gen/sentence/v1;sentencev1";
 
 // Core sentence entity (shared across users)
 message Sentence {

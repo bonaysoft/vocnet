@@ -8,7 +8,7 @@ import "common/v1/enums.proto";
 import "common/v1/types.proto";
 import "validate/validate.proto";
 
-option go_package = "github.com/bonaysoft/vocnet/api/gen/stats/v1;statsv1";
+option go_package = "github.com/eslsoft/vocnet/api/gen/stats/v1;statsv1";
 
 // Statistics and analytics service for learning progress
 service StatsService {

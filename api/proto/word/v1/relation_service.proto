@@ -8,7 +8,7 @@ import "common/v1/types.proto";
 import "word/v1/word.proto";
 import "validate/validate.proto";
 
-option go_package = "github.com/bonaysoft/vocnet/api/gen/word/v1;wordv1";
+option go_package = "github.com/eslsoft/vocnet/api/gen/word/v1;wordv1";
 
 // Word relationship management service for building vocabulary networks
 service WordRelationService {

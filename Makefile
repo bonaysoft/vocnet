@@ -2,8 +2,8 @@
 .DEFAULT_GOAL := help
 GOPATH ?= $(shell go env GOPATH)
 GOBIN ?= $(GOPATH)/bin
-PROJECT_NAME := rockd
-BINARY_NAME := $(PROJECT_NAME)-server
+PROJECT_NAME := vocnet
+BINARY_NAME := vocnet
 
 # Tool versions
 PROTOC_VERSION := 3.21.12
@@ -73,15 +73,15 @@ mocks: ## Generate mock files
 	go generate ./...
 
 .PHONY: build
-build: generate sqlc ## Build the application
+build: generate sqlc ## Build the unified CLI binary
 	@echo "Building $(BINARY_NAME)..."
 	@mkdir -p $(BUILD_DIR)
-	go build -o $(BUILD_DIR)/$(BINARY_NAME) ./cmd/server
+	go build -o $(BUILD_DIR)/$(BINARY_NAME) .
 
 .PHONY: run
-run: ## Run the application
-	@echo "Running $(BINARY_NAME)..."
-	go run ./cmd/server
+run: ## Run the server via unified CLI
+	@echo "Running server (serve)..."
+	go run . serve
 
 .PHONY: test
 test: mocks ## Run tests
@@ -175,3 +175,8 @@ dev: db-up migrate-up run ## Start development environment
 
 .PHONY: all
 all: clean setup build test ## Clean, setup, build, and test
+
+.PHONY: init-words
+init-words: ## Initialize database schema and import words (downloads ~30MB)
+	@echo "Initializing database & importing words (ECDICT)..."
+	CGO_ENABLED=1 go run . db-init

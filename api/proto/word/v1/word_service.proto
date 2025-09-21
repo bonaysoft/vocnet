@@ -8,7 +8,7 @@ import "common/v1/types.proto";
 import "word/v1/word.proto";
 import "validate/validate.proto";
 
-option go_package = "github.com/bonaysoft/vocnet/api/gen/word/v1;wordv1";
+option go_package = "github.com/eslsoft/vocnet/api/gen/word/v1;wordv1";
 
 // Word management service for global vocabulary
 service WordService {
@@ -34,10 +34,10 @@ service WordService {
     };
   }
   
-  // Search words by text prefix or full-text search
-  rpc SearchWords(SearchWordsRequest) returns (SearchWordsResponse) {
+  // Lookup a single word by exact lemma (case-insensitive)
+  rpc Lookup(LookupRequest) returns (LookupResponse) {
     option (google.api.http) = {
-      get: "/api/v1/words/search"
+      get: "/api/v1/words/lookup"
     };
   }
 }
@@ -76,14 +76,14 @@ message ListWordsResponse {
   common.v1.PaginationResponse pagination = 2;
 }
 
-// SearchWords request
-message SearchWordsRequest {
-  string query = 1 [(validate.rules).string.min_len = 1];
-  common.v1.Language language = 2;
-  common.v1.PaginationRequest pagination = 3;
+// LookupRequest performs an exact lemma lookup in specified language (default en)
+message LookupRequest {
+  string lemma = 1 [(validate.rules).string.min_len = 1];
+  common.v1.Language language = 2; // optional; if unspecified, server default language
 }
 
-message SearchWordsResponse {
-  repeated Word words = 1;
-  common.v1.PaginationResponse pagination = 2;
+// LookupResponse returns the found word or empty if not found
+message LookupResponse {
+  Word word = 1; // empty if not found
+  bool found = 2; // explicit flag to indicate result presence
 }

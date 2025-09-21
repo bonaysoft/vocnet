@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package common.v1;
 
-option go_package = "github.com/bonaysoft/vocnet/api/gen/common/v1;commonv1";
+option go_package = "github.com/eslsoft/vocnet/api/gen/common/v1;commonv1";
 
 // Mastery level for vocabulary learning
 // Based on 0-5 star rating system from roadmap

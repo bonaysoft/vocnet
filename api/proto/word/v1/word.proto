@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "common/v1/enums.proto";
 import "common/v1/types.proto";
 
-option go_package = "github.com/bonaysoft/vocnet/api/gen/word/v1;wordv1";
+option go_package = "github.com/eslsoft/vocnet/api/gen/word/v1;wordv1";
 
 // Core word entity (global lexeme)
 message Word {
@@ -16,7 +16,10 @@ message Word {
   string phonetic = 4;                             // IPA phonetic notation (optional)
   string pos = 5;                                  // Primary part of speech
   string definition = 6;                           // Primary definition (optional)
-  google.protobuf.Timestamp created_at = 7;
+  string translation = 7;                          // Localized translation or gloss (optional)
+  string exchange = 8;                             // Inflectional forms JSON or compact string
+  repeated string tags = 9;                        // Semantic or difficulty tags
+  google.protobuf.Timestamp created_at = 10;
 }
 
 // User's personal word record with learning context

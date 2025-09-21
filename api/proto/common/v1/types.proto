@@ -5,7 +5,7 @@ package common.v1;
 import "google/protobuf/timestamp.proto";
 import "common/v1/enums.proto";
 
-option go_package = "github.com/bonaysoft/vocnet/api/gen/common/v1;commonv1";
+option go_package = "github.com/eslsoft/vocnet/api/gen/common/v1;commonv1";
 
 // Pagination request parameters
 message PaginationRequest {

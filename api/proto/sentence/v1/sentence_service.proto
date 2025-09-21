@@ -9,7 +9,7 @@ import "common/v1/types.proto";
 import "sentence/v1/sentence.proto";
 import "validate/validate.proto";
 
-option go_package = "github.com/bonaysoft/vocnet/api/gen/sentence/v1;sentencev1";
+option go_package = "github.com/eslsoft/vocnet/api/gen/sentence/v1;sentencev1";
 
 // Sentence management service for example sentences and language materials
 service SentenceService {
