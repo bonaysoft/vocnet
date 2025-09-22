@@ -3,6 +3,9 @@ managed:
   enabled: true
   go_package_prefix:
     default: github.com/eslsoft/vocnet/api/gen
+    except:
+      - buf.build/googleapis/googleapis
+      - buf.build/envoyproxy/protoc-gen-validate
 plugins:
   # Go protobuf generation
   - plugin: buf.build/protocolbuffers/go

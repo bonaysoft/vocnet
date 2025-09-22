@@ -1,15 +1,15 @@
 syntax = "proto3";
 
-package word.v1;
+package voc.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "common/v1/enums.proto";
 import "common/v1/types.proto";
-import "word/v1/word.proto";
+import "voc/v1/voc.proto";
 import "validate/validate.proto";
 
-option go_package = "github.com/eslsoft/vocnet/api/gen/word/v1;wordv1";
+option go_package = "github.com/eslsoft/vocnet/api/gen/voc/v1;vocv1";
 
 // User word management service for personal vocabulary learning
 service UserWordService {
@@ -79,7 +79,7 @@ message CollectWordRequest {
 
 message CollectWordResponse {
   UserWord user_word = 1;
-  Word global_word = 2;                           // If a new global word was created
+  Voc global_voc = 2;                           // If a new global vocabulary entry was created
 }
 
 // UpdateUserWordMastery request

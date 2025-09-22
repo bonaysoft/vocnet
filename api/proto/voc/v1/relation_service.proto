@@ -1,16 +1,16 @@
 syntax = "proto3";
 
-package word.v1;
+package voc.v1;
 
-import "google/api/annotations.proto";
+import "google/api/annotations.proto"; // for google.api.http annotations
 import "common/v1/enums.proto";
 import "common/v1/types.proto";
-import "word/v1/word.proto";
-import "validate/validate.proto";
+import "voc/v1/voc.proto";
+import "validate/validate.proto"; // for (validate.rules)
 
-option go_package = "github.com/eslsoft/vocnet/api/gen/word/v1;wordv1";
+option go_package = "github.com/eslsoft/vocnet/api/gen/voc/v1;vocv1";
 
-// Word relationship management service for building vocabulary networks
+// Vocabulary relationship management service for building networks
 service WordRelationService {
   // Create a relationship between two user words
   rpc CreateWordRelation(CreateWordRelationRequest) returns (CreateWordRelationResponse) {

@@ -14,3 +14,8 @@ sql:
         emit_interface: true
         emit_exact_table_names: false
         emit_empty_slices: true
+        overrides:
+          - column: vocs.meanings
+            go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.VocMeanings
+          - column: vocs.forms
+            go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.VocForms

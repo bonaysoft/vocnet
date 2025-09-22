@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	commonv1 "github.com/eslsoft/vocnet/api/gen/common/v1"
-	wordv1 "github.com/eslsoft/vocnet/api/gen/word/v1"
+	vocv1v1 "github.com/eslsoft/vocnet/api/gen/voc/v1"
 	adaptergrpc "github.com/eslsoft/vocnet/internal/adapter/grpc"
 	"github.com/eslsoft/vocnet/internal/adapter/repository"
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
@@ -37,12 +37,12 @@ func NewServer(cfg *config.Config, logger *logrus.Logger, pool *pgxpool.Pool) *S
 	// Create gRPC-Gateway mux
 	mux := runtime.NewServeMux()
 
-	// Setup dependencies for WordService
+	// Setup dependencies for VocService
 	queries := dbpkg.New(pool)
-	wordRepo := repository.NewWordRepository(queries)
+	wordRepo := repository.NewVocRepository(queries)
 	wordUC := usecase.NewWordUsecase(wordRepo, "en")
-	wordSvc := adaptergrpc.NewWordServiceServer(wordUC)
-	wordv1.RegisterWordServiceServer(grpcServer, wordSvc)
+	vocSvc := adaptergrpc.NewVocServiceServer(wordUC)
+	vocv1v1.RegisterVocServiceServer(grpcServer, vocSvc)
 
 	// Register gateway handler for WordService
 	ctx := context.Background()
@@ -50,8 +50,8 @@ func NewServer(cfg *config.Config, logger *logrus.Logger, pool *pgxpool.Pool) *S
 	// We assume same host different port for grpc
 	endpoint := fmt.Sprintf("localhost:%d", cfg.Server.GRPCPort)
 	_ = commonv1.Language_LANGUAGE_UNSPECIFIED // reference to keep imported commonv1 (maybe unused otherwise)
-	if err := wordv1.RegisterWordServiceHandlerFromEndpoint(ctx, mux, endpoint, dialOpts); err != nil {
-		logger.Errorf("failed to register word service handler: %v", err)
+	if err := vocv1v1.RegisterVocServiceHandlerFromEndpoint(ctx, mux, endpoint, dialOpts); err != nil {
+		logger.Errorf("failed to register voc service handler: %v", err)
 	}
 
 	// Create HTTP server
