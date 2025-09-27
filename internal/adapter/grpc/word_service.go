@@ -4,49 +4,58 @@ import (
 	"context"
 
 	commonv1 "github.com/eslsoft/vocnet/api/gen/common/v1"
-	vocv1 "github.com/eslsoft/vocnet/api/gen/voc/v1"
+	dictv1 "github.com/eslsoft/vocnet/api/gen/dict/v1"
 	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/usecase"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type VocServiceServer struct {
-	vocv1.UnimplementedVocServiceServer
+type WordServiceServer struct {
+	dictv1.UnimplementedWordServiceServer
 	uc usecase.WordUsecase
 }
 
-func NewVocServiceServer(uc usecase.WordUsecase) *VocServiceServer {
-	return &VocServiceServer{uc: uc}
+func NewWordServiceServer(uc usecase.WordUsecase) *WordServiceServer {
+	return &WordServiceServer{uc: uc}
 }
 
-func (s *VocServiceServer) toProto(v *entity.Voc) *vocv1.Voc {
+func (s *WordServiceServer) toProto(v *entity.Voc) *dictv1.Word {
 	if v == nil {
 		return nil
 	}
-	pv := &vocv1.Voc{
-		Id:       v.ID,
-		Text:     v.Text,
-		Language: languageStringToEnum(v.Language),
-		VocType:  v.VocType,
-		Phonetic: v.Phonetic,
-		Tags:     v.Tags,
+	pv := &dictv1.Word{
+		Id:        v.ID,
+		Text:      v.Text,
+		Language:  languageStringToEnum(v.Language),
+		WordType:  v.VocType,
+		Phonetics: []*dictv1.Phonetic{{Ipa: v.Phonetic, Dialect: "en-US"}}, // TODO: multiple phonetics
+		Tags:      v.Tags,
+		CreatedAt: timestamppb.New(v.CreatedAt),
 	}
 	if v.Lemma != nil {
 		pv.Lemma = *v.Lemma
 	}
 	// Meanings
 	for _, m := range v.Meanings {
-		pv.Meanings = append(pv.Meanings, &vocv1.VocMeaning{
-			Pos:         m.POS,
-			Definition:  m.Definition,
-			Translation: m.Translation,
+		lang := commonv1.Language_LANGUAGE_ENGLISH
+		text := m.Definition
+		if m.Translation != "" {
+			lang = commonv1.Language_LANGUAGE_CHINESE
+			text = m.Translation
+		}
+
+		pv.Definitions = append(pv.Definitions, &dictv1.Definition{
+			Pos:      m.POS,
+			Text:     text,
+			Language: lang,
 		})
 	}
 	// Forms (only set for lemma entries)
 	if len(v.Forms) > 0 {
 		for _, f := range v.Forms {
-			pv.Forms = append(pv.Forms, &vocv1.VocFormRef{Text: f.Text, VocType: f.VocType})
+			pv.Forms = append(pv.Forms, &dictv1.WordFormRef{Text: f.Text, WordType: f.VocType})
 		}
 	}
 	return pv
@@ -74,15 +83,15 @@ func languageStringToEnum(code string) commonv1.Language {
 }
 
 // Lookup implements exact lemma lookup
-func (s *VocServiceServer) Lookup(ctx context.Context, req *vocv1.LookupVocRequest) (*vocv1.Voc, error) {
-	if req == nil || req.Text == "" {
+func (s *WordServiceServer) LookupWord(ctx context.Context, req *dictv1.LookupWordRequest) (*dictv1.Word, error) {
+	if req == nil || req.Word == "" {
 		return nil, status.Error(codes.InvalidArgument, "text required")
 	}
 	lang := "en"
 	if req.Language != commonv1.Language_LANGUAGE_UNSPECIFIED {
 		lang = req.Language.String()
 	}
-	v, err := s.uc.Lookup(ctx, req.Text, lang)
+	v, err := s.uc.Lookup(ctx, req.Word, lang)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

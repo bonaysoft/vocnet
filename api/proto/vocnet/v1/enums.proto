@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package vocnet.v1;
+
+option go_package = "github.com/eslsoft/vocnet/api/gen/vocnet/v1;vocnetv1";
+
+// Mastery level for vocabulary learning
+// Based on 0-5 star rating system from roadmap
+// enum MasteryLevel {
+//   MASTERY_LEVEL_UNSPECIFIED = 0; // Default/Unknown - 未认识
+//   MASTERY_LEVEL_SEEN = 1; // 眼熟 - Seen but can't recall meaning
+//   MASTERY_LEVEL_RECOGNIZE = 2; // 理解 - Can understand when reading/listening
+//   MASTERY_LEVEL_USABLE = 3; // 可用 - Can spell and use in basic sentences
+//   MASTERY_LEVEL_PROFICIENT = 4; // 熟练 - Confident in all contexts
+//   MASTERY_LEVEL_MASTERED = 5; // 内化 - Completely internalized
+// }
+
+// Word relation types for building vocabulary networks
+enum RelationType {
+  RELATION_TYPE_UNSPECIFIED = 0;
+  RELATION_TYPE_SYNONYM = 1; // 同义词
+  RELATION_TYPE_ANTONYM = 2; // 反义词
+  RELATION_TYPE_HYPERNYM = 3; // 上位词 (animal->dog)
+  RELATION_TYPE_HYPONYM = 4; // 下位词 (dog->animal)
+  RELATION_TYPE_ASSOCIATION = 5; // 关联词 (bread->butter)
+  RELATION_TYPE_CAUSE_EFFECT = 6; // 因果关系 (smoke->cancer)
+  RELATION_TYPE_PART_WHOLE = 7; // 部分-整体 (wheel->car)
+  RELATION_TYPE_MNEMONIC = 10; // 联想/助记 (arbitrary user associations)
+  RELATION_TYPE_CUSTOM = 100; // 自定义关系 (reserved for extension)
+}
+
+// Supported languages
+enum Language {
+  LANGUAGE_UNSPECIFIED = 0;
+  LANGUAGE_ENGLISH = 1; // en
+  LANGUAGE_CHINESE = 2; // zh
+  LANGUAGE_SPANISH = 3; // es
+  LANGUAGE_FRENCH = 4; // fr
+  LANGUAGE_GERMAN = 5; // de
+  LANGUAGE_JAPANESE = 6; // ja
+  LANGUAGE_KOREAN = 7; // ko
+}
+
+// Source types for sentences and content
+enum SourceType {
+  SOURCE_TYPE_UNSPECIFIED = 0;
+  SOURCE_TYPE_BOOK = 1; // 书籍
+  SOURCE_TYPE_WEB = 2; // 网页
+  SOURCE_TYPE_AUDIO = 3; // 音频
+  SOURCE_TYPE_VIDEO = 4; // 视频
+  SOURCE_TYPE_MANUAL = 5; // 手动输入
+  SOURCE_TYPE_OTHER = 10; // 其他
+}

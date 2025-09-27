@@ -2,73 +2,35 @@ syntax = "proto3";
 
 package common.v1;
 
-import "google/protobuf/timestamp.proto";
-import "common/v1/enums.proto";
+import "validate/validate.proto";
 
 option go_package = "github.com/eslsoft/vocnet/api/gen/common/v1;commonv1";
 
+// ID request message
+message IDRequest {
+  int64 id = 1 [(validate.rules).int64.gt = 0];
+}
+
 // Pagination request parameters
 message PaginationRequest {
-  int32 limit = 1;    // Number of items to return (default: 20, max: 100)
-  int32 offset = 2;   // Number of items to skip (default: 0)
+  int32 limit = 1; // Number of items to return (default: 20, max: 100)
+  int32 offset = 2; // Number of items to skip (default: 0)
 }
 
 // Pagination response metadata
 message PaginationResponse {
-  int32 total = 1;        // Total number of items
-  int32 page = 2;         // Current page number (calculated from offset/limit)
-  int32 per_page = 3;     // Items per page (same as limit)
-  int32 total_pages = 4;  // Total number of pages
+  int32 total = 1; // Total number of items
+  int32 page_no = 2; // Current page number (calculated from offset/limit)
 }
 
-// Standard API response wrapper
-message APIResponse {
-  bool success = 1;
-  string message = 2;
-  PaginationResponse pagination = 3;
-}
-
-// Error details for API responses
-message ErrorDetail {
-  string code = 1;        // Error code (e.g., "INVALID_MASTERY_LEVEL")
-  string message = 2;     // Human-readable error message
-  string field = 3;       // Field name for validation errors
-}
-
-// Mastery breakdown for different skills
-message MasteryBreakdown {
-  int32 listen = 1;       // Listening mastery (0-5)
-  int32 read = 2;         // Reading mastery (0-5)
-  int32 spell = 3;        // Spelling mastery (0-5)
-  int32 pronounce = 4;    // Pronunciation mastery (0-5)
-  int32 use = 5;          // Usage in context mastery (0-5)
-  int32 overall = 6;      // Overall mastery score (0-500, stored as *100)
-}
-
-// Review timing information
-message ReviewTiming {
-  google.protobuf.Timestamp last_review_at = 1;
-  google.protobuf.Timestamp next_review_at = 2;
-  int32 interval_days = 3;                          // Current review interval
-  int32 fail_count = 4;                            // Consecutive failure count
-}
-
-// User identification (for internal use)
-message UserContext {
-  int64 user_id = 1;
-}
-
-// Language learning statistics
-message LearningStats {
-  int32 total_words = 1;
-  int32 mastered_words = 2;
-  int32 learning_words = 3;
-  int32 review_due = 4;
-  repeated MasteryLevelCount mastery_distribution = 5;
-}
-
-// Count by mastery level for statistics
-message MasteryLevelCount {
-  MasteryLevel level = 1;
-  int32 count = 2;
+// Supported languages
+enum Language {
+  LANGUAGE_UNSPECIFIED = 0;
+  LANGUAGE_ENGLISH = 1; // en
+  LANGUAGE_CHINESE = 2; // zh
+  LANGUAGE_SPANISH = 3; // es
+  LANGUAGE_FRENCH = 4; // fr
+  LANGUAGE_GERMAN = 5; // de
+  LANGUAGE_JAPANESE = 6; // ja
+  LANGUAGE_KOREAN = 7; // ko
 }

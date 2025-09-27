@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package vocnet.v1;
+
+import "google/protobuf/timestamp.proto";
+import "vocnet/v1/enums.proto";
+
+// User's personal word record with learning context
+message UserWord {
+  int64 id = 1;
+  string word = 2; // Reference to global word (nullable)
+  MasteryBreakdown mastery = 3; // Detailed mastery scores
+  ReviewTiming review_timing = 4; // Review scheduling info
+  int64 query_count = 5; // How many times user looked up this word
+  string notes = 6; // User's personal notes
+  repeated Sentence sentences = 7; // Contextual example sentences
+  repeated WordRelation relations = 8; // Relationships to other words
+
+  string created_by = 20; // Owner username (read-only)
+  google.protobuf.Timestamp created_at = 21;
+  google.protobuf.Timestamp updated_at = 22;
+}
+
+// Mastery breakdown for different skills
+message MasteryBreakdown {
+  int32 listen = 1; // Listening mastery (0-5)
+  int32 read = 2; // Reading mastery (0-5)
+  int32 spell = 3; // Spelling mastery (0-5)
+  int32 pronounce = 4; // Pronunciation mastery (0-5)
+  int32 use = 5; // Usage in context mastery (0-5)
+  int32 overall = 6; // Overall mastery score (0-500, stored as *100)
+}
+
+// Review timing information
+message ReviewTiming {
+  google.protobuf.Timestamp last_review_at = 1;
+  google.protobuf.Timestamp next_review_at = 2;
+  int32 interval_days = 3; // Current review interval
+  int32 fail_count = 4; // Consecutive failure count
+}
+
+message Sentence {
+  string text = 1; // Surface form of the sentence
+  vocnet.v1.SourceType source = 2; // How this sentence was added
+}
+
+// Word-to-word relationship for building vocabulary networks
+message WordRelation {
+  string word = 1;
+  vocnet.v1.RelationType relation_type = 2; // Type of relationship
+  string note = 3; // User's note about this relation
+
+  string created_by = 20; // Owner username (read-only)
+  google.protobuf.Timestamp created_at = 21;
+  google.protobuf.Timestamp updated_at = 22;
+}
+
+// // Language learning statistics
+// message LearningStats {
+//   int32 total_words = 1;
+//   int32 mastered_words = 2;
+//   int32 learning_words = 3;
+//   int32 review_due = 4;
+//   repeated MasteryLevelCount mastery_distribution = 5;
+// }
+
+// // Count by mastery level for statistics
+// message MasteryLevelCount {
+//   vocnet.v1.MasteryLevel level = 1;
+//   int32 count = 2;
+// }

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package dict.v1;
+
+import "common/v1/types.proto";
+
+option go_package = "github.com/eslsoft/wordnet/api/gen/dict/v1;dictv1";
+
+message Phrase {
+  int64 id = 1; // Auto-increment ID (CRUD only)
+  string text = 2; // Surface form of the phrase
+  common.v1.Language language = 3; // Language of the phrase
+}
