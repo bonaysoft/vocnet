@@ -11,3 +11,7 @@ message Phrase {
   string text = 2; // Surface form of the phrase
   common.v1.Language language = 3; // Language of the phrase
 }
+
+service DictPhraseService {
+
+}

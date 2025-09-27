@@ -59,8 +59,10 @@ generate: buf-deps ## Generate code from protobuf files using buf
 	@echo "Generating protobuf files with buf..."
 	@mkdir -p $(GEN_DIR) $(OPENAPI_DIR)
 	buf generate
-	
 	@echo "Protobuf generation completed"
+	@echo "Generating OpenAPI v3 specification..."
+	curl -X POST -H "Content-Type: application/json" -T api/openapi/apidocs.swagger.json https://converter.swagger.io/api/convert | yq -P -oy '.' > api/openapi/apidocs.openapi.yaml
+	@echo "OpenAPI v3 specification generated at $(OPENAPI_DIR)/apidocs.openapi.yaml"
 
 .PHONY: sqlc
 sqlc: ## Generate type-safe database code

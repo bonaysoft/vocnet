@@ -5,6 +5,7 @@ managed:
     default: github.com/eslsoft/vocnet/api/gen
     except:
       - buf.build/googleapis/googleapis
+      - buf.build/grpc-ecosystem/grpc-gateway
       - buf.build/envoyproxy/protoc-gen-validate
 plugins:
   # Go protobuf generation
@@ -32,9 +33,11 @@ plugins:
     opt:
       - logtostderr=true
       - generate_unbound_methods=true
+      - allow_merge=true
   
   # Validation generation
   - plugin: buf.build/bufbuild/validate-go
     out: api/gen
     opt:
       - paths=source_relative
+  
