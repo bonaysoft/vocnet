@@ -19,3 +19,7 @@ sql:
             go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.VocMeanings
           - column: vocs.forms
             go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.VocForms
+          - column: user_words.sentences
+            go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.UserSentences
+          - column: user_words.relations
+            go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.UserWordRelations

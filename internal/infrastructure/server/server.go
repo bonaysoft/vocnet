@@ -6,12 +6,14 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
 	commonv1 "github.com/eslsoft/vocnet/api/gen/common/v1"
 	dictv1 "github.com/eslsoft/vocnet/api/gen/dict/v1"
+	vocnetv1 "github.com/eslsoft/vocnet/api/gen/vocnet/v1"
 	adaptergrpc "github.com/eslsoft/vocnet/internal/adapter/grpc"
 	"github.com/eslsoft/vocnet/internal/adapter/repository"
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
@@ -32,7 +34,14 @@ type Server struct {
 // NewServer creates a new server instance
 func NewServer(cfg *config.Config, logger *logrus.Logger, pool *pgxpool.Pool) *Server {
 	// Create gRPC server
-	grpcServer := grpc.NewServer()
+	opts := []logging.Option{
+		logging.WithLogOnEvents(logging.StartCall, logging.FinishCall),
+		// Add any other option (check functions starting with logging.With).
+	}
+	grpcServer := grpc.NewServer(grpc.ChainUnaryInterceptor(
+		logging.UnaryServerInterceptor(InterceptorLogger(), opts...),
+		// Add any other interceptor you want.
+	))
 
 	// Create gRPC-Gateway mux
 	mux := runtime.NewServeMux()
@@ -44,6 +53,12 @@ func NewServer(cfg *config.Config, logger *logrus.Logger, pool *pgxpool.Pool) *S
 	wordSvc := adaptergrpc.NewWordServiceServer(wordUC)
 	dictv1.RegisterWordServiceServer(grpcServer, wordSvc)
 
+	// Setup dependencies for UserWord service backed by Postgres
+	userWordRepo := repository.NewUserWordRepository(queries)
+	userWordUC := usecase.NewUserWordUsecase(userWordRepo)
+	userWordSvc := adaptergrpc.NewUserWordServiceServer(userWordUC, 1)
+	vocnetv1.RegisterUserWordServiceServer(grpcServer, userWordSvc)
+
 	// Register gateway handler for WordService
 	ctx := context.Background()
 	dialOpts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
@@ -52,6 +67,9 @@ func NewServer(cfg *config.Config, logger *logrus.Logger, pool *pgxpool.Pool) *S
 	_ = commonv1.Language_LANGUAGE_UNSPECIFIED // reference to keep imported commonv1 (maybe unused otherwise)
 	if err := dictv1.RegisterWordServiceHandlerFromEndpoint(ctx, mux, endpoint, dialOpts); err != nil {
 		logger.Errorf("failed to register voc service handler: %v", err)
+	}
+	if err := vocnetv1.RegisterUserWordServiceHandlerFromEndpoint(ctx, mux, endpoint, dialOpts); err != nil {
+		logger.Errorf("failed to register user word service handler: %v", err)
 	}
 
 	// Create HTTP server

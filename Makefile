@@ -30,7 +30,7 @@ install-tools: ## Install development tools
 	# Install sqlc and other tools
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@v$(SQLC_VERSION)
 	go install github.com/golang/mock/mockgen@v$(MOCKGEN_VERSION)
-	go install github.com/golang-migrate/migrate/v4/cmd/migrate@v$(MIGRATE_VERSION)
+	GOFLAGS='-tags=postgres' go install github.com/golang-migrate/migrate/v4/cmd/migrate@v$(MIGRATE_VERSION)
 	@echo "Tools installed successfully"
 
 .PHONY: deps
