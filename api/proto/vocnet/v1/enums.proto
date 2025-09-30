@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package vocnet.v1;
 
-option go_package = "github.com/eslsoft/vocnet/api/gen/vocnet/v1;vocnetv1";
-
 // Mastery level for vocabulary learning
 // Based on 0-5 star rating system from roadmap
 // enum MasteryLevel {

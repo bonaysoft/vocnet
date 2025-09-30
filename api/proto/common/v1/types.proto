@@ -2,10 +2,8 @@ syntax = "proto3";
 
 package common.v1;
 
-import "validate/validate.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
-
-option go_package = "github.com/eslsoft/vocnet/api/gen/common/v1;commonv1";
+import "validate/validate.proto";
 
 // OpenAPI v2 (Swagger) specification for the entire API
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {

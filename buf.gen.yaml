@@ -1,43 +1,52 @@
-version: v1
+version: v2
 managed:
   enabled: true
-  go_package_prefix:
-    default: github.com/eslsoft/vocnet/api/gen
-    except:
-      - buf.build/googleapis/googleapis
-      - buf.build/grpc-ecosystem/grpc-gateway
-      - buf.build/envoyproxy/protoc-gen-validate
+  disable:
+    - file_option: go_package
+      module: buf.build/googleapis/googleapis
+    - file_option: go_package
+      module: buf.build/grpc-ecosystem/grpc-gateway
+    - file_option: go_package
+      module: buf.build/envoyproxy/protoc-gen-validate
+  override:
+    - file_option: go_package_prefix
+      value: github.com/eslsoft/vocnet/api/gen
 plugins:
-  # Go protobuf generation
-  - plugin: buf.build/protocolbuffers/go
+  - remote: buf.build/protocolbuffers/go
     out: api/gen
-    opt:
-      - paths=source_relative
-  
-  # Go gRPC generation
-  - plugin: buf.build/grpc/go
+    opt: paths=source_relative
+  - remote: buf.build/grpc/go
     out: api/gen
-    opt:
-      - paths=source_relative
-  
-  # grpc-gateway generation
-  - plugin: buf.build/grpc-ecosystem/gateway
+    opt: paths=source_relative
+  - local: protoc-gen-connect-go
+    out: api/gen
+    opt: paths=source_relative
+  - remote: buf.build/grpc-ecosystem/gateway
     out: api/gen
     opt:
       - paths=source_relative
       - generate_unbound_methods=true
-  
-  # OpenAPI v2 generation
-  - plugin: buf.build/grpc-ecosystem/openapiv2
+  - remote: buf.build/grpc-ecosystem/openapiv2
     out: api/openapi
     opt:
       - logtostderr=true
       - generate_unbound_methods=true
       - allow_merge=true
-  
-  # Validation generation
-  - plugin: buf.build/bufbuild/validate-go
+  - remote: buf.build/bufbuild/validate-go
     out: api/gen
+    opt: paths=source_relative
+  - remote: buf.build/bufbuild/es
+    out: api/vocnet-sdk-ts
+    # Also generate any imported dependencies
+    include_imports: true
+    # Add more plugin options here
+    opt: target=ts
+  - remote: buf.build/connectrpc/swift
+    out: api/vocnet-sdk-swift/Sources
     opt:
-      - paths=source_relative
-  
+      - GenerateAsyncMethods=true
+      - GenerateCallbackMethods=true
+      - Visibility=Public
+  - remote: buf.build/apple/swift
+    out: api/vocnet-sdk-swift/Sources
+    opt: Visibility=Public

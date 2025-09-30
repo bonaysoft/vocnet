@@ -1,8 +1,6 @@
 module github.com/eslsoft/vocnet
 
-go 1.23.0
-
-toolchain go1.24.4
+go 1.25
 
 // upgraded google.golang.org/grpc to match generated code expectations (SupportPackageIsVersion9)
 require (
@@ -16,13 +14,17 @@ require (
 	github.com/spf13/viper v1.21.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240826202546-f6391c0de4c7
 	google.golang.org/grpc v1.67.1
-	google.golang.org/protobuf v1.36.6
+	google.golang.org/protobuf v1.36.9
+)
+
+require (
+	connectrpc.com/connect v1.19.0
+	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2
 )
 
 require (
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
-	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect

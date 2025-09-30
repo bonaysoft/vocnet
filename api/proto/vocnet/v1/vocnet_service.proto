@@ -8,8 +8,6 @@ import "google/protobuf/empty.proto";
 import "validate/validate.proto";
 import "vocnet/v1/vocnet.proto";
 
-option go_package = "github.com/eslsoft/vocnet/api/gen/vocnet/v1;vocnetv1";
-
 // User word management service for personal vocabulary learning
 service UserWordService {
   // Collect/add a word to user's vocabulary (creates global word if needed)
