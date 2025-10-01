@@ -40,7 +40,10 @@ func Initialize() (*Container, func(), error) {
 	vocRepository := repository.NewVocRepository(queries)
 	wordUsecase := usecase.NewWordUsecase(vocRepository)
 	wordServiceServer := grpc.NewWordServiceServer(wordUsecase)
-	serverServer := server.NewServer(configConfig, logger, wordServiceServer)
+	userWordRepository := repository.NewUserWordRepository(queries)
+	userWordUsecase := usecase.NewUserWordUsecase(userWordRepository)
+	userWordServiceServer := grpc.NewUserWordServiceServer(userWordUsecase)
+	serverServer := server.NewServer(configConfig, logger, wordServiceServer, userWordServiceServer)
 	container := &Container{
 		Logger: logger,
 		Server: serverServer,

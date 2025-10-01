@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/eslsoft/vocnet/api/gen/dict/v1/dictv1connect"
+	"github.com/eslsoft/vocnet/api/gen/vocnet/v1/vocnetv1connect"
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
 	"github.com/sirupsen/logrus"
 )
@@ -26,12 +27,10 @@ type Server struct {
 }
 
 // NewServer creates a new server instance from pre-wired dependencies.
-func NewServer(cfg *config.Config, logger *logrus.Logger, wordSvc dictv1connect.WordServiceHandler) *Server {
+func NewServer(cfg *config.Config, logger *logrus.Logger, wordSvc dictv1connect.WordServiceHandler, userWordSvc vocnetv1connect.UserWordServiceHandler) *Server {
 	mux := http.NewServeMux()
-
-	path, handler := dictv1connect.NewWordServiceHandler(wordSvc)
-	fmt.Println(path)
-	mux.Handle(path, handler)
+	mux.Handle(dictv1connect.NewWordServiceHandler(wordSvc))
+	mux.Handle(vocnetv1connect.NewUserWordServiceHandler(userWordSvc))
 
 	return &Server{
 		config: cfg,

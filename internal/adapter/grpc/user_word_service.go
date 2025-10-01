@@ -20,15 +20,11 @@ import (
 type UserWordServiceServer struct {
 	dictv1connect.UnimplementedWordServiceHandler
 
-	uc            usecase.UserWordUsecase
-	defaultUserID int64
+	uc usecase.UserWordUsecase
 }
 
-func NewUserWordServiceServer(uc usecase.UserWordUsecase, defaultUserID int64) *UserWordServiceServer {
-	if defaultUserID <= 0 {
-		defaultUserID = 1
-	}
-	return &UserWordServiceServer{uc: uc, defaultUserID: defaultUserID}
+func NewUserWordServiceServer(uc usecase.UserWordUsecase) *UserWordServiceServer {
+	return &UserWordServiceServer{uc: uc}
 }
 
 func (s *UserWordServiceServer) CollectWord(ctx context.Context, req *connect.Request[vocnetv1.CollectWordRequest]) (*connect.Response[vocnetv1.UserWord], error) {
@@ -36,8 +32,9 @@ func (s *UserWordServiceServer) CollectWord(ctx context.Context, req *connect.Re
 		return nil, status.Error(codes.InvalidArgument, "word payload required")
 	}
 
+	userID := int64(1000)
 	entityWord := protoToEntityUserWord(req.Msg.Word)
-	result, err := s.uc.CollectWord(ctx, s.defaultUserID, entityWord)
+	result, err := s.uc.CollectWord(ctx, userID, entityWord)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -51,7 +48,8 @@ func (s *UserWordServiceServer) UpdateUserWordMastery(ctx context.Context, req *
 	}
 
 	msg := req.Msg
-	result, err := s.uc.UpdateMastery(ctx, s.defaultUserID, msg.GetWordId(), protoToEntityMastery(msg.GetMastery()), entity.ReviewTiming{}, msg.GetNotes())
+	userID := int64(1000)
+	result, err := s.uc.UpdateMastery(ctx, userID, msg.GetWordId(), protoToEntityMastery(msg.GetMastery()), entity.ReviewTiming{}, msg.GetNotes())
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -61,9 +59,10 @@ func (s *UserWordServiceServer) UpdateUserWordMastery(ctx context.Context, req *
 
 func (s *UserWordServiceServer) ListUserWords(ctx context.Context, req *connect.Request[vocnetv1.ListUserWordsRequest]) (*connect.Response[vocnetv1.ListUserWordsResponse], error) {
 	msg := req.Msg
+	userID := int64(1000)
 	pagination := msg.GetPagination()
 	filter := entity.UserWordFilter{
-		UserID:  s.defaultUserID,
+		UserID:  userID,
 		Keyword: msg.GetKeyword(),
 	}
 	if pagination != nil {
@@ -91,7 +90,8 @@ func (s *UserWordServiceServer) ListUserWords(ctx context.Context, req *connect.
 
 func (s *UserWordServiceServer) DeleteUserWord(ctx context.Context, req *connect.Request[commonv1.IDRequest]) (*connect.Response[emptypb.Empty], error) {
 	msg := req.Msg
-	if err := s.uc.DeleteUserWord(ctx, s.defaultUserID, msg.GetId()); err != nil {
+	userID := int64(1000)
+	if err := s.uc.DeleteUserWord(ctx, userID, msg.GetId()); err != nil {
 		return nil, toStatus(err)
 	}
 
