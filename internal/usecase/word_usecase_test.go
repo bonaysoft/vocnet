@@ -25,7 +25,7 @@ func (m *mockVocRepo) ListFormsByLemma(ctx context.Context, lemma string, langua
 func TestLookup_PopulatesFormsForLemma(t *testing.T) {
 	lemmaText := "run"
 	repo := &mockVocRepo{voc: &entity.Voc{ID: 1, Text: lemmaText, Language: "en", VocType: "lemma"}, forms: []entity.VocFormRef{{Text: "ran", VocType: "past"}, {Text: "running", VocType: "ing"}}}
-	uc := NewWordUsecase(repo, "en")
+	uc := NewWordUsecase(repo)
 
 	v, err := uc.Lookup(context.Background(), lemmaText, "en")
 	if err != nil {
@@ -39,7 +39,7 @@ func TestLookup_PopulatesFormsForLemma(t *testing.T) {
 func TestLookup_NoFormsWhenNotLemma(t *testing.T) {
 	lemmaStr := "run"
 	repo := &mockVocRepo{voc: &entity.Voc{ID: 2, Text: "ran", Language: "en", VocType: "past", Lemma: &lemmaStr}, forms: []entity.VocFormRef{{Text: "ran", VocType: "past"}}}
-	uc := NewWordUsecase(repo, "en")
+	uc := NewWordUsecase(repo)
 
 	v, err := uc.Lookup(context.Background(), "ran", "en")
 	if err != nil {

@@ -29,12 +29,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/eslsoft/vocnet/internal/infrastructure/config"
-	infraDB "github.com/eslsoft/vocnet/internal/infrastructure/database"
-	"github.com/eslsoft/vocnet/internal/infrastructure/server"
+	"github.com/eslsoft/vocnet/internal/app"
 )
 
 // serveCmd represents the serve command
@@ -42,44 +39,20 @@ var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Start gRPC + HTTP gateway server",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		seedWord, _ := cmd.Flags().GetString("seed-word")
-		// Load config
-		cfg, err := config.Load()
+		container, cleanup, err := app.Initialize()
 		if err != nil {
-			return fmt.Errorf("load config: %w", err)
+			return fmt.Errorf("init container: %w", err)
 		}
+		defer cleanup()
 
-		// Logger
-		logger := logrus.New()
-		lvl, _ := logrus.ParseLevel(cfg.Log.Level)
-		logger.SetLevel(lvl)
-		if cfg.Log.Format == "text" {
-			logger.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
-		}
-
-		// DB connection (pgx pool)
-		pool, err := infraDB.NewConnection(cfg)
-		if err != nil {
-			return fmt.Errorf("db connect: %w", err)
-		}
-		defer pool.Close()
-
-		if seedWord != "" {
-			// naive upsert-like insert ignore conflicts
-			_, err := pool.Exec(context.Background(), `INSERT INTO words(lemma, language) VALUES ($1,'en') ON CONFLICT (language, lemma) DO NOTHING`, seedWord)
-			if err != nil {
-				logger.Warnf("seed word failed: %v", err)
-			} else {
-				logger.Infof("seeded word: %s", seedWord)
-			}
-		}
+		logger := container.Logger
 
 		// Build server
-		srv := server.NewServer(cfg, logger, pool)
+		srv := container.Server
 
 		// Run gRPC & HTTP concurrently
 		errCh := make(chan error, 2)
-		go func() { errCh <- srv.StartGRPC() }()
+		// go func() { errCh <- srv.StartGRPC() }()
 		go func() { errCh <- srv.StartHTTP() }()
 
 		// Graceful shutdown
@@ -103,8 +76,6 @@ var serveCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(serveCmd)
-
-	serveCmd.Flags().String("seed-word", "", "(dev) seed a word lemma before starting for quick lookup test")
 
 	// Here you will define your flags and configuration settings.
 

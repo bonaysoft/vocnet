@@ -14,16 +14,14 @@ type WordUsecase interface {
 	Lookup(ctx context.Context, lemma string, language string) (*entity.Voc, error)
 }
 
+const _defaultLanguage = "en"
+
 type wordUsecase struct {
-	repo            repository.VocRepository
-	defaultLanguage string
+	repo repository.VocRepository
 }
 
-func NewWordUsecase(repo repository.VocRepository, defaultLanguage string) WordUsecase {
-	if defaultLanguage == "" {
-		defaultLanguage = "en"
-	}
-	return &wordUsecase{repo: repo, defaultLanguage: defaultLanguage}
+func NewWordUsecase(repo repository.VocRepository) WordUsecase {
+	return &wordUsecase{repo: repo}
 }
 
 func (u *wordUsecase) Lookup(ctx context.Context, lemma string, language string) (*entity.Voc, error) {
@@ -32,7 +30,7 @@ func (u *wordUsecase) Lookup(ctx context.Context, lemma string, language string)
 		return nil, errors.New("lemma required")
 	}
 	if language == "" {
-		language = u.defaultLanguage
+		language = _defaultLanguage
 	}
 	v, err := u.repo.Lookup(ctx, lemma, language)
 	if err != nil || v == nil {

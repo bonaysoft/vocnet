@@ -5,7 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"connectrpc.com/connect"
 	commonv1 "github.com/eslsoft/vocnet/api/gen/common/v1"
+	"github.com/eslsoft/vocnet/api/gen/dict/v1/dictv1connect"
 	vocnetv1 "github.com/eslsoft/vocnet/api/gen/vocnet/v1"
 	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/usecase"
@@ -16,7 +18,8 @@ import (
 )
 
 type UserWordServiceServer struct {
-	vocnetv1.UnimplementedUserWordServiceServer
+	dictv1connect.UnimplementedWordServiceHandler
+
 	uc            usecase.UserWordUsecase
 	defaultUserID int64
 }
@@ -28,42 +31,40 @@ func NewUserWordServiceServer(uc usecase.UserWordUsecase, defaultUserID int64) *
 	return &UserWordServiceServer{uc: uc, defaultUserID: defaultUserID}
 }
 
-func (s *UserWordServiceServer) CollectWord(ctx context.Context, req *vocnetv1.CollectWordRequest) (*vocnetv1.UserWord, error) {
-	if req == nil || req.Word == nil {
+func (s *UserWordServiceServer) CollectWord(ctx context.Context, req *connect.Request[vocnetv1.CollectWordRequest]) (*connect.Response[vocnetv1.UserWord], error) {
+	if req.Msg == nil || req.Msg.Word == nil {
 		return nil, status.Error(codes.InvalidArgument, "word payload required")
 	}
 
-	entityWord := protoToEntityUserWord(req.Word)
+	entityWord := protoToEntityUserWord(req.Msg.Word)
 	result, err := s.uc.CollectWord(ctx, s.defaultUserID, entityWord)
 	if err != nil {
 		return nil, toStatus(err)
 	}
 
-	return entityToProtoUserWord(result), nil
+	return connect.NewResponse(entityToProtoUserWord(result)), nil
 }
 
-func (s *UserWordServiceServer) UpdateUserWordMastery(ctx context.Context, req *vocnetv1.UpdateUserWordMasteryRequest) (*vocnetv1.UserWord, error) {
+func (s *UserWordServiceServer) UpdateUserWordMastery(ctx context.Context, req *connect.Request[vocnetv1.UpdateUserWordMasteryRequest]) (*connect.Response[vocnetv1.UserWord], error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request required")
 	}
 
-	result, err := s.uc.UpdateMastery(ctx, s.defaultUserID, req.GetWordId(), protoToEntityMastery(req.GetMastery()), entity.ReviewTiming{}, req.GetNotes())
+	msg := req.Msg
+	result, err := s.uc.UpdateMastery(ctx, s.defaultUserID, msg.GetWordId(), protoToEntityMastery(msg.GetMastery()), entity.ReviewTiming{}, msg.GetNotes())
 	if err != nil {
 		return nil, toStatus(err)
 	}
 
-	return entityToProtoUserWord(result), nil
+	return connect.NewResponse(entityToProtoUserWord(result)), nil
 }
 
-func (s *UserWordServiceServer) ListUserWords(ctx context.Context, req *vocnetv1.ListUserWordsRequest) (*vocnetv1.ListUserWordsResponse, error) {
-	if req == nil {
-		req = &vocnetv1.ListUserWordsRequest{}
-	}
-
-	pagination := req.GetPagination()
+func (s *UserWordServiceServer) ListUserWords(ctx context.Context, req *connect.Request[vocnetv1.ListUserWordsRequest]) (*connect.Response[vocnetv1.ListUserWordsResponse], error) {
+	msg := req.Msg
+	pagination := msg.GetPagination()
 	filter := entity.UserWordFilter{
 		UserID:  s.defaultUserID,
-		Keyword: req.GetKeyword(),
+		Keyword: msg.GetKeyword(),
 	}
 	if pagination != nil {
 		filter.Limit = pagination.GetLimit()
@@ -85,17 +86,16 @@ func (s *UserWordServiceServer) ListUserWords(ctx context.Context, req *vocnetv1
 		resp.UserWords = append(resp.UserWords, entityToProtoUserWord(item))
 	}
 
-	return resp, nil
+	return connect.NewResponse(resp), nil
 }
 
-func (s *UserWordServiceServer) DeleteUserWord(ctx context.Context, req *commonv1.IDRequest) (*emptypb.Empty, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "request required")
-	}
-	if err := s.uc.DeleteUserWord(ctx, s.defaultUserID, req.GetId()); err != nil {
+func (s *UserWordServiceServer) DeleteUserWord(ctx context.Context, req *connect.Request[commonv1.IDRequest]) (*connect.Response[emptypb.Empty], error) {
+	msg := req.Msg
+	if err := s.uc.DeleteUserWord(ctx, s.defaultUserID, msg.GetId()); err != nil {
 		return nil, toStatus(err)
 	}
-	return &emptypb.Empty{}, nil
+
+	return connect.NewResponse(&emptypb.Empty{}), nil
 }
 
 func protoToEntityUserWord(in *vocnetv1.UserWord) *entity.UserWord {

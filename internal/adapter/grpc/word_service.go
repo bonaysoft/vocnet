@@ -5,20 +5,40 @@ import (
 
 	commonv1 "github.com/eslsoft/vocnet/api/gen/common/v1"
 	dictv1 "github.com/eslsoft/vocnet/api/gen/dict/v1"
+	"github.com/eslsoft/vocnet/api/gen/dict/v1/dictv1connect"
 	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/usecase"
+
+	"connectrpc.com/connect"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type WordServiceServer struct {
-	dictv1.UnimplementedWordServiceServer
+	dictv1connect.UnimplementedWordServiceHandler
 	uc usecase.WordUsecase
 }
 
 func NewWordServiceServer(uc usecase.WordUsecase) *WordServiceServer {
 	return &WordServiceServer{uc: uc}
+}
+
+// LookupWord looks up a word by text and language.
+func (s *WordServiceServer) LookupWord(ctx context.Context, req *connect.Request[dictv1.LookupWordRequest]) (*connect.Response[dictv1.Word], error) {
+	if req.Msg == nil || req.Msg.Word == "" {
+		return nil, status.Error(codes.InvalidArgument, "text required")
+	}
+	lang := "en"
+	if req.Msg.Language != commonv1.Language_LANGUAGE_UNSPECIFIED {
+		lang = req.Msg.Language.String()
+	}
+	v, err := s.uc.Lookup(ctx, req.Msg.Word, lang)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return connect.NewResponse(s.toProto(v)), nil
 }
 
 func (s *WordServiceServer) toProto(v *entity.Voc) *dictv1.Word {
@@ -80,21 +100,4 @@ func languageStringToEnum(code string) commonv1.Language {
 	default:
 		return commonv1.Language_LANGUAGE_UNSPECIFIED
 	}
-}
-
-// Lookup implements exact lemma lookup
-func (s *WordServiceServer) LookupWord(ctx context.Context, req *dictv1.LookupWordRequest) (*dictv1.Word, error) {
-	if req == nil || req.Word == "" {
-		return nil, status.Error(codes.InvalidArgument, "text required")
-	}
-	lang := "en"
-	if req.Language != commonv1.Language_LANGUAGE_UNSPECIFIED {
-		lang = req.Language.String()
-	}
-	v, err := s.uc.Lookup(ctx, req.Word, lang)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	return s.toProto(v), nil
 }

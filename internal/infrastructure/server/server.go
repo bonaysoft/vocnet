@@ -6,20 +6,14 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	connectcors "connectrpc.com/cors"
+	"github.com/rs/cors"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 
-	commonv1 "github.com/eslsoft/vocnet/api/gen/common/v1"
-	dictv1 "github.com/eslsoft/vocnet/api/gen/dict/v1"
-	vocnetv1 "github.com/eslsoft/vocnet/api/gen/vocnet/v1"
-	adaptergrpc "github.com/eslsoft/vocnet/internal/adapter/grpc"
-	"github.com/eslsoft/vocnet/internal/adapter/repository"
+	"github.com/eslsoft/vocnet/api/gen/dict/v1/dictv1connect"
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
-	dbpkg "github.com/eslsoft/vocnet/internal/infrastructure/database/db"
-	"github.com/eslsoft/vocnet/internal/usecase"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 )
 
@@ -31,58 +25,21 @@ type Server struct {
 	logger     *logrus.Logger
 }
 
-// NewServer creates a new server instance
-func NewServer(cfg *config.Config, logger *logrus.Logger, pool *pgxpool.Pool) *Server {
-	// Create gRPC server
-	opts := []logging.Option{
-		logging.WithLogOnEvents(logging.StartCall, logging.FinishCall),
-		// Add any other option (check functions starting with logging.With).
-	}
-	grpcServer := grpc.NewServer(grpc.ChainUnaryInterceptor(
-		logging.UnaryServerInterceptor(InterceptorLogger(), opts...),
-		// Add any other interceptor you want.
-	))
+// NewServer creates a new server instance from pre-wired dependencies.
+func NewServer(cfg *config.Config, logger *logrus.Logger, wordSvc dictv1connect.WordServiceHandler) *Server {
+	mux := http.NewServeMux()
 
-	// Create gRPC-Gateway mux
-	mux := runtime.NewServeMux()
-
-	// Setup dependencies for VocService
-	queries := dbpkg.New(pool)
-	wordRepo := repository.NewVocRepository(queries)
-	wordUC := usecase.NewWordUsecase(wordRepo, "en")
-	wordSvc := adaptergrpc.NewWordServiceServer(wordUC)
-	dictv1.RegisterWordServiceServer(grpcServer, wordSvc)
-
-	// Setup dependencies for UserWord service backed by Postgres
-	userWordRepo := repository.NewUserWordRepository(queries)
-	userWordUC := usecase.NewUserWordUsecase(userWordRepo)
-	userWordSvc := adaptergrpc.NewUserWordServiceServer(userWordUC, 1)
-	vocnetv1.RegisterUserWordServiceServer(grpcServer, userWordSvc)
-
-	// Register gateway handler for WordService
-	ctx := context.Background()
-	dialOpts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	// We assume same host different port for grpc
-	endpoint := fmt.Sprintf("localhost:%d", cfg.Server.GRPCPort)
-	_ = commonv1.Language_LANGUAGE_UNSPECIFIED // reference to keep imported commonv1 (maybe unused otherwise)
-	if err := dictv1.RegisterWordServiceHandlerFromEndpoint(ctx, mux, endpoint, dialOpts); err != nil {
-		logger.Errorf("failed to register voc service handler: %v", err)
-	}
-	if err := vocnetv1.RegisterUserWordServiceHandlerFromEndpoint(ctx, mux, endpoint, dialOpts); err != nil {
-		logger.Errorf("failed to register user word service handler: %v", err)
-	}
-
-	// Create HTTP server
-	httpServer := &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.Server.HTTPPort),
-		Handler: mux,
-	}
+	path, handler := dictv1connect.NewWordServiceHandler(wordSvc)
+	fmt.Println(path)
+	mux.Handle(path, handler)
 
 	return &Server{
-		config:     cfg,
-		grpcServer: grpcServer,
-		httpServer: httpServer,
-		logger:     logger,
+		config: cfg,
+		httpServer: &http.Server{
+			Addr:    fmt.Sprintf(":%d", cfg.Server.HTTPPort),
+			Handler: h2c.NewHandler(withCORS(mux), &http2.Server{}),
+		},
+		logger: logger,
 	}
 }
 
@@ -125,9 +82,16 @@ func (s *Server) Shutdown(ctx context.Context) error {
 		s.logger.Errorf("Failed to shutdown HTTP server: %v", err)
 	}
 
-	// Shutdown gRPC server
-	s.grpcServer.GracefulStop()
-
 	s.logger.Info("Server shutdown complete")
 	return nil
+}
+
+func withCORS(h http.Handler) http.Handler {
+	middleware := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: connectcors.AllowedMethods(),
+		AllowedHeaders: connectcors.AllowedHeaders(),
+		ExposedHeaders: connectcors.ExposedHeaders(),
+	})
+	return middleware.Handler(h)
 }
