@@ -15,7 +15,7 @@ message Word {
   string word_type = 4; // Allowed values: lemma, past, pp (past participle), ing (present participle / gerund), 3sg (third person singular), plural, comparative, superlative, variant, derived, other
   string lemma = 5; // Present only if word_type != lemma; empty when this is the lemma itself
   repeated Phonetic phonetics = 6; // IPAs for this word
-  repeated Definition definitions = 7; // Deprecated: use meanings instead
+  repeated Definition definitions = 7; // Possibly multiple languages' definitions
   repeated string tags = 8; // Difficulty / semantic / topic tags
 
   // When this entry is a lemma (word_type == "lemma"), forms lists all other surface forms

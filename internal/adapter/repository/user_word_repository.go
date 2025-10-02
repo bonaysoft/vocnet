@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/eslsoft/vocnet/internal/entity"
@@ -76,7 +75,6 @@ func (r *userWordRepository) FindByWord(ctx context.Context, userID int64, word 
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	word = strings.TrimSpace(word)
 	if word == "" {
 		return nil, nil
 	}
@@ -94,10 +92,9 @@ func (r *userWordRepository) List(ctx context.Context, filter entity.UserWordFil
 	if err := ctx.Err(); err != nil {
 		return nil, 0, err
 	}
-	keyword := strings.TrimSpace(filter.Keyword)
 	rows, err := r.q.ListUserWords(ctx, db.ListUserWordsParams{
 		UserID:  filter.UserID,
-		Column2: keyword,
+		Column2: filter.Keyword,
 		Limit:   filter.Limit,
 		Offset:  filter.Offset,
 	})
@@ -146,7 +143,7 @@ func toCreateParams(uw *entity.UserWord) db.CreateUserWordParams {
 	return db.CreateUserWordParams{
 		UserID:             uw.UserID,
 		Word:               uw.Word,
-		Language:           zeroDefault(uw.Language, "en"),
+		Language:           uw.Language,
 		MasteryListen:      int16(uw.Mastery.Listen),
 		MasteryRead:        int16(uw.Mastery.Read),
 		MasterySpell:       int16(uw.Mastery.Spell),
@@ -172,7 +169,7 @@ func toUpdateParams(uw *entity.UserWord) db.UpdateUserWordParams {
 		ID:                 uw.ID,
 		UserID:             uw.UserID,
 		Word:               uw.Word,
-		Language:           zeroDefault(uw.Language, "en"),
+		Language:           uw.Language,
 		MasteryListen:      int16(uw.Mastery.Listen),
 		MasteryRead:        int16(uw.Mastery.Read),
 		MasterySpell:       int16(uw.Mastery.Spell),
@@ -325,13 +322,6 @@ func fromUserWordRelations(relations types.UserWordRelations) []entity.WordRelat
 		})
 	}
 	return res
-}
-
-func zeroDefault(value string, fallback string) string {
-	if strings.TrimSpace(value) == "" {
-		return fallback
-	}
-	return value
 }
 
 func ptrTime(t time.Time) *time.Time {

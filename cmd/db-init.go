@@ -37,6 +37,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
 	migrate "github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -47,7 +48,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// dbInitCmd initializes database schema then imports ECDICT data into new 'vocs' table
+// dbInitCmd initializes database schema then imports ECDICT data into new 'words' table
 var dbInitCmd = &cobra.Command{
 	Use:   "db-init",
 	Short: "初始化数据库并导入词库",
@@ -86,14 +87,14 @@ type wordRecord struct {
 	Pos         sql.NullString
 	Translation sql.NullString
 	Exchange    sql.NullString
-	Tags        sql.NullString // retained but currently unused for vocs import
+	Tags        sql.NullString // retained but currently unused for words import
 }
 
-// JSON marshal helpers for meanings & forms (aligned with entity.VocMeaning / VocForm but minimal).
+// JSON marshal helpers for meanings & forms (aligned with entity.WordDefinition / VocForm but minimal).
 type jsonMeaning struct {
-	POS         string `json:"pos"`
-	Definition  string `json:"definition,omitempty"`
-	Translation string `json:"translation,omitempty"`
+	Pos      string `json:"pos"`
+	Text     string `json:"text"`
+	Language string `json:"language"`
 }
 
 // inflection relation extracted from exchange field
@@ -152,9 +153,9 @@ func importECDICT(ctx context.Context, url string, batchSize int, cacheDirFlag s
 	}
 	defer pgpool.Close()
 
-	// Ensure new vocs table exists (migration must have created it)
-	if _, err := pgpool.Exec(ctx, "SELECT 1 FROM vocs LIMIT 1"); err != nil {
-		return fmt.Errorf("vocs 表不存在或无法访问，请先执行迁移: %w", err)
+	// Ensure new words table exists (migration must have created it)
+	if _, err := pgpool.Exec(ctx, "SELECT 1 FROM words LIMIT 1"); err != nil {
+		return fmt.Errorf("words 表不存在或无法访问，请先执行迁移: %w", err)
 	}
 
 	// NOTE: ECDICT schema sample (stardict): word, phonetic, definition, translation, pos, collins, oxford, tag, bnc, frq, exchange, detail, audio
@@ -207,10 +208,10 @@ func importECDICT(ctx context.Context, url string, batchSize int, cacheDirFlag s
 		}
 	}
 
-	// Batch insert with voc_type & lemma resolution. Rules:
-	// - If word itself appears as an inflection of some other lemma: voc_type = that type, lemma = that lemma
-	// - Else if it provides exchange forms (i.e., it acts as base), voc_type='lemma', lemma=NULL
-	// - Else voc_type='lemma' (default)
+	// Batch insert with word_type & lemma resolution. Rules:
+	// - If word itself appears as an inflection of some other lemma: word_type = that type, lemma = that lemma
+	// - Else if it provides exchange forms (i.e., it acts as base), word_type='lemma', lemma=NULL
+	// - Else word_type='lemma' (default)
 	// Note: a word can be both a lemma and an inflection (e.g., "read" past==present). Prefer lemma (keep lemma row) so lookup returns meanings.
 	total := 0
 	batchStart := 0
@@ -291,7 +292,7 @@ func unzipSingle(match func(string) bool, zipPath, dstDir string) (string, error
 
 // (legacy single-pass insert function removed)
 
-// insertBatchClassified inserts records with lemma/voc_type based on inflection map.
+// insertBatchClassified inserts records with lemma/word_type based on inflection map.
 func insertBatchClassified(ctx context.Context, pool *pgxpool.Pool, batch []wordRecord, inflectionMap map[string]inflectionRel) error {
 	if len(batch) == 0 {
 		return nil
@@ -302,23 +303,24 @@ func insertBatchClassified(ctx context.Context, pool *pgxpool.Pool, batch []word
 		if err != nil {
 			return fmt.Errorf("build meanings for %s: %w", w.Word, err)
 		}
-		if meaningsJSON == nil && !w.Phonetic.Valid {
+		phoneticsJSON := buildPhoneticsJSON(w.Phonetic)
+		if meaningsJSON == nil && len(phoneticsJSON) == 0 {
 			continue
 		}
-		// Determine voc_type & lemma
-		vocType := "lemma"
+		// Determine word_type & lemma
+		WordType := "lemma"
 		var lemma any = nil
 		if rel, ok := inflectionMap[strings.ToLower(w.Word)]; ok {
 			// 已被别的 lemma 标记为某种形态 (不可能为 lemma，因为我们已跳过 code=lemma)
 			if !strings.EqualFold(rel.Lemma, w.Word) {
-				vocType = rel.Type
+				WordType = rel.Type
 				lemma = rel.Lemma
 			}
 		}
-		b.Queue(`INSERT INTO vocs (text, language, voc_type, lemma, phonetic, meanings, tags)
-				VALUES ($1,'en',$2,$3,$4,COALESCE($5,'[]'::jsonb),$6)
-				ON CONFLICT (language, text, voc_type) DO UPDATE SET phonetic=EXCLUDED.phonetic, meanings=EXCLUDED.meanings, tags=EXCLUDED.tags`,
-			w.Word, vocType, lemma, nullString(w.Phonetic), meaningsJSON, buildTagsArray(w.Tags))
+		b.Queue(`INSERT INTO words (text, language, word_type, lemma, phonetics, meanings, tags)
+				VALUES ($1,'en',$2,$3,COALESCE($4,'[]'::jsonb),COALESCE($5,'[]'::jsonb),$6)
+				ON CONFLICT (language, text, word_type) DO UPDATE SET phonetics=EXCLUDED.phonetics, meanings=EXCLUDED.meanings, tags=EXCLUDED.tags`,
+			w.Word, WordType, lemma, phoneticsJSON, meaningsJSON, buildTagsArray(w.Tags))
 	}
 	br := pool.SendBatch(ctx, b)
 	for i := 0; i < b.Len(); i++ {
@@ -367,6 +369,21 @@ func buildTagsArray(ns sql.NullString) any {
 	return ordered
 }
 
+func buildPhoneticsJSON(ns sql.NullString) []byte {
+	if !ns.Valid {
+		return nil
+	}
+	ipa := strings.TrimSpace(ns.String)
+	if ipa == "" {
+		return nil
+	}
+	payload, err := json.Marshal([]entity.WordPhonetic{{IPA: ipa, Dialect: "en-US"}})
+	if err != nil {
+		return nil
+	}
+	return payload
+}
+
 // buildMeanings converts record fields to a JSONB value for meanings
 func buildMeanings(w wordRecord) (meanings any, err error) {
 	defLines := splitLines(nullStringVal(w.Definition))
@@ -402,14 +419,18 @@ func buildMeanings(w wordRecord) (meanings any, err error) {
 	}
 
 	// 改为：每一条原始行 -> 一条 meaning，不再合并同 POS 行。
-	type lineMeaning struct{ pos, def, tran string }
+	type lineMeaning struct {
+		pos  string
+		lang entity.Language
+		text string
+	}
 	var lm []lineMeaning
 	for _, g := range groups {
 		for _, d := range g.defs {
-			lm = append(lm, lineMeaning{pos: g.pos, def: d})
+			lm = append(lm, lineMeaning{pos: g.pos, lang: entity.LanguageEnglish, text: d})
 		}
 		for _, tr := range g.trans {
-			lm = append(lm, lineMeaning{pos: g.pos, tran: tr})
+			lm = append(lm, lineMeaning{pos: g.pos, lang: entity.LanguageChinese, text: tr})
 		}
 	}
 	if len(lm) == 0 {
@@ -419,10 +440,16 @@ func buildMeanings(w wordRecord) (meanings any, err error) {
 	// 构建 meanings: 逐行转换，无权重。
 	meaningsSlice := make([]jsonMeaning, 0, len(lm))
 	for _, it := range lm {
-		if it.def == "" && it.tran == "" {
+		text := strings.TrimSpace(it.text)
+		if text == "" {
 			continue
 		}
-		meaningsSlice = append(meaningsSlice, jsonMeaning{POS: it.pos, Definition: it.def, Translation: it.tran})
+		lang := entity.NormalizeLanguage(it.lang)
+		meaningsSlice = append(meaningsSlice, jsonMeaning{
+			Pos:      strings.TrimSpace(it.pos),
+			Text:     text,
+			Language: lang.Code(),
+		})
 	}
 	if len(meaningsSlice) == 0 {
 		return nil, nil
@@ -454,7 +481,7 @@ func extractLeadingPOS(line string) (string, string) {
 			if c == "noun" {
 				c = "n"
 			}
-			return c, rest
+			return fmt.Sprintf("%s.", c), rest
 		}
 	}
 	return "", s
@@ -513,7 +540,7 @@ func parseExchangePairs(s string) []exchangePair {
 	return out
 }
 
-// normalizeExchangeCode maps ECDICT exchange codes to voc_type strings.
+// normalizeExchangeCode maps ECDICT exchange codes to word_type strings.
 // Rule (finalized): Only these three get abbreviations: past participle -> pp, present participle -> ing, third person singular -> 3sg.
 // Others keep readable full words without underscores.
 // Mapping:

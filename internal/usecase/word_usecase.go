@@ -11,37 +11,144 @@ import (
 
 // WordUsecase defines business logic for words.
 type WordUsecase interface {
-	Lookup(ctx context.Context, lemma string, language string) (*entity.Voc, error)
+	Create(ctx context.Context, word *entity.Word) (*entity.Word, error)
+	Update(ctx context.Context, word *entity.Word) (*entity.Word, error)
+	Get(ctx context.Context, id int64) (*entity.Word, error)
+	Lookup(ctx context.Context, lemma string, language entity.Language) (*entity.Word, error)
+	List(ctx context.Context, filter entity.WordFilter) ([]*entity.Word, int64, error)
+	Delete(ctx context.Context, id int64) error
 }
 
-const _defaultLanguage = "en"
+const (
+	_defaultLanguage = entity.LanguageEnglish
+	_defaultLimit    = int32(20)
+	_maxLimit        = int32(100)
+)
 
 type wordUsecase struct {
-	repo repository.VocRepository
+	repo repository.WordRepository
 }
 
-func NewWordUsecase(repo repository.VocRepository) WordUsecase {
+func NewWordUsecase(repo repository.WordRepository) WordUsecase {
 	return &wordUsecase{repo: repo}
 }
 
-func (u *wordUsecase) Lookup(ctx context.Context, lemma string, language string) (*entity.Voc, error) {
+func (u *wordUsecase) Create(ctx context.Context, word *entity.Word) (*entity.Word, error) {
+	norm, err := normalizeVocForUpsert(word)
+	if err != nil {
+		return nil, err
+	}
+	return u.repo.Create(ctx, norm)
+}
+
+func (u *wordUsecase) Update(ctx context.Context, word *entity.Word) (*entity.Word, error) {
+	norm, err := normalizeVocForUpsert(word)
+	if err != nil {
+		return nil, err
+	}
+	if norm.ID <= 0 {
+		return nil, entity.ErrInvalidVocID
+	}
+	return u.repo.Update(ctx, norm)
+}
+
+func (u *wordUsecase) Get(ctx context.Context, id int64) (*entity.Word, error) {
+	if id <= 0 {
+		return nil, entity.ErrInvalidVocID
+	}
+	return u.repo.GetByID(ctx, id)
+}
+
+func (u *wordUsecase) Lookup(ctx context.Context, lemma string, language entity.Language) (*entity.Word, error) {
 	lemma = strings.TrimSpace(lemma)
 	if lemma == "" {
-		return nil, errors.New("lemma required")
+		return nil, entity.ErrInvalidVocText
 	}
-	if language == "" {
+	if language == entity.LanguageUnspecified {
 		language = _defaultLanguage
 	}
 	v, err := u.repo.Lookup(ctx, lemma, language)
 	if err != nil || v == nil {
 		return v, err
 	}
-	// Populate forms only if this entry itself is a lemma
-	if v.VocType == "lemma" {
+	if v.WordType == "lemma" {
 		forms, ferr := u.repo.ListFormsByLemma(ctx, v.Text, v.Language)
 		if ferr == nil {
 			v.Forms = forms
 		}
 	}
 	return v, nil
+}
+
+func (u *wordUsecase) List(ctx context.Context, filter entity.WordFilter) ([]*entity.Word, int64, error) {
+	if filter.Limit <= 0 {
+		filter.Limit = _defaultLimit
+	}
+	if filter.Limit > _maxLimit {
+		filter.Limit = _maxLimit
+	}
+	if filter.Offset < 0 {
+		filter.Offset = 0
+	}
+	filter.Keyword = strings.TrimSpace(filter.Keyword)
+	return u.repo.List(ctx, filter)
+}
+
+func (u *wordUsecase) Delete(ctx context.Context, id int64) error {
+	if id <= 0 {
+		return entity.ErrInvalidVocID
+	}
+	return u.repo.Delete(ctx, id)
+}
+
+func normalizeVocForUpsert(in *entity.Word) (*entity.Word, error) {
+	if in == nil {
+		return nil, errors.New("word payload required")
+	}
+	text := strings.TrimSpace(in.Text)
+	if text == "" {
+		return nil, entity.ErrInvalidVocText
+	}
+	out := *in
+	out.Text = text
+	if out.Language == entity.LanguageUnspecified {
+		out.Language = _defaultLanguage
+	}
+	out.WordType = strings.TrimSpace(out.WordType)
+	if out.WordType == "" {
+		out.WordType = "lemma"
+	}
+	if out.WordType != "lemma" {
+		if out.Lemma == nil || strings.TrimSpace(*out.Lemma) == "" {
+			return nil, errors.New("lemma reference required for non-lemma entries")
+		}
+		lemma := strings.TrimSpace(*out.Lemma)
+		out.Lemma = &lemma
+	} else {
+		out.Lemma = nil
+	}
+	if len(out.Tags) == 0 {
+		out.Tags = nil
+	}
+	out.Phonetics = normalizePhonetics(out.Phonetics)
+	return &out, nil
+}
+
+func normalizePhonetics(in []entity.WordPhonetic) []entity.WordPhonetic {
+	if len(in) == 0 {
+		return nil
+	}
+	out := make([]entity.WordPhonetic, 0, len(in))
+	for _, p := range in {
+		ipa := strings.TrimSpace(p.IPA)
+		if ipa == "" {
+			continue
+		}
+		dialect := strings.TrimSpace(p.Dialect)
+		out = append(out, entity.WordPhonetic{IPA: ipa, Dialect: dialect})
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return out
 }

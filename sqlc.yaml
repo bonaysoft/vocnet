@@ -15,10 +15,12 @@ sql:
         emit_exact_table_names: false
         emit_empty_slices: true
         overrides:
-          - column: vocs.meanings
-            go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.VocMeanings
-          - column: vocs.forms
-            go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.VocForms
+          - column: words.meanings
+            go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.WordMeanings
+          - column: words.phonetics
+            go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.WordPhonetics
+          - column: words.forms
+            go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.WordForms
           - column: user_words.sentences
             go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.UserSentences
           - column: user_words.relations

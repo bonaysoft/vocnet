@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/eslsoft/vocnet/internal/entity"
@@ -9,25 +10,40 @@ import (
 
 // minimal in-memory mock repository for testing forms logic
 type mockVocRepo struct {
-	voc          *entity.Voc
-	forms        []entity.VocFormRef
+	word         *entity.Word
+	forms        []entity.WordFormRef
 	lookupErr    error
 	listFormsErr error
 }
 
-func (m *mockVocRepo) Lookup(ctx context.Context, text string, language string) (*entity.Voc, error) {
-	return m.voc, m.lookupErr
+func (m *mockVocRepo) Create(ctx context.Context, word *entity.Word) (*entity.Word, error) {
+	return nil, errors.New("not implemented")
 }
-func (m *mockVocRepo) ListFormsByLemma(ctx context.Context, lemma string, language string) ([]entity.VocFormRef, error) {
+func (m *mockVocRepo) Update(ctx context.Context, word *entity.Word) (*entity.Word, error) {
+	return nil, errors.New("not implemented")
+}
+func (m *mockVocRepo) GetByID(ctx context.Context, id int64) (*entity.Word, error) {
+	return nil, errors.New("not implemented")
+}
+func (m *mockVocRepo) Lookup(ctx context.Context, text string, language entity.Language) (*entity.Word, error) {
+	return m.word, m.lookupErr
+}
+func (m *mockVocRepo) List(ctx context.Context, filter entity.WordFilter) ([]*entity.Word, int64, error) {
+	return nil, 0, errors.New("not implemented")
+}
+func (m *mockVocRepo) ListFormsByLemma(ctx context.Context, lemma string, language entity.Language) ([]entity.WordFormRef, error) {
 	return m.forms, m.listFormsErr
+}
+func (m *mockVocRepo) Delete(ctx context.Context, id int64) error {
+	return errors.New("not implemented")
 }
 
 func TestLookup_PopulatesFormsForLemma(t *testing.T) {
 	lemmaText := "run"
-	repo := &mockVocRepo{voc: &entity.Voc{ID: 1, Text: lemmaText, Language: "en", VocType: "lemma"}, forms: []entity.VocFormRef{{Text: "ran", VocType: "past"}, {Text: "running", VocType: "ing"}}}
+	repo := &mockVocRepo{word: &entity.Word{ID: 1, Text: lemmaText, Language: entity.LanguageEnglish, WordType: "lemma"}, forms: []entity.WordFormRef{{Text: "ran", WordType: "past"}, {Text: "running", WordType: "ing"}}}
 	uc := NewWordUsecase(repo)
 
-	v, err := uc.Lookup(context.Background(), lemmaText, "en")
+	v, err := uc.Lookup(context.Background(), lemmaText, entity.LanguageEnglish)
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}
@@ -38,10 +54,10 @@ func TestLookup_PopulatesFormsForLemma(t *testing.T) {
 
 func TestLookup_NoFormsWhenNotLemma(t *testing.T) {
 	lemmaStr := "run"
-	repo := &mockVocRepo{voc: &entity.Voc{ID: 2, Text: "ran", Language: "en", VocType: "past", Lemma: &lemmaStr}, forms: []entity.VocFormRef{{Text: "ran", VocType: "past"}}}
+	repo := &mockVocRepo{word: &entity.Word{ID: 2, Text: "ran", Language: entity.LanguageEnglish, WordType: "past", Lemma: &lemmaStr}, forms: []entity.WordFormRef{{Text: "ran", WordType: "past"}}}
 	uc := NewWordUsecase(repo)
 
-	v, err := uc.Lookup(context.Background(), "ran", "en")
+	v, err := uc.Lookup(context.Background(), "ran", entity.LanguageEnglish)
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}

@@ -37,8 +37,8 @@ func Initialize() (*Container, func(), error) {
 		return nil, nil, err
 	}
 	queries := db.New(pool)
-	vocRepository := repository.NewVocRepository(queries)
-	wordUsecase := usecase.NewWordUsecase(vocRepository)
+	wordRepository := repository.NewWordRepository(queries)
+	wordUsecase := usecase.NewWordUsecase(wordRepository)
 	wordServiceServer := grpc.NewWordServiceServer(wordUsecase)
 	userWordRepository := repository.NewUserWordRepository(queries)
 	userWordUsecase := usecase.NewUserWordUsecase(userWordRepository)
@@ -59,7 +59,7 @@ var configSet = wire.NewSet(config.Load)
 
 var databaseSet = wire.NewSet(database.NewConnection, wire.Bind(new(db.DBTX), new(*pgxpool.Pool)), db.New)
 
-var repositorySet = wire.NewSet(repository.NewVocRepository, repository.NewUserWordRepository)
+var repositorySet = wire.NewSet(repository.NewWordRepository, repository.NewUserWordRepository)
 
 var usecaseSet = wire.NewSet(usecase.NewWordUsecase, usecase.NewUserWordUsecase)
 

@@ -1,33 +1,108 @@
 package entity
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
-// Domain model now aligned with proto naming (Voc, VocMeaning, VocForm).
-// This is the internal representation used by business logic.
+// Language represents supported language codes using ISO-style abbreviations.
+type Language string
 
-type Voc struct {
-	ID        int64        `json:"id"` // 自增ID, 基础CRUD用
-	Text      string       `json:"text"`
-	Language  string       `json:"language"`
-	VocType   string       `json:"voc_type"`        // lemma, past, pp (past participle), ing (present participle), 3sg (third person singular), plural, comparative, superlative, variant, derived, other
-	Lemma     *string      `json:"lemma,omitempty"` // nil if this row itself is the lemma
-	Phonetic  string       `json:"phonetic,omitempty"`
-	Meanings  []VocMeaning `json:"meanings,omitempty"` // only populated for lemma rows
-	Tags      []string     `json:"tags,omitempty"`
-	CreatedAt time.Time    `json:"created_at"`
-	Forms     []VocFormRef `json:"forms,omitempty"` // if this is lemma: other forms; if not lemma: empty
+const (
+	LanguageUnspecified Language = ""
+	LanguageEnglish     Language = "en"
+	LanguageChinese     Language = "zh"
+	LanguageSpanish     Language = "es"
+	LanguageFrench      Language = "fr"
+	LanguageGerman      Language = "de"
+	LanguageJapanese    Language = "ja"
+	LanguageKorean      Language = "ko"
+)
+
+type Word struct {
+	ID        int64          `json:"id"` // 自增ID, 基础CRUD用
+	Text      string         `json:"text"`
+	Language  Language       `json:"language"`
+	WordType  string         `json:"word_type"`       // lemma, past, pp (past participle), ing (present participle), 3sg (third person singular), plural, comparative, superlative, variant, derived, other
+	Lemma     *string        `json:"lemma,omitempty"` // nil if this row itself is the lemma
+	Phonetics []WordPhonetic `json:"phonetics,omitempty"`
+
+	Definitions []WordDefinition `json:"definitions,omitempty"` // only populated for lemma rows
+	Tags        []string         `json:"tags,omitempty"`
+	Forms       []WordFormRef    `json:"forms,omitempty"` // if this is lemma: other forms; if not lemma: empty
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type VocMeaning struct {
-	POS         string `json:"pos"`         // n., v., adj.
-	Definition  string `json:"definition"`  // English meaning/definition
-	Translation string `json:"translation"` // Chinese translation / gloss
+type WordDefinition struct {
+	Pos      string   `json:"pos"`
+	Text     string   `json:"text"`
+	Language Language `json:"language"`
 }
 
-// Removed VocForm due to new flattened schema using voc_type + lemma linkage.
+type WordPhonetic struct {
+	IPA     string `json:"ipa"`
+	Dialect string `json:"dialect,omitempty"`
+}
 
-// VocFormRef is a lightweight reference to an inflected / variant form.
-type VocFormRef struct {
-	Text    string `json:"text"`
-	VocType string `json:"voc_type"`
+type WordFormRef struct {
+	Text     string `json:"text"`
+	WordType string `json:"word_type"`
+}
+
+// WordFilter defines filtering options when listing vocabulary entries.
+type WordFilter struct {
+	Language Language
+	Keyword  string
+	WordType string
+	Limit    int32
+	Offset   int32
+}
+
+// NormalizeLanguage ensures the language falls back to a supported value (defaults to English).
+func NormalizeLanguage(lang Language) Language {
+	switch lang {
+	case LanguageEnglish, LanguageChinese, LanguageSpanish, LanguageFrench, LanguageGerman, LanguageJapanese, LanguageKorean:
+		return lang
+	default:
+		return LanguageEnglish
+	}
+}
+
+// ParseLanguage converts an arbitrary string into a supported Language value.
+func ParseLanguage(code string) Language {
+	switch strings.ToLower(strings.TrimSpace(code)) {
+	case "en":
+		return LanguageEnglish
+	case "zh":
+		return LanguageChinese
+	case "es":
+		return LanguageSpanish
+	case "fr":
+		return LanguageFrench
+	case "de":
+		return LanguageGerman
+	case "ja":
+		return LanguageJapanese
+	case "ko":
+		return LanguageKorean
+	case "":
+		return LanguageUnspecified
+	default:
+		return LanguageUnspecified
+	}
+}
+
+// Code returns the lowercase language code (without defaulting).
+func (l Language) Code() string {
+	return strings.TrimSpace(string(l))
+}
+
+// CodeOrDefault returns the language code, falling back to English when unspecified.
+func (l Language) CodeOrDefault() string {
+	if l.Code() == "" {
+		return string(LanguageEnglish)
+	}
+	return l.Code()
 }

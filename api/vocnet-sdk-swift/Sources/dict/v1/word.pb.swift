@@ -43,7 +43,7 @@ public struct Dict_V1_Word: Sendable {
   /// IPAs for this word
   public var phonetics: [Dict_V1_Phonetic] = []
 
-  /// Deprecated: use meanings instead
+  /// Possibly multiple languages' definitions
   public var definitions: [Dict_V1_Definition] = []
 
   /// Difficulty / semantic / topic tags

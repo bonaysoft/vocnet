@@ -30,7 +30,7 @@ var databaseSet = wire.NewSet(
 )
 
 var repositorySet = wire.NewSet(
-	repository.NewVocRepository,
+	repository.NewWordRepository,
 	repository.NewUserWordRepository,
 )
 

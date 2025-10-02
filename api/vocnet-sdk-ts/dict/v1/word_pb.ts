@@ -65,7 +65,7 @@ export type Word = Message<"dict.v1.Word"> & {
   phonetics: Phonetic[];
 
   /**
-   * Deprecated: use meanings instead
+   * Possibly multiple languages' definitions
    *
    * @generated from field: repeated dict.v1.Definition definitions = 7;
    */

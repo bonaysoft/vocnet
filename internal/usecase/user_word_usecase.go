@@ -109,6 +109,7 @@ func (u *userWordUsecase) ListUserWords(ctx context.Context, filter entity.UserW
 	if filter.Offset < 0 {
 		filter.Offset = 0
 	}
+	filter.Keyword = strings.TrimSpace(filter.Keyword)
 	return u.repo.List(ctx, filter)
 }
 

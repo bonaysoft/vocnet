@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"testing"
+
+	"github.com/eslsoft/vocnet/internal/entity"
 )
 
 func Test_buildMeanings_alignment(t *testing.T) {
@@ -26,23 +28,23 @@ func Test_buildMeanings_alignment(t *testing.T) {
 		t.Fatalf("expected 6 meanings got %d", len(arr))
 	}
 	// Definitions first
-	if arr[0].POS != "n" || arr[0].Definition == "" || arr[0].Translation != "" {
+	if arr[0].Pos != "n" || arr[0].Text == "" || arr[0].Language != entity.LanguageEnglish.Code() {
 		t.Fatalf("bad first: %+v", arr[0])
 	}
-	if arr[1].POS != "vt" || arr[1].Definition == "" {
+	if arr[1].Pos != "vt" || arr[1].Text == "" || arr[1].Language != entity.LanguageEnglish.Code() {
 		t.Fatalf("bad second: %+v", arr[1])
 	}
-	if arr[2].POS != "vi" || arr[2].Definition == "" {
+	if arr[2].Pos != "vi" || arr[2].Text == "" || arr[2].Language != entity.LanguageEnglish.Code() {
 		t.Fatalf("bad third: %+v", arr[2])
 	}
 	// Translations follow
-	if arr[3].POS != "n" || arr[3].Translation == "" || arr[3].Definition != "" {
+	if arr[3].Pos != "n" || arr[3].Text == "" || arr[3].Language != entity.LanguageChinese.Code() {
 		t.Fatalf("bad fourth: %+v", arr[3])
 	}
-	if arr[4].POS != "vt" || arr[4].Translation == "" {
+	if arr[4].Pos != "vt" || arr[4].Text == "" || arr[4].Language != entity.LanguageChinese.Code() {
 		t.Fatalf("bad fifth: %+v", arr[4])
 	}
-	if arr[5].POS != "vi" || arr[5].Translation == "" {
+	if arr[5].Pos != "vi" || arr[5].Text == "" || arr[5].Language != entity.LanguageChinese.Code() {
 		t.Fatalf("bad sixth: %+v", arr[5])
 	}
 }
