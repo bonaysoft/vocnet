@@ -93,6 +93,91 @@ public enum Common_V1_Language: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
+/// Word relation types for building vocabulary networks
+public enum Common_V1_RelationType: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+
+  /// 同义词
+  case synonym // = 1
+
+  /// 反义词
+  case antonym // = 2
+
+  /// 上位词 (animal->dog)
+  case hypernym // = 3
+
+  /// 下位词 (dog->animal)
+  case hyponym // = 4
+
+  /// 关联词 (bread->butter)
+  case association // = 5
+
+  /// 因果关系 (smoke->cancer)
+  case causeEffect // = 6
+
+  /// 部分-整体 (wheel->car)
+  case partWhole // = 7
+
+  /// 联想/助记 (arbitrary user associations)
+  case mnemonic // = 10
+
+  /// 自定义关系 (reserved for extension)
+  case custom // = 100
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 1: self = .synonym
+    case 2: self = .antonym
+    case 3: self = .hypernym
+    case 4: self = .hyponym
+    case 5: self = .association
+    case 6: self = .causeEffect
+    case 7: self = .partWhole
+    case 10: self = .mnemonic
+    case 100: self = .custom
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .synonym: return 1
+    case .antonym: return 2
+    case .hypernym: return 3
+    case .hyponym: return 4
+    case .association: return 5
+    case .causeEffect: return 6
+    case .partWhole: return 7
+    case .mnemonic: return 10
+    case .custom: return 100
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Common_V1_RelationType] = [
+    .unspecified,
+    .synonym,
+    .antonym,
+    .hypernym,
+    .hyponym,
+    .association,
+    .causeEffect,
+    .partWhole,
+    .mnemonic,
+    .custom,
+  ]
+
+}
+
 /// ID request message
 public struct Common_V1_IDRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -146,6 +231,10 @@ fileprivate let _protobuf_package = "common.v1"
 
 extension Common_V1_Language: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0LANGUAGE_UNSPECIFIED\0\u{1}LANGUAGE_ENGLISH\0\u{1}LANGUAGE_CHINESE\0\u{1}LANGUAGE_SPANISH\0\u{1}LANGUAGE_FRENCH\0\u{1}LANGUAGE_GERMAN\0\u{1}LANGUAGE_JAPANESE\0\u{1}LANGUAGE_KOREAN\0")
+}
+
+extension Common_V1_RelationType: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0RELATION_TYPE_UNSPECIFIED\0\u{1}RELATION_TYPE_SYNONYM\0\u{1}RELATION_TYPE_ANTONYM\0\u{1}RELATION_TYPE_HYPERNYM\0\u{1}RELATION_TYPE_HYPONYM\0\u{1}RELATION_TYPE_ASSOCIATION\0\u{1}RELATION_TYPE_CAUSE_EFFECT\0\u{1}RELATION_TYPE_PART_WHOLE\0\u{2}\u{3}RELATION_TYPE_MNEMONIC\0\u{2}Z\u{1}RELATION_TYPE_CUSTOM\0")
 }
 
 extension Common_V1_IDRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {

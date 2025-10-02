@@ -9,88 +9,7 @@ import { enumDesc, fileDesc } from "@bufbuild/protobuf/codegenv2";
  * Describes the file vocnet/v1/enums.proto.
  */
 export const file_vocnet_v1_enums: GenFile = /*@__PURE__*/
-  fileDesc("ChV2b2NuZXQvdjEvZW51bXMucHJvdG8SCXZvY25ldC52MSqtAgoMUmVsYXRpb25UeXBlEh0KGVJFTEFUSU9OX1RZUEVfVU5TUEVDSUZJRUQQABIZChVSRUxBVElPTl9UWVBFX1NZTk9OWU0QARIZChVSRUxBVElPTl9UWVBFX0FOVE9OWU0QAhIaChZSRUxBVElPTl9UWVBFX0hZUEVSTllNEAMSGQoVUkVMQVRJT05fVFlQRV9IWVBPTllNEAQSHQoZUkVMQVRJT05fVFlQRV9BU1NPQ0lBVElPThAFEh4KGlJFTEFUSU9OX1RZUEVfQ0FVU0VfRUZGRUNUEAYSHAoYUkVMQVRJT05fVFlQRV9QQVJUX1dIT0xFEAcSGgoWUkVMQVRJT05fVFlQRV9NTkVNT05JQxAKEhgKFFJFTEFUSU9OX1RZUEVfQ1VTVE9NEGQqvAEKCExhbmd1YWdlEhgKFExBTkdVQUdFX1VOU1BFQ0lGSUVEEAASFAoQTEFOR1VBR0VfRU5HTElTSBABEhQKEExBTkdVQUdFX0NISU5FU0UQAhIUChBMQU5HVUFHRV9TUEFOSVNIEAMSEwoPTEFOR1VBR0VfRlJFTkNIEAQSEwoPTEFOR1VBR0VfR0VSTUFOEAUSFQoRTEFOR1VBR0VfSkFQQU5FU0UQBhITCg9MQU5HVUFHRV9LT1JFQU4QByqxAQoKU291cmNlVHlwZRIbChdTT1VSQ0VfVFlQRV9VTlNQRUNJRklFRBAAEhQKEFNPVVJDRV9UWVBFX0JPT0sQARITCg9TT1VSQ0VfVFlQRV9XRUIQAhIVChFTT1VSQ0VfVFlQRV9BVURJTxADEhUKEVNPVVJDRV9UWVBFX1ZJREVPEAQSFgoSU09VUkNFX1RZUEVfTUFOVUFMEAUSFQoRU09VUkNFX1RZUEVfT1RIRVIQCkKWAQoNY29tLnZvY25ldC52MUIKRW51bXNQcm90b1ABWjRnaXRodWIuY29tL2VzbHNvZnQvdm9jbmV0L2FwaS9nZW4vdm9jbmV0L3YxO3ZvY25ldHYxogIDVlhYqgIJVm9jbmV0LlYxygIJVm9jbmV0XFYx4gIVVm9jbmV0XFYxXEdQQk1ldGFkYXRh6gIKVm9jbmV0OjpWMWIGcHJvdG8z");
-
-/**
- * Word relation types for building vocabulary networks
- *
- * @generated from enum vocnet.v1.RelationType
- */
-export enum RelationType {
-  /**
-   * @generated from enum value: RELATION_TYPE_UNSPECIFIED = 0;
-   */
-  UNSPECIFIED = 0,
-
-  /**
-   * 同义词
-   *
-   * @generated from enum value: RELATION_TYPE_SYNONYM = 1;
-   */
-  SYNONYM = 1,
-
-  /**
-   * 反义词
-   *
-   * @generated from enum value: RELATION_TYPE_ANTONYM = 2;
-   */
-  ANTONYM = 2,
-
-  /**
-   * 上位词 (animal->dog)
-   *
-   * @generated from enum value: RELATION_TYPE_HYPERNYM = 3;
-   */
-  HYPERNYM = 3,
-
-  /**
-   * 下位词 (dog->animal)
-   *
-   * @generated from enum value: RELATION_TYPE_HYPONYM = 4;
-   */
-  HYPONYM = 4,
-
-  /**
-   * 关联词 (bread->butter)
-   *
-   * @generated from enum value: RELATION_TYPE_ASSOCIATION = 5;
-   */
-  ASSOCIATION = 5,
-
-  /**
-   * 因果关系 (smoke->cancer)
-   *
-   * @generated from enum value: RELATION_TYPE_CAUSE_EFFECT = 6;
-   */
-  CAUSE_EFFECT = 6,
-
-  /**
-   * 部分-整体 (wheel->car)
-   *
-   * @generated from enum value: RELATION_TYPE_PART_WHOLE = 7;
-   */
-  PART_WHOLE = 7,
-
-  /**
-   * 联想/助记 (arbitrary user associations)
-   *
-   * @generated from enum value: RELATION_TYPE_MNEMONIC = 10;
-   */
-  MNEMONIC = 10,
-
-  /**
-   * 自定义关系 (reserved for extension)
-   *
-   * @generated from enum value: RELATION_TYPE_CUSTOM = 100;
-   */
-  CUSTOM = 100,
-}
-
-/**
- * Describes the enum vocnet.v1.RelationType.
- */
-export const RelationTypeSchema: GenEnum<RelationType> = /*@__PURE__*/
-  enumDesc(file_vocnet_v1_enums, 0);
+  fileDesc("ChV2b2NuZXQvdjEvZW51bXMucHJvdG8SCXZvY25ldC52MSq8AQoITGFuZ3VhZ2USGAoUTEFOR1VBR0VfVU5TUEVDSUZJRUQQABIUChBMQU5HVUFHRV9FTkdMSVNIEAESFAoQTEFOR1VBR0VfQ0hJTkVTRRACEhQKEExBTkdVQUdFX1NQQU5JU0gQAxITCg9MQU5HVUFHRV9GUkVOQ0gQBBITCg9MQU5HVUFHRV9HRVJNQU4QBRIVChFMQU5HVUFHRV9KQVBBTkVTRRAGEhMKD0xBTkdVQUdFX0tPUkVBThAHKrEBCgpTb3VyY2VUeXBlEhsKF1NPVVJDRV9UWVBFX1VOU1BFQ0lGSUVEEAASFAoQU09VUkNFX1RZUEVfQk9PSxABEhMKD1NPVVJDRV9UWVBFX1dFQhACEhUKEVNPVVJDRV9UWVBFX0FVRElPEAMSFQoRU09VUkNFX1RZUEVfVklERU8QBBIWChJTT1VSQ0VfVFlQRV9NQU5VQUwQBRIVChFTT1VSQ0VfVFlQRV9PVEhFUhAKQpYBCg1jb20udm9jbmV0LnYxQgpFbnVtc1Byb3RvUAFaNGdpdGh1Yi5jb20vZXNsc29mdC92b2NuZXQvYXBpL2dlbi92b2NuZXQvdjE7dm9jbmV0djGiAgNWWFiqAglWb2NuZXQuVjHKAglWb2NuZXRcVjHiAhVWb2NuZXRcVjFcR1BCTWV0YWRhdGHqAgpWb2NuZXQ6OlYxYgZwcm90bzM");
 
 /**
  * Supported languages
@@ -157,7 +76,7 @@ export enum Language {
  * Describes the enum vocnet.v1.Language.
  */
 export const LanguageSchema: GenEnum<Language> = /*@__PURE__*/
-  enumDesc(file_vocnet_v1_enums, 1);
+  enumDesc(file_vocnet_v1_enums, 0);
 
 /**
  * Source types for sentences and content
@@ -217,5 +136,5 @@ export enum SourceType {
  * Describes the enum vocnet.v1.SourceType.
  */
 export const SourceTypeSchema: GenEnum<SourceType> = /*@__PURE__*/
-  enumDesc(file_vocnet_v1_enums, 2);
+  enumDesc(file_vocnet_v1_enums, 1);
 

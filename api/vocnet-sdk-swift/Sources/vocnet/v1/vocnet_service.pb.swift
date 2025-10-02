@@ -86,6 +86,9 @@ public struct Vocnet_V1_ListUserWordsRequest: Sendable {
   /// Filtering options
   public var keyword: String = String()
 
+  /// Exact match filter for word texts
+  public var words: [String] = []
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -200,7 +203,7 @@ extension Vocnet_V1_UpdateUserWordMasteryRequest: SwiftProtobuf.Message, SwiftPr
 
 extension Vocnet_V1_ListUserWordsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListUserWordsRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pagination\0\u{2}\u{4}keyword\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pagination\0\u{2}\u{4}keyword\0\u{1}words\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -210,6 +213,7 @@ extension Vocnet_V1_ListUserWordsRequest: SwiftProtobuf.Message, SwiftProtobuf._
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularMessageField(value: &self._pagination) }()
       case 5: try { try decoder.decodeSingularStringField(value: &self.keyword) }()
+      case 6: try { try decoder.decodeRepeatedStringField(value: &self.words) }()
       default: break
       }
     }
@@ -226,12 +230,16 @@ extension Vocnet_V1_ListUserWordsRequest: SwiftProtobuf.Message, SwiftProtobuf._
     if !self.keyword.isEmpty {
       try visitor.visitSingularStringField(value: self.keyword, fieldNumber: 5)
     }
+    if !self.words.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.words, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Vocnet_V1_ListUserWordsRequest, rhs: Vocnet_V1_ListUserWordsRequest) -> Bool {
     if lhs._pagination != rhs._pagination {return false}
     if lhs.keyword != rhs.keyword {return false}
+    if lhs.words != rhs.words {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -22,18 +22,19 @@ type ReviewTiming struct {
 
 // Sentence captures a short contextual example recorded by the user.
 type Sentence struct {
-	Text   string
-	Source int32
+	Text      string `json:"text"`
+	Source    int32  `json:"source"`
+	SourceRef string `json:"source_ref,omitempty"`
 }
 
-// WordRelation links a user word to another concept in their vocabulary graph.
-type WordRelation struct {
-	Word         string
-	RelationType int32
-	Note         string
-	CreatedBy    string
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+// UserWordRelation links a user word to another concept in their vocabulary graph.
+type UserWordRelation struct {
+	Word         string    `json:"word"`
+	RelationType int32     `json:"relation_type"`
+	Note         string    `json:"note,omitempty"`
+	CreatedBy    string    `json:"created_by"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 // UserWord represents a user's personalised vocabulary entry.
@@ -47,7 +48,7 @@ type UserWord struct {
 	QueryCount int64
 	Notes      string
 	Sentences  []Sentence
-	Relations  []WordRelation
+	Relations  []UserWordRelation
 	CreatedBy  string
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
@@ -57,6 +58,7 @@ type UserWord struct {
 type UserWordFilter struct {
 	UserID  int64
 	Keyword string
+	Words   []string
 	Limit   int32
 	Offset  int32
 }
@@ -74,6 +76,6 @@ func (uw *UserWord) Normalize(now time.Time) {
 		uw.Sentences = []Sentence{}
 	}
 	if uw.Relations == nil {
-		uw.Relations = []WordRelation{}
+		uw.Relations = []UserWordRelation{}
 	}
 }

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package vocnet.v1;
 
+import "common/v1/types.proto";
 import "google/protobuf/timestamp.proto";
 import "vocnet/v1/enums.proto";
 
@@ -13,8 +14,9 @@ message UserWord {
   ReviewTiming review_timing = 4; // Review scheduling info
   int64 query_count = 5; // How many times user looked up this word
   string notes = 6; // User's personal notes
+
   repeated Sentence sentences = 7; // Contextual example sentences
-  repeated WordRelation relations = 8; // Relationships to other words
+  repeated UserWordRelation relations = 8; // Relationships to other words
 
   string created_by = 20; // Owner username (read-only)
   google.protobuf.Timestamp created_at = 21;
@@ -42,12 +44,13 @@ message ReviewTiming {
 message Sentence {
   string text = 1; // Surface form of the sentence
   vocnet.v1.SourceType source = 2; // How this sentence was added
+  string source_ref = 3; // Optional reference (book or article title)
 }
 
 // Word-to-word relationship for building vocabulary networks
-message WordRelation {
+message UserWordRelation {
   string word = 1;
-  vocnet.v1.RelationType relation_type = 2; // Type of relationship
+  common.v1.RelationType relation_type = 2; // Type of relationship
   string note = 3; // User's note about this relation
 
   string created_by = 20; // Owner username (read-only)

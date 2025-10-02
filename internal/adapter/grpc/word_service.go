@@ -9,6 +9,7 @@ import (
 	commonv1 "github.com/eslsoft/vocnet/api/gen/common/v1"
 	dictv1 "github.com/eslsoft/vocnet/api/gen/dict/v1"
 	"github.com/eslsoft/vocnet/api/gen/dict/v1/dictv1connect"
+	vocnetv1 "github.com/eslsoft/vocnet/api/gen/vocnet/v1"
 	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/usecase"
 	"github.com/samber/lo"
@@ -69,6 +70,7 @@ func (s *WordServiceServer) ListWords(ctx context.Context, req *connect.Request[
 	filter := entity.WordFilter{
 		Language: fromProtoLanguage(req.Msg.GetLanguage()),
 		Keyword:  req.Msg.GetKeyword(),
+		Words:    append([]string(nil), req.Msg.GetWords()...),
 	}
 	if page := req.Msg.GetPagination(); page != nil {
 		filter.Limit = page.GetLimit()
@@ -143,7 +145,14 @@ func (s *WordServiceServer) toProto(v *entity.Word) *dictv1.Word {
 		Forms: lo.Map(v.Forms, func(form entity.WordFormRef, _ int) *dictv1.WordFormRef {
 			return &dictv1.WordFormRef{Text: form.Text, WordType: form.WordType}
 		}),
-		Tags: v.Tags,
+		Tags:    v.Tags,
+		Phrases: lo.Map(v.Phrases, func(phrase string, _ int) string { return phrase }),
+		Sentences: lo.Map(v.Sentences, func(sent entity.Sentence, _ int) *vocnetv1.Sentence {
+			return &vocnetv1.Sentence{Text: sent.Text, Source: vocnetv1.SourceType(sent.Source), SourceRef: sent.SourceRef}
+		}),
+		Relations: lo.Map(v.Relations, func(rel entity.WordRelation, _ int) *dictv1.WordRelation {
+			return &dictv1.WordRelation{Word: rel.Word, RelationType: commonv1.RelationType(rel.RelationType)}
+		}),
 	}
 
 	if v.Lemma != nil {
@@ -152,6 +161,9 @@ func (s *WordServiceServer) toProto(v *entity.Word) *dictv1.Word {
 
 	if !v.CreatedAt.IsZero() {
 		pv.CreatedAt = timestamppb.New(v.CreatedAt)
+	}
+	if !v.UpdatedAt.IsZero() {
+		pv.UpdatedAt = timestamppb.New(v.UpdatedAt)
 	}
 
 	return pv
@@ -167,6 +179,7 @@ func fromProtoWord(in *dictv1.Word) *entity.Word {
 		Language: fromProtoLanguage(in.GetLanguage()),
 		WordType: strings.TrimSpace(in.GetWordType()),
 		Tags:     append([]string(nil), in.GetTags()...),
+		Phrases:  append([]string(nil), in.GetPhrases()...),
 	}
 	if lemma := strings.TrimSpace(in.GetLemma()); lemma != "" {
 		word.Lemma = &lemma
@@ -191,6 +204,9 @@ func fromProtoWord(in *dictv1.Word) *entity.Word {
 	}
 	if ts := in.GetCreatedAt(); ts != nil {
 		word.CreatedAt = ts.AsTime()
+	}
+	if ts := in.GetUpdatedAt(); ts != nil {
+		word.UpdatedAt = ts.AsTime()
 	}
 	definitions := lo.FilterMap(in.GetDefinitions(), func(def *dictv1.Definition, _ int) (entity.WordDefinition, bool) {
 		if def == nil {
@@ -224,6 +240,46 @@ func fromProtoWord(in *dictv1.Word) *entity.Word {
 	})
 	if len(forms) > 0 {
 		word.Forms = forms
+	}
+	phrases := lo.FilterMap(in.GetPhrases(), func(phrase string, _ int) (string, bool) {
+		trimmed := strings.TrimSpace(phrase)
+		if trimmed == "" {
+			return "", false
+		}
+		return trimmed, true
+	})
+	if len(phrases) > 0 {
+		word.Phrases = phrases
+	}
+	sentences := lo.FilterMap(in.GetSentences(), func(sent *vocnetv1.Sentence, _ int) (entity.Sentence, bool) {
+		if sent == nil {
+			return entity.Sentence{}, false
+		}
+		text := strings.TrimSpace(sent.GetText())
+		if text == "" {
+			return entity.Sentence{}, false
+		}
+		return entity.Sentence{
+			Text:      text,
+			Source:    int32(sent.GetSource()),
+			SourceRef: strings.TrimSpace(sent.GetSourceRef()),
+		}, true
+	})
+	if len(sentences) > 0 {
+		word.Sentences = sentences
+	}
+	relations := lo.FilterMap(in.GetRelations(), func(rel *dictv1.WordRelation, _ int) (entity.WordRelation, bool) {
+		if rel == nil {
+			return entity.WordRelation{}, false
+		}
+		wordText := strings.TrimSpace(rel.GetWord())
+		if wordText == "" {
+			return entity.WordRelation{}, false
+		}
+		return entity.WordRelation{Word: wordText, RelationType: int32(rel.GetRelationType())}, true
+	})
+	if len(relations) > 0 {
+		word.Relations = relations
 	}
 	return word
 }

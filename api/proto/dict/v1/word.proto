@@ -7,6 +7,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "validate/validate.proto";
+import "vocnet/v1/vocnet.proto";
 
 message Word {
   int64 id = 1; // Auto-increment ID (CRUD only)
@@ -16,7 +17,9 @@ message Word {
   string lemma = 5; // Present only if word_type != lemma; empty when this is the lemma itself
   repeated Phonetic phonetics = 6; // IPAs for this word
   repeated Definition definitions = 7; // Possibly multiple languages' definitions
-  repeated string tags = 8; // Difficulty / semantic / topic tags
+  repeated string tags = 8; // Level / topic tags
+  repeated string phrases = 9; // Common phrases/idioms containing this word
+  repeated vocnet.v1.Sentence sentences = 10; // Example sentences
 
   // When this entry is a lemma (word_type == "lemma"), forms lists all other surface forms
   // (e.g. past, past_participle, plural, etc.) referencing this lemma. It MUST NOT include
@@ -25,6 +28,7 @@ message Word {
   // obtained from the `lemma` field. We return structured objects instead of plain strings
   // so the client knows which type each form is without extra lookups.
   repeated WordFormRef forms = 30;
+  repeated WordRelation relations = 31; // Relationships to other words (e.g. synonyms, antonyms)
 
   google.protobuf.Timestamp created_at = 100; // Creation timestamp
   google.protobuf.Timestamp updated_at = 101; // Last update timestamp
@@ -47,6 +51,12 @@ message WordFormRef {
   string word_type = 2; // The specific form type (same value domain as Word.word_type)
 }
 
+// Word-to-word relationship for building vocabulary networks
+message WordRelation {
+  string word = 1;
+  common.v1.RelationType relation_type = 2; // Type of relationship
+}
+
 // CreateWord request (creates either a lemma entry or a derived/inflected form)
 message CreateWordRequest {
   Word word = 1 [(validate.rules).message.required = true];
@@ -57,6 +67,7 @@ message ListWordsRequest {
   common.v1.PaginationRequest pagination = 1;
   common.v1.Language language = 2; // Filter by language
   string keyword = 3; // Filter by keyword in text (partial match)
+  repeated string words = 4; // Filter by exact words (multiple values allowed)
 }
 
 message ListWordsResponse {

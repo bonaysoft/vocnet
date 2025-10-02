@@ -4,9 +4,11 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
+import type { RelationType } from "../../common/v1/types_pb";
+import { file_common_v1_types } from "../../common/v1/types_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
-import type { RelationType, SourceType } from "./enums_pb";
+import type { SourceType } from "./enums_pb";
 import { file_vocnet_v1_enums } from "./enums_pb";
 import type { Message } from "@bufbuild/protobuf";
 
@@ -14,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file vocnet/v1/vocnet.proto.
  */
 export const file_vocnet_v1_vocnet: GenFile = /*@__PURE__*/
-  fileDesc("ChZ2b2NuZXQvdjEvdm9jbmV0LnByb3RvEgl2b2NuZXQudjEi7gIKCFVzZXJXb3JkEgoKAmlkGAEgASgDEgwKBHdvcmQYAiABKAkSLAoHbWFzdGVyeRgDIAEoCzIbLnZvY25ldC52MS5NYXN0ZXJ5QnJlYWtkb3duEi4KDXJldmlld190aW1pbmcYBCABKAsyFy52b2NuZXQudjEuUmV2aWV3VGltaW5nEhMKC3F1ZXJ5X2NvdW50GAUgASgDEg0KBW5vdGVzGAYgASgJEiYKCXNlbnRlbmNlcxgHIAMoCzITLnZvY25ldC52MS5TZW50ZW5jZRIqCglyZWxhdGlvbnMYCCADKAsyFy52b2NuZXQudjEuV29yZFJlbGF0aW9uEhIKCmNyZWF0ZWRfYnkYFCABKAkSLgoKY3JlYXRlZF9hdBgVIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgWIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAicAoQTWFzdGVyeUJyZWFrZG93bhIOCgZsaXN0ZW4YASABKAUSDAoEcmVhZBgCIAEoBRINCgVzcGVsbBgDIAEoBRIRCglwcm9ub3VuY2UYBCABKAUSCwoDdXNlGAUgASgFEg8KB292ZXJhbGwYBiABKAUioQEKDFJldmlld1RpbWluZxIyCg5sYXN0X3Jldmlld19hdBgBIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASMgoObmV4dF9yZXZpZXdfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhUKDWludGVydmFsX2RheXMYAyABKAUSEgoKZmFpbF9jb3VudBgEIAEoBSI/CghTZW50ZW5jZRIMCgR0ZXh0GAEgASgJEiUKBnNvdXJjZRgCIAEoDjIVLnZvY25ldC52MS5Tb3VyY2VUeXBlIs4BCgxXb3JkUmVsYXRpb24SDAoEd29yZBgBIAEoCRIuCg1yZWxhdGlvbl90eXBlGAIgASgOMhcudm9jbmV0LnYxLlJlbGF0aW9uVHlwZRIMCgRub3RlGAMgASgJEhIKCmNyZWF0ZWRfYnkYFCABKAkSLgoKY3JlYXRlZF9hdBgVIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgWIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBClwEKDWNvbS52b2NuZXQudjFCC1ZvY25ldFByb3RvUAFaNGdpdGh1Yi5jb20vZXNsc29mdC92b2NuZXQvYXBpL2dlbi92b2NuZXQvdjE7dm9jbmV0djGiAgNWWFiqAglWb2NuZXQuVjHKAglWb2NuZXRcVjHiAhVWb2NuZXRcVjFcR1BCTWV0YWRhdGHqAgpWb2NuZXQ6OlYxYgZwcm90bzM", [file_google_protobuf_timestamp, file_vocnet_v1_enums]);
+  fileDesc("ChZ2b2NuZXQvdjEvdm9jbmV0LnByb3RvEgl2b2NuZXQudjEi8gIKCFVzZXJXb3JkEgoKAmlkGAEgASgDEgwKBHdvcmQYAiABKAkSLAoHbWFzdGVyeRgDIAEoCzIbLnZvY25ldC52MS5NYXN0ZXJ5QnJlYWtkb3duEi4KDXJldmlld190aW1pbmcYBCABKAsyFy52b2NuZXQudjEuUmV2aWV3VGltaW5nEhMKC3F1ZXJ5X2NvdW50GAUgASgDEg0KBW5vdGVzGAYgASgJEiYKCXNlbnRlbmNlcxgHIAMoCzITLnZvY25ldC52MS5TZW50ZW5jZRIuCglyZWxhdGlvbnMYCCADKAsyGy52b2NuZXQudjEuVXNlcldvcmRSZWxhdGlvbhISCgpjcmVhdGVkX2J5GBQgASgJEi4KCmNyZWF0ZWRfYXQYFSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYFiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wInAKEE1hc3RlcnlCcmVha2Rvd24SDgoGbGlzdGVuGAEgASgFEgwKBHJlYWQYAiABKAUSDQoFc3BlbGwYAyABKAUSEQoJcHJvbm91bmNlGAQgASgFEgsKA3VzZRgFIAEoBRIPCgdvdmVyYWxsGAYgASgFIqEBCgxSZXZpZXdUaW1pbmcSMgoObGFzdF9yZXZpZXdfYXQYASABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjIKDm5leHRfcmV2aWV3X2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIVCg1pbnRlcnZhbF9kYXlzGAMgASgFEhIKCmZhaWxfY291bnQYBCABKAUiUwoIU2VudGVuY2USDAoEdGV4dBgBIAEoCRIlCgZzb3VyY2UYAiABKA4yFS52b2NuZXQudjEuU291cmNlVHlwZRISCgpzb3VyY2VfcmVmGAMgASgJItIBChBVc2VyV29yZFJlbGF0aW9uEgwKBHdvcmQYASABKAkSLgoNcmVsYXRpb25fdHlwZRgCIAEoDjIXLmNvbW1vbi52MS5SZWxhdGlvblR5cGUSDAoEbm90ZRgDIAEoCRISCgpjcmVhdGVkX2J5GBQgASgJEi4KCmNyZWF0ZWRfYXQYFSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYFiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQpcBCg1jb20udm9jbmV0LnYxQgtWb2NuZXRQcm90b1ABWjRnaXRodWIuY29tL2VzbHNvZnQvdm9jbmV0L2FwaS9nZW4vdm9jbmV0L3YxO3ZvY25ldHYxogIDVlhYqgIJVm9jbmV0LlYxygIJVm9jbmV0XFYx4gIVVm9jbmV0XFYxXEdQQk1ldGFkYXRh6gIKVm9jbmV0OjpWMWIGcHJvdG8z", [file_common_v1_types, file_google_protobuf_timestamp, file_vocnet_v1_enums]);
 
 /**
  * User's personal word record with learning context
@@ -72,9 +74,9 @@ export type UserWord = Message<"vocnet.v1.UserWord"> & {
   /**
    * Relationships to other words
    *
-   * @generated from field: repeated vocnet.v1.WordRelation relations = 8;
+   * @generated from field: repeated vocnet.v1.UserWordRelation relations = 8;
    */
-  relations: WordRelation[];
+  relations: UserWordRelation[];
 
   /**
    * Owner username (read-only)
@@ -212,6 +214,13 @@ export type Sentence = Message<"vocnet.v1.Sentence"> & {
    * @generated from field: vocnet.v1.SourceType source = 2;
    */
   source: SourceType;
+
+  /**
+   * Optional reference (book or article title)
+   *
+   * @generated from field: string source_ref = 3;
+   */
+  sourceRef: string;
 };
 
 /**
@@ -224,9 +233,9 @@ export const SentenceSchema: GenMessage<Sentence> = /*@__PURE__*/
 /**
  * Word-to-word relationship for building vocabulary networks
  *
- * @generated from message vocnet.v1.WordRelation
+ * @generated from message vocnet.v1.UserWordRelation
  */
-export type WordRelation = Message<"vocnet.v1.WordRelation"> & {
+export type UserWordRelation = Message<"vocnet.v1.UserWordRelation"> & {
   /**
    * @generated from field: string word = 1;
    */
@@ -235,7 +244,7 @@ export type WordRelation = Message<"vocnet.v1.WordRelation"> & {
   /**
    * Type of relationship
    *
-   * @generated from field: vocnet.v1.RelationType relation_type = 2;
+   * @generated from field: common.v1.RelationType relation_type = 2;
    */
   relationType: RelationType;
 
@@ -265,9 +274,9 @@ export type WordRelation = Message<"vocnet.v1.WordRelation"> & {
 };
 
 /**
- * Describes the message vocnet.v1.WordRelation.
- * Use `create(WordRelationSchema)` to create a new message.
+ * Describes the message vocnet.v1.UserWordRelation.
+ * Use `create(UserWordRelationSchema)` to create a new message.
  */
-export const WordRelationSchema: GenMessage<WordRelation> = /*@__PURE__*/
+export const UserWordRelationSchema: GenMessage<UserWordRelation> = /*@__PURE__*/
   messageDesc(file_vocnet_v1_vocnet, 4);
 

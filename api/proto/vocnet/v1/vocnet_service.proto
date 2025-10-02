@@ -55,9 +55,11 @@ message ListUserWordsRequest {
 
   // Filtering options
   string keyword = 5; // Search in word text or notes
+  repeated string words = 6; // Exact match filter for word texts
 }
 
 message ListUserWordsResponse {
   common.v1.PaginationResponse pagination = 1;
   repeated UserWord user_words = 2;
 }
+

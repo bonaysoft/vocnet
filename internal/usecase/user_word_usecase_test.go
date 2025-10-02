@@ -168,7 +168,7 @@ func cloneUserWord(src *entity.UserWord) *entity.UserWord {
 		copy.Sentences = append([]entity.Sentence(nil), src.Sentences...)
 	}
 	if src.Relations != nil {
-		copy.Relations = append([]entity.WordRelation(nil), src.Relations...)
+		copy.Relations = append([]entity.UserWordRelation(nil), src.Relations...)
 	}
 	return &copy
 }

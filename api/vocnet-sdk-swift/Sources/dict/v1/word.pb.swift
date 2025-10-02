@@ -46,8 +46,14 @@ public struct Dict_V1_Word: Sendable {
   /// Possibly multiple languages' definitions
   public var definitions: [Dict_V1_Definition] = []
 
-  /// Difficulty / semantic / topic tags
+  /// Level / topic tags
   public var tags: [String] = []
+
+  /// Common phrases/idioms containing this word
+  public var phrases: [String] = []
+
+  /// Example sentences
+  public var sentences: [Vocnet_V1_Sentence] = []
 
   /// When this entry is a lemma (word_type == "lemma"), forms lists all other surface forms
   /// (e.g. past, past_participle, plural, etc.) referencing this lemma. It MUST NOT include
@@ -56,6 +62,9 @@ public struct Dict_V1_Word: Sendable {
   /// obtained from the `lemma` field. We return structured objects instead of plain strings
   /// so the client knows which type each form is without extra lookups.
   public var forms: [Dict_V1_WordFormRef] = []
+
+  /// Relationships to other words (e.g. synonyms, antonyms)
+  public var relations: [Dict_V1_WordRelation] = []
 
   /// Creation timestamp
   public var createdAt: SwiftProtobuf.Google_Protobuf_Timestamp {
@@ -137,6 +146,22 @@ public struct Dict_V1_WordFormRef: Sendable {
   public init() {}
 }
 
+/// Word-to-word relationship for building vocabulary networks
+public struct Dict_V1_WordRelation: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var word: String = String()
+
+  /// Type of relationship
+  public var relationType: Common_V1_RelationType = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 /// CreateWord request (creates either a lemma entry or a derived/inflected form)
 public struct Dict_V1_CreateWordRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -179,6 +204,9 @@ public struct Dict_V1_ListWordsRequest: Sendable {
 
   /// Filter by keyword in text (partial match)
   public var keyword: String = String()
+
+  /// Filter by exact words (multiple values allowed)
+  public var words: [String] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -232,7 +260,7 @@ fileprivate let _protobuf_package = "dict.v1"
 
 extension Dict_V1_Word: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Word"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}text\0\u{1}language\0\u{3}word_type\0\u{1}lemma\0\u{1}phonetics\0\u{1}definitions\0\u{1}tags\0\u{2}\u{16}forms\0\u{4}F\u{1}created_at\0\u{3}updated_at\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}text\0\u{1}language\0\u{3}word_type\0\u{1}lemma\0\u{1}phonetics\0\u{1}definitions\0\u{1}tags\0\u{1}phrases\0\u{1}sentences\0\u{2}\u{14}forms\0\u{1}relations\0\u{4}E\u{1}created_at\0\u{3}updated_at\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -248,7 +276,10 @@ extension Dict_V1_Word: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       case 6: try { try decoder.decodeRepeatedMessageField(value: &self.phonetics) }()
       case 7: try { try decoder.decodeRepeatedMessageField(value: &self.definitions) }()
       case 8: try { try decoder.decodeRepeatedStringField(value: &self.tags) }()
+      case 9: try { try decoder.decodeRepeatedStringField(value: &self.phrases) }()
+      case 10: try { try decoder.decodeRepeatedMessageField(value: &self.sentences) }()
       case 30: try { try decoder.decodeRepeatedMessageField(value: &self.forms) }()
+      case 31: try { try decoder.decodeRepeatedMessageField(value: &self.relations) }()
       case 100: try { try decoder.decodeSingularMessageField(value: &self._createdAt) }()
       case 101: try { try decoder.decodeSingularMessageField(value: &self._updatedAt) }()
       default: break
@@ -285,8 +316,17 @@ extension Dict_V1_Word: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     if !self.tags.isEmpty {
       try visitor.visitRepeatedStringField(value: self.tags, fieldNumber: 8)
     }
+    if !self.phrases.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.phrases, fieldNumber: 9)
+    }
+    if !self.sentences.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.sentences, fieldNumber: 10)
+    }
     if !self.forms.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.forms, fieldNumber: 30)
+    }
+    if !self.relations.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.relations, fieldNumber: 31)
     }
     try { if let v = self._createdAt {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 100)
@@ -306,7 +346,10 @@ extension Dict_V1_Word: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     if lhs.phonetics != rhs.phonetics {return false}
     if lhs.definitions != rhs.definitions {return false}
     if lhs.tags != rhs.tags {return false}
+    if lhs.phrases != rhs.phrases {return false}
+    if lhs.sentences != rhs.sentences {return false}
     if lhs.forms != rhs.forms {return false}
+    if lhs.relations != rhs.relations {return false}
     if lhs._createdAt != rhs._createdAt {return false}
     if lhs._updatedAt != rhs._updatedAt {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -424,6 +467,41 @@ extension Dict_V1_WordFormRef: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   }
 }
 
+extension Dict_V1_WordRelation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".WordRelation"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}word\0\u{3}relation_type\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.word) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.relationType) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.word.isEmpty {
+      try visitor.visitSingularStringField(value: self.word, fieldNumber: 1)
+    }
+    if self.relationType != .unspecified {
+      try visitor.visitSingularEnumField(value: self.relationType, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Dict_V1_WordRelation, rhs: Dict_V1_WordRelation) -> Bool {
+    if lhs.word != rhs.word {return false}
+    if lhs.relationType != rhs.relationType {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Dict_V1_CreateWordRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreateWordRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}word\0")
@@ -460,7 +538,7 @@ extension Dict_V1_CreateWordRequest: SwiftProtobuf.Message, SwiftProtobuf._Messa
 
 extension Dict_V1_ListWordsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListWordsRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pagination\0\u{1}language\0\u{1}keyword\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pagination\0\u{1}language\0\u{1}keyword\0\u{1}words\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -471,6 +549,7 @@ extension Dict_V1_ListWordsRequest: SwiftProtobuf.Message, SwiftProtobuf._Messag
       case 1: try { try decoder.decodeSingularMessageField(value: &self._pagination) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self.language) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.keyword) }()
+      case 4: try { try decoder.decodeRepeatedStringField(value: &self.words) }()
       default: break
       }
     }
@@ -490,6 +569,9 @@ extension Dict_V1_ListWordsRequest: SwiftProtobuf.Message, SwiftProtobuf._Messag
     if !self.keyword.isEmpty {
       try visitor.visitSingularStringField(value: self.keyword, fieldNumber: 3)
     }
+    if !self.words.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.words, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -497,6 +579,7 @@ extension Dict_V1_ListWordsRequest: SwiftProtobuf.Message, SwiftProtobuf._Messag
     if lhs._pagination != rhs._pagination {return false}
     if lhs.language != rhs.language {return false}
     if lhs.keyword != rhs.keyword {return false}
+    if lhs.words != rhs.words {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

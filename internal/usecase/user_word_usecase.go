@@ -110,6 +110,7 @@ func (u *userWordUsecase) ListUserWords(ctx context.Context, filter entity.UserW
 		filter.Offset = 0
 	}
 	filter.Keyword = strings.TrimSpace(filter.Keyword)
+	filter.Words = normalizeUserWordFilter(filter.Words)
 	return u.repo.List(ctx, filter)
 }
 
@@ -118,4 +119,28 @@ func (u *userWordUsecase) DeleteUserWord(ctx context.Context, userID, id int64) 
 		return entity.ErrUserWordNotFound
 	}
 	return u.repo.Delete(ctx, userID, id)
+}
+
+func normalizeUserWordFilter(words []string) []string {
+	if len(words) == 0 {
+		return nil
+	}
+	seen := make(map[string]struct{}, len(words))
+	out := make([]string, 0, len(words))
+	for _, w := range words {
+		trimmed := strings.TrimSpace(w)
+		if trimmed == "" {
+			continue
+		}
+		key := strings.ToLower(trimmed)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		out = append(out, trimmed)
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return out
 }

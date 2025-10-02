@@ -44,28 +44,7 @@ INSERT INTO user_words (
     $19,
     $20
 )
-RETURNING
-    id,
-    user_id,
-    word,
-    language,
-    mastery_listen,
-    mastery_read,
-    mastery_spell,
-    mastery_pronounce,
-    mastery_use,
-    mastery_overall,
-    review_last_review_at,
-    review_next_review_at,
-    review_interval_days,
-    review_fail_count,
-    query_count,
-    notes,
-    sentences,
-    relations,
-    created_by,
-    created_at,
-    updated_at;
+RETURNING user_words.*;
 
 -- name: UpdateUserWord :one
 UPDATE user_words
@@ -89,116 +68,49 @@ SET
     created_by = $19,
     updated_at = $20
 WHERE id = $1 AND user_id = $2
-RETURNING
-    id,
-    user_id,
-    word,
-    language,
-    mastery_listen,
-    mastery_read,
-    mastery_spell,
-    mastery_pronounce,
-    mastery_use,
-    mastery_overall,
-    review_last_review_at,
-    review_next_review_at,
-    review_interval_days,
-    review_fail_count,
-    query_count,
-    notes,
-    sentences,
-    relations,
-    created_by,
-    created_at,
-    updated_at;
+RETURNING user_words.*;
 
 -- name: GetUserWord :one
-SELECT
-    id,
-    user_id,
-    word,
-    language,
-    mastery_listen,
-    mastery_read,
-    mastery_spell,
-    mastery_pronounce,
-    mastery_use,
-    mastery_overall,
-    review_last_review_at,
-    review_next_review_at,
-    review_interval_days,
-    review_fail_count,
-    query_count,
-    notes,
-    sentences,
-    relations,
-    created_by,
-    created_at,
-    updated_at
+SELECT user_words.*
 FROM user_words
 WHERE id = $1 AND user_id = $2;
 
 -- name: FindUserWordByWord :one
-SELECT
-    id,
-    user_id,
-    word,
-    language,
-    mastery_listen,
-    mastery_read,
-    mastery_spell,
-    mastery_pronounce,
-    mastery_use,
-    mastery_overall,
-    review_last_review_at,
-    review_next_review_at,
-    review_interval_days,
-    review_fail_count,
-    query_count,
-    notes,
-    sentences,
-    relations,
-    created_by,
-    created_at,
-    updated_at
+SELECT user_words.*
 FROM user_words
 WHERE user_id = $1 AND word_normalized = lower($2)
 LIMIT 1;
 
 -- name: ListUserWords :many
-SELECT
-    id,
-    user_id,
-    word,
-    language,
-    mastery_listen,
-    mastery_read,
-    mastery_spell,
-    mastery_pronounce,
-    mastery_use,
-    mastery_overall,
-    review_last_review_at,
-    review_next_review_at,
-    review_interval_days,
-    review_fail_count,
-    query_count,
-    notes,
-    sentences,
-    relations,
-    created_by,
-    created_at,
-    updated_at,
-    COUNT(*) OVER() AS total_count
+SELECT user_words.*
 FROM user_words
-WHERE user_id = $1
-  AND (
-        $2::text = ''
-        OR word ILIKE '%' || $2 || '%'
-        OR notes ILIKE '%' || $2 || '%'
-      )
+WHERE user_id = sqlc.arg('user_id')
+    AND (
+        sqlc.arg('keyword')::text = ''
+        OR word ILIKE '%' || sqlc.arg('keyword') || '%'
+        OR notes ILIKE '%' || sqlc.arg('keyword') || '%'
+    )
+    AND (
+        COALESCE(array_length(sqlc.arg('words')::text[], 1), 0) = 0
+        OR word_normalized = ANY(sqlc.arg('words')::text[])
+    )
 ORDER BY created_at DESC, id DESC
-LIMIT $3
-OFFSET $4;
+LIMIT sqlc.arg('limit')
+OFFSET sqlc.arg('offset');
+
+-- name: CountUserWords :one
+SELECT COUNT(*)
+FROM user_words
+WHERE user_id = sqlc.arg('user_id')
+    AND (
+        sqlc.arg('keyword')::text = ''
+        OR word ILIKE '%' || sqlc.arg('keyword') || '%'
+        OR notes ILIKE '%' || sqlc.arg('keyword') || '%'
+    )
+    AND (
+        COALESCE(array_length(sqlc.arg('words')::text[], 1), 0) = 0
+        OR word_normalized = ANY(sqlc.arg('words')::text[])
+    );
 
 -- name: DeleteUserWord :execresult
 DELETE FROM user_words

@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file common/v1/types.proto.
  */
 export const file_common_v1_types: GenFile = /*@__PURE__*/
-  fileDesc("ChVjb21tb24vdjEvdHlwZXMucHJvdG8SCWNvbW1vbi52MSIgCglJRFJlcXVlc3QSEwoCaWQYASABKANCB/pCBCICIAAiMgoRUGFnaW5hdGlvblJlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGb2Zmc2V0GAIgASgFIjQKElBhZ2luYXRpb25SZXNwb25zZRINCgV0b3RhbBgBIAEoBRIPCgdwYWdlX25vGAIgASgFKrwBCghMYW5ndWFnZRIYChRMQU5HVUFHRV9VTlNQRUNJRklFRBAAEhQKEExBTkdVQUdFX0VOR0xJU0gQARIUChBMQU5HVUFHRV9DSElORVNFEAISFAoQTEFOR1VBR0VfU1BBTklTSBADEhMKD0xBTkdVQUdFX0ZSRU5DSBAEEhMKD0xBTkdVQUdFX0dFUk1BThAFEhUKEUxBTkdVQUdFX0pBUEFORVNFEAYSEwoPTEFOR1VBR0VfS09SRUFOEAdCxwIKDWNvbS5jb21tb24udjFCClR5cGVzUHJvdG9QAVo0Z2l0aHViLmNvbS9lc2xzb2Z0L3ZvY25ldC9hcGkvZ2VuL2NvbW1vbi92MTtjb21tb252MaICA0NYWKoCCUNvbW1vbi5WMcoCCUNvbW1vblxWMeICFUNvbW1vblxWMVxHUEJNZXRhZGF0YeoCCkNvbW1vbjo6VjGSQa0BEoIBCgpWb2NuZXQgQVBJEjZWb2NuZXQgQVBJIGZvciB2b2NhYnVsYXJ5IGxlYXJuaW5nIGFuZCB3b3JkIG1hbmFnZW1lbnQiNwoSVm9jbmV0IEFQSSBTdXBwb3J0EiFodHRwczovL2dpdGh1Yi5jb20vZXNsc29mdC92b2NuZXQyAzEuMCoCAQIyEGFwcGxpY2F0aW9uL2pzb246EGFwcGxpY2F0aW9uL2pzb25iBnByb3RvMw", [file_protoc_gen_openapiv2_options_annotations, file_validate_validate]);
+  fileDesc("ChVjb21tb24vdjEvdHlwZXMucHJvdG8SCWNvbW1vbi52MSIgCglJRFJlcXVlc3QSEwoCaWQYASABKANCB/pCBCICIAAiMgoRUGFnaW5hdGlvblJlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGb2Zmc2V0GAIgASgFIjQKElBhZ2luYXRpb25SZXNwb25zZRINCgV0b3RhbBgBIAEoBRIPCgdwYWdlX25vGAIgASgFKrwBCghMYW5ndWFnZRIYChRMQU5HVUFHRV9VTlNQRUNJRklFRBAAEhQKEExBTkdVQUdFX0VOR0xJU0gQARIUChBMQU5HVUFHRV9DSElORVNFEAISFAoQTEFOR1VBR0VfU1BBTklTSBADEhMKD0xBTkdVQUdFX0ZSRU5DSBAEEhMKD0xBTkdVQUdFX0dFUk1BThAFEhUKEUxBTkdVQUdFX0pBUEFORVNFEAYSEwoPTEFOR1VBR0VfS09SRUFOEAcqrQIKDFJlbGF0aW9uVHlwZRIdChlSRUxBVElPTl9UWVBFX1VOU1BFQ0lGSUVEEAASGQoVUkVMQVRJT05fVFlQRV9TWU5PTllNEAESGQoVUkVMQVRJT05fVFlQRV9BTlRPTllNEAISGgoWUkVMQVRJT05fVFlQRV9IWVBFUk5ZTRADEhkKFVJFTEFUSU9OX1RZUEVfSFlQT05ZTRAEEh0KGVJFTEFUSU9OX1RZUEVfQVNTT0NJQVRJT04QBRIeChpSRUxBVElPTl9UWVBFX0NBVVNFX0VGRkVDVBAGEhwKGFJFTEFUSU9OX1RZUEVfUEFSVF9XSE9MRRAHEhoKFlJFTEFUSU9OX1RZUEVfTU5FTU9OSUMQChIYChRSRUxBVElPTl9UWVBFX0NVU1RPTRBkQscCCg1jb20uY29tbW9uLnYxQgpUeXBlc1Byb3RvUAFaNGdpdGh1Yi5jb20vZXNsc29mdC92b2NuZXQvYXBpL2dlbi9jb21tb24vdjE7Y29tbW9udjGiAgNDWFiqAglDb21tb24uVjHKAglDb21tb25cVjHiAhVDb21tb25cVjFcR1BCTWV0YWRhdGHqAgpDb21tb246OlYxkkGtARKCAQoKVm9jbmV0IEFQSRI2Vm9jbmV0IEFQSSBmb3Igdm9jYWJ1bGFyeSBsZWFybmluZyBhbmQgd29yZCBtYW5hZ2VtZW50IjcKElZvY25ldCBBUEkgU3VwcG9ydBIhaHR0cHM6Ly9naXRodWIuY29tL2VzbHNvZnQvdm9jbmV0MgMxLjAqAgECMhBhcHBsaWNhdGlvbi9qc29uOhBhcHBsaWNhdGlvbi9qc29uYgZwcm90bzM", [file_protoc_gen_openapiv2_options_annotations, file_validate_validate]);
 
 /**
  * ID request message
@@ -155,4 +155,85 @@ export enum Language {
  */
 export const LanguageSchema: GenEnum<Language> = /*@__PURE__*/
   enumDesc(file_common_v1_types, 0);
+
+/**
+ * Word relation types for building vocabulary networks
+ *
+ * @generated from enum common.v1.RelationType
+ */
+export enum RelationType {
+  /**
+   * @generated from enum value: RELATION_TYPE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * 同义词
+   *
+   * @generated from enum value: RELATION_TYPE_SYNONYM = 1;
+   */
+  SYNONYM = 1,
+
+  /**
+   * 反义词
+   *
+   * @generated from enum value: RELATION_TYPE_ANTONYM = 2;
+   */
+  ANTONYM = 2,
+
+  /**
+   * 上位词 (animal->dog)
+   *
+   * @generated from enum value: RELATION_TYPE_HYPERNYM = 3;
+   */
+  HYPERNYM = 3,
+
+  /**
+   * 下位词 (dog->animal)
+   *
+   * @generated from enum value: RELATION_TYPE_HYPONYM = 4;
+   */
+  HYPONYM = 4,
+
+  /**
+   * 关联词 (bread->butter)
+   *
+   * @generated from enum value: RELATION_TYPE_ASSOCIATION = 5;
+   */
+  ASSOCIATION = 5,
+
+  /**
+   * 因果关系 (smoke->cancer)
+   *
+   * @generated from enum value: RELATION_TYPE_CAUSE_EFFECT = 6;
+   */
+  CAUSE_EFFECT = 6,
+
+  /**
+   * 部分-整体 (wheel->car)
+   *
+   * @generated from enum value: RELATION_TYPE_PART_WHOLE = 7;
+   */
+  PART_WHOLE = 7,
+
+  /**
+   * 联想/助记 (arbitrary user associations)
+   *
+   * @generated from enum value: RELATION_TYPE_MNEMONIC = 10;
+   */
+  MNEMONIC = 10,
+
+  /**
+   * 自定义关系 (reserved for extension)
+   *
+   * @generated from enum value: RELATION_TYPE_CUSTOM = 100;
+   */
+  CUSTOM = 100,
+}
+
+/**
+ * Describes the enum common.v1.RelationType.
+ */
+export const RelationTypeSchema: GenEnum<RelationType> = /*@__PURE__*/
+  enumDesc(file_common_v1_types, 1);
 

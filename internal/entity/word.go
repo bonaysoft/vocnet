@@ -29,6 +29,9 @@ type Word struct {
 
 	Definitions []WordDefinition `json:"definitions,omitempty"` // only populated for lemma rows
 	Tags        []string         `json:"tags,omitempty"`
+	Phrases     []string         `json:"phrases,omitempty"`
+	Sentences   []Sentence       `json:"sentences,omitempty"`
+	Relations   []WordRelation   `json:"relations,omitempty"`
 	Forms       []WordFormRef    `json:"forms,omitempty"` // if this is lemma: other forms; if not lemma: empty
 
 	CreatedAt time.Time `json:"created_at"`
@@ -51,11 +54,18 @@ type WordFormRef struct {
 	WordType string `json:"word_type"`
 }
 
+// WordRelation models a connection to another dictionary entry.
+type WordRelation struct {
+	Word         string `json:"word"`
+	RelationType int32  `json:"relation_type"`
+}
+
 // WordFilter defines filtering options when listing vocabulary entries.
 type WordFilter struct {
 	Language Language
 	Keyword  string
 	WordType string
+	Words    []string
 	Limit    int32
 	Offset   int32
 }

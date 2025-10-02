@@ -76,7 +76,7 @@ public struct Vocnet_V1_UserWord: @unchecked Sendable {
   }
 
   /// Relationships to other words
-  public var relations: [Vocnet_V1_WordRelation] {
+  public var relations: [Vocnet_V1_UserWordRelation] {
     get {return _storage._relations}
     set {_uniqueStorage()._relations = newValue}
   }
@@ -190,13 +190,16 @@ public struct Vocnet_V1_Sentence: Sendable {
   /// How this sentence was added
   public var source: Vocnet_V1_SourceType = .unspecified
 
+  /// Optional reference (book or article title)
+  public var sourceRef: String = String()
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 }
 
 /// Word-to-word relationship for building vocabulary networks
-public struct Vocnet_V1_WordRelation: Sendable {
+public struct Vocnet_V1_UserWordRelation: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -204,7 +207,7 @@ public struct Vocnet_V1_WordRelation: Sendable {
   public var word: String = String()
 
   /// Type of relationship
-  public var relationType: Vocnet_V1_RelationType = .unspecified
+  public var relationType: Common_V1_RelationType = .unspecified
 
   /// User's note about this relation
   public var note: String = String()
@@ -254,7 +257,7 @@ extension Vocnet_V1_UserWord: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     var _queryCount: Int64 = 0
     var _notes: String = String()
     var _sentences: [Vocnet_V1_Sentence] = []
-    var _relations: [Vocnet_V1_WordRelation] = []
+    var _relations: [Vocnet_V1_UserWordRelation] = []
     var _createdBy: String = String()
     var _createdAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
     var _updatedAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
@@ -488,7 +491,7 @@ extension Vocnet_V1_ReviewTiming: SwiftProtobuf.Message, SwiftProtobuf._MessageI
 
 extension Vocnet_V1_Sentence: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Sentence"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}text\0\u{1}source\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}text\0\u{1}source\0\u{3}source_ref\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -498,6 +501,7 @@ extension Vocnet_V1_Sentence: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self.source) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.sourceRef) }()
       default: break
       }
     }
@@ -510,19 +514,23 @@ extension Vocnet_V1_Sentence: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if self.source != .unspecified {
       try visitor.visitSingularEnumField(value: self.source, fieldNumber: 2)
     }
+    if !self.sourceRef.isEmpty {
+      try visitor.visitSingularStringField(value: self.sourceRef, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Vocnet_V1_Sentence, rhs: Vocnet_V1_Sentence) -> Bool {
     if lhs.text != rhs.text {return false}
     if lhs.source != rhs.source {return false}
+    if lhs.sourceRef != rhs.sourceRef {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension Vocnet_V1_WordRelation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".WordRelation"
+extension Vocnet_V1_UserWordRelation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".UserWordRelation"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}word\0\u{3}relation_type\0\u{1}note\0\u{4}\u{11}created_by\0\u{3}created_at\0\u{3}updated_at\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -568,7 +576,7 @@ extension Vocnet_V1_WordRelation: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Vocnet_V1_WordRelation, rhs: Vocnet_V1_WordRelation) -> Bool {
+  public static func ==(lhs: Vocnet_V1_UserWordRelation, rhs: Vocnet_V1_UserWordRelation) -> Bool {
     if lhs.word != rhs.word {return false}
     if lhs.relationType != rhs.relationType {return false}
     if lhs.note != rhs.note {return false}

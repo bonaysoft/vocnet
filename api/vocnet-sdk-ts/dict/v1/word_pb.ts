@@ -4,19 +4,21 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { IDRequestSchema, Language, PaginationRequest, PaginationResponse } from "../../common/v1/types_pb";
+import type { IDRequestSchema, Language, PaginationRequest, PaginationResponse, RelationType } from "../../common/v1/types_pb";
 import { file_common_v1_types } from "../../common/v1/types_pb";
 import { file_google_api_annotations } from "../../google/api/annotations_pb";
 import type { EmptySchema, Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_empty, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import { file_validate_validate } from "../../validate/validate_pb";
+import type { Sentence } from "../../vocnet/v1/vocnet_pb";
+import { file_vocnet_v1_vocnet } from "../../vocnet/v1/vocnet_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file dict/v1/word.proto.
  */
 export const file_dict_v1_word: GenFile = /*@__PURE__*/
-  fileDesc("ChJkaWN0L3YxL3dvcmQucHJvdG8SB2RpY3QudjEizAIKBFdvcmQSCgoCaWQYASABKAMSDAoEdGV4dBgCIAEoCRIlCghsYW5ndWFnZRgDIAEoDjITLmNvbW1vbi52MS5MYW5ndWFnZRIRCgl3b3JkX3R5cGUYBCABKAkSDQoFbGVtbWEYBSABKAkSJAoJcGhvbmV0aWNzGAYgAygLMhEuZGljdC52MS5QaG9uZXRpYxIoCgtkZWZpbml0aW9ucxgHIAMoCzITLmRpY3QudjEuRGVmaW5pdGlvbhIMCgR0YWdzGAggAygJEiMKBWZvcm1zGB4gAygLMhQuZGljdC52MS5Xb3JkRm9ybVJlZhIuCgpjcmVhdGVkX2F0GGQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GGUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIoCghQaG9uZXRpYxILCgNpcGEYASABKAkSDwoHZGlhbGVjdBgCIAEoCSJOCgpEZWZpbml0aW9uEgsKA3BvcxgBIAEoCRIMCgR0ZXh0GAIgASgJEiUKCGxhbmd1YWdlGAMgASgOMhMuY29tbW9uLnYxLkxhbmd1YWdlIi4KC1dvcmRGb3JtUmVmEgwKBHRleHQYASABKAkSEQoJd29yZF90eXBlGAIgASgJIjoKEUNyZWF0ZVdvcmRSZXF1ZXN0EiUKBHdvcmQYASABKAsyDS5kaWN0LnYxLldvcmRCCPpCBYoBAhABInwKEExpc3RXb3Jkc1JlcXVlc3QSMAoKcGFnaW5hdGlvbhgBIAEoCzIcLmNvbW1vbi52MS5QYWdpbmF0aW9uUmVxdWVzdBIlCghsYW5ndWFnZRgCIAEoDjITLmNvbW1vbi52MS5MYW5ndWFnZRIPCgdrZXl3b3JkGAMgASgJImQKEUxpc3RXb3Jkc1Jlc3BvbnNlEjEKCnBhZ2luYXRpb24YASABKAsyHS5jb21tb24udjEuUGFnaW5hdGlvblJlc3BvbnNlEhwKBXdvcmRzGAIgAygLMg0uZGljdC52MS5Xb3JkIlEKEUxvb2t1cFdvcmRSZXF1ZXN0EhUKBHdvcmQYASABKAlCB/pCBHICEAESJQoIbGFuZ3VhZ2UYAiABKA4yEy5jb21tb24udjEuTGFuZ3VhZ2UygQQKC1dvcmRTZXJ2aWNlElEKCkNyZWF0ZVdvcmQSGi5kaWN0LnYxLkNyZWF0ZVdvcmRSZXF1ZXN0Gg0uZGljdC52MS5Xb3JkIhiC0+STAhI6ASoiDS9hcGkvdjEvd29yZHMSSQoKVXBkYXRlV29yZBINLmRpY3QudjEuV29yZBoNLmRpY3QudjEuV29yZCIdgtPkkwIXOgEqGhIvYXBpL3YxL3dvcmRzL3tpZH0SSgoHR2V0V29yZBIULmNvbW1vbi52MS5JRFJlcXVlc3QaDS5kaWN0LnYxLldvcmQiGoLT5JMCFBISL2FwaS92MS93b3Jkcy97aWR9ElkKCUxpc3RXb3JkcxIZLmRpY3QudjEuTGlzdFdvcmRzUmVxdWVzdBoaLmRpY3QudjEuTGlzdFdvcmRzUmVzcG9uc2UiFYLT5JMCDxINL2FwaS92MS93b3JkcxJVCgpMb29rdXBXb3JkEhouZGljdC52MS5Mb29rdXBXb3JkUmVxdWVzdBoNLmRpY3QudjEuV29yZCIcgtPkkwIWEhQvYXBpL3YxL3dvcmRzOmxvb2t1cBJWCgpEZWxldGVXb3JkEhQuY29tbW9uLnYxLklEUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eSIagtPkkwIUKhIvYXBpL3YxL3dvcmRzL3tpZH1ChwEKC2NvbS5kaWN0LnYxQglXb3JkUHJvdG9QAVowZ2l0aHViLmNvbS9lc2xzb2Z0L3ZvY25ldC9hcGkvZ2VuL2RpY3QvdjE7ZGljdHYxogIDRFhYqgIHRGljdC5WMcoCB0RpY3RcVjHiAhNEaWN0XFYxXEdQQk1ldGFkYXRh6gIIRGljdDo6VjFiBnByb3RvMw", [file_common_v1_types, file_google_api_annotations, file_google_protobuf_empty, file_google_protobuf_timestamp, file_validate_validate]);
+  fileDesc("ChJkaWN0L3YxL3dvcmQucHJvdG8SB2RpY3QudjEirwMKBFdvcmQSCgoCaWQYASABKAMSDAoEdGV4dBgCIAEoCRIlCghsYW5ndWFnZRgDIAEoDjITLmNvbW1vbi52MS5MYW5ndWFnZRIRCgl3b3JkX3R5cGUYBCABKAkSDQoFbGVtbWEYBSABKAkSJAoJcGhvbmV0aWNzGAYgAygLMhEuZGljdC52MS5QaG9uZXRpYxIoCgtkZWZpbml0aW9ucxgHIAMoCzITLmRpY3QudjEuRGVmaW5pdGlvbhIMCgR0YWdzGAggAygJEg8KB3BocmFzZXMYCSADKAkSJgoJc2VudGVuY2VzGAogAygLMhMudm9jbmV0LnYxLlNlbnRlbmNlEiMKBWZvcm1zGB4gAygLMhQuZGljdC52MS5Xb3JkRm9ybVJlZhIoCglyZWxhdGlvbnMYHyADKAsyFS5kaWN0LnYxLldvcmRSZWxhdGlvbhIuCgpjcmVhdGVkX2F0GGQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GGUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIoCghQaG9uZXRpYxILCgNpcGEYASABKAkSDwoHZGlhbGVjdBgCIAEoCSJOCgpEZWZpbml0aW9uEgsKA3BvcxgBIAEoCRIMCgR0ZXh0GAIgASgJEiUKCGxhbmd1YWdlGAMgASgOMhMuY29tbW9uLnYxLkxhbmd1YWdlIi4KC1dvcmRGb3JtUmVmEgwKBHRleHQYASABKAkSEQoJd29yZF90eXBlGAIgASgJIkwKDFdvcmRSZWxhdGlvbhIMCgR3b3JkGAEgASgJEi4KDXJlbGF0aW9uX3R5cGUYAiABKA4yFy5jb21tb24udjEuUmVsYXRpb25UeXBlIjoKEUNyZWF0ZVdvcmRSZXF1ZXN0EiUKBHdvcmQYASABKAsyDS5kaWN0LnYxLldvcmRCCPpCBYoBAhABIosBChBMaXN0V29yZHNSZXF1ZXN0EjAKCnBhZ2luYXRpb24YASABKAsyHC5jb21tb24udjEuUGFnaW5hdGlvblJlcXVlc3QSJQoIbGFuZ3VhZ2UYAiABKA4yEy5jb21tb24udjEuTGFuZ3VhZ2USDwoHa2V5d29yZBgDIAEoCRINCgV3b3JkcxgEIAMoCSJkChFMaXN0V29yZHNSZXNwb25zZRIxCgpwYWdpbmF0aW9uGAEgASgLMh0uY29tbW9uLnYxLlBhZ2luYXRpb25SZXNwb25zZRIcCgV3b3JkcxgCIAMoCzINLmRpY3QudjEuV29yZCJRChFMb29rdXBXb3JkUmVxdWVzdBIVCgR3b3JkGAEgASgJQgf6QgRyAhABEiUKCGxhbmd1YWdlGAIgASgOMhMuY29tbW9uLnYxLkxhbmd1YWdlMoEECgtXb3JkU2VydmljZRJRCgpDcmVhdGVXb3JkEhouZGljdC52MS5DcmVhdGVXb3JkUmVxdWVzdBoNLmRpY3QudjEuV29yZCIYgtPkkwISOgEqIg0vYXBpL3YxL3dvcmRzEkkKClVwZGF0ZVdvcmQSDS5kaWN0LnYxLldvcmQaDS5kaWN0LnYxLldvcmQiHYLT5JMCFzoBKhoSL2FwaS92MS93b3Jkcy97aWR9EkoKB0dldFdvcmQSFC5jb21tb24udjEuSURSZXF1ZXN0Gg0uZGljdC52MS5Xb3JkIhqC0+STAhQSEi9hcGkvdjEvd29yZHMve2lkfRJZCglMaXN0V29yZHMSGS5kaWN0LnYxLkxpc3RXb3Jkc1JlcXVlc3QaGi5kaWN0LnYxLkxpc3RXb3Jkc1Jlc3BvbnNlIhWC0+STAg8SDS9hcGkvdjEvd29yZHMSVQoKTG9va3VwV29yZBIaLmRpY3QudjEuTG9va3VwV29yZFJlcXVlc3QaDS5kaWN0LnYxLldvcmQiHILT5JMCFhIUL2FwaS92MS93b3Jkczpsb29rdXASVgoKRGVsZXRlV29yZBIULmNvbW1vbi52MS5JRFJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkiGoLT5JMCFCoSL2FwaS92MS93b3Jkcy97aWR9QocBCgtjb20uZGljdC52MUIJV29yZFByb3RvUAFaMGdpdGh1Yi5jb20vZXNsc29mdC92b2NuZXQvYXBpL2dlbi9kaWN0L3YxO2RpY3R2MaICA0RYWKoCB0RpY3QuVjHKAgdEaWN0XFYx4gITRGljdFxWMVxHUEJNZXRhZGF0YeoCCERpY3Q6OlYxYgZwcm90bzM", [file_common_v1_types, file_google_api_annotations, file_google_protobuf_empty, file_google_protobuf_timestamp, file_validate_validate, file_vocnet_v1_vocnet]);
 
 /**
  * @generated from message dict.v1.Word
@@ -72,11 +74,25 @@ export type Word = Message<"dict.v1.Word"> & {
   definitions: Definition[];
 
   /**
-   * Difficulty / semantic / topic tags
+   * Level / topic tags
    *
    * @generated from field: repeated string tags = 8;
    */
   tags: string[];
+
+  /**
+   * Common phrases/idioms containing this word
+   *
+   * @generated from field: repeated string phrases = 9;
+   */
+  phrases: string[];
+
+  /**
+   * Example sentences
+   *
+   * @generated from field: repeated vocnet.v1.Sentence sentences = 10;
+   */
+  sentences: Sentence[];
 
   /**
    * When this entry is a lemma (word_type == "lemma"), forms lists all other surface forms
@@ -89,6 +105,13 @@ export type Word = Message<"dict.v1.Word"> & {
    * @generated from field: repeated dict.v1.WordFormRef forms = 30;
    */
   forms: WordFormRef[];
+
+  /**
+   * Relationships to other words (e.g. synonyms, antonyms)
+   *
+   * @generated from field: repeated dict.v1.WordRelation relations = 31;
+   */
+  relations: WordRelation[];
 
   /**
    * Creation timestamp
@@ -200,6 +223,32 @@ export const WordFormRefSchema: GenMessage<WordFormRef> = /*@__PURE__*/
   messageDesc(file_dict_v1_word, 3);
 
 /**
+ * Word-to-word relationship for building vocabulary networks
+ *
+ * @generated from message dict.v1.WordRelation
+ */
+export type WordRelation = Message<"dict.v1.WordRelation"> & {
+  /**
+   * @generated from field: string word = 1;
+   */
+  word: string;
+
+  /**
+   * Type of relationship
+   *
+   * @generated from field: common.v1.RelationType relation_type = 2;
+   */
+  relationType: RelationType;
+};
+
+/**
+ * Describes the message dict.v1.WordRelation.
+ * Use `create(WordRelationSchema)` to create a new message.
+ */
+export const WordRelationSchema: GenMessage<WordRelation> = /*@__PURE__*/
+  messageDesc(file_dict_v1_word, 4);
+
+/**
  * CreateWord request (creates either a lemma entry or a derived/inflected form)
  *
  * @generated from message dict.v1.CreateWordRequest
@@ -216,7 +265,7 @@ export type CreateWordRequest = Message<"dict.v1.CreateWordRequest"> & {
  * Use `create(CreateWordRequestSchema)` to create a new message.
  */
 export const CreateWordRequestSchema: GenMessage<CreateWordRequest> = /*@__PURE__*/
-  messageDesc(file_dict_v1_word, 4);
+  messageDesc(file_dict_v1_word, 5);
 
 /**
  * ListWords request
@@ -242,6 +291,13 @@ export type ListWordsRequest = Message<"dict.v1.ListWordsRequest"> & {
    * @generated from field: string keyword = 3;
    */
   keyword: string;
+
+  /**
+   * Filter by exact words (multiple values allowed)
+   *
+   * @generated from field: repeated string words = 4;
+   */
+  words: string[];
 };
 
 /**
@@ -249,7 +305,7 @@ export type ListWordsRequest = Message<"dict.v1.ListWordsRequest"> & {
  * Use `create(ListWordsRequestSchema)` to create a new message.
  */
 export const ListWordsRequestSchema: GenMessage<ListWordsRequest> = /*@__PURE__*/
-  messageDesc(file_dict_v1_word, 5);
+  messageDesc(file_dict_v1_word, 6);
 
 /**
  * @generated from message dict.v1.ListWordsResponse
@@ -271,7 +327,7 @@ export type ListWordsResponse = Message<"dict.v1.ListWordsResponse"> & {
  * Use `create(ListWordsResponseSchema)` to create a new message.
  */
 export const ListWordsResponseSchema: GenMessage<ListWordsResponse> = /*@__PURE__*/
-  messageDesc(file_dict_v1_word, 6);
+  messageDesc(file_dict_v1_word, 7);
 
 /**
  * LookupWordRequest performs an exact text lookup in specified language (default en)
@@ -297,7 +353,7 @@ export type LookupWordRequest = Message<"dict.v1.LookupWordRequest"> & {
  * Use `create(LookupWordRequestSchema)` to create a new message.
  */
 export const LookupWordRequestSchema: GenMessage<LookupWordRequest> = /*@__PURE__*/
-  messageDesc(file_dict_v1_word, 7);
+  messageDesc(file_dict_v1_word, 8);
 
 /**
  * @generated from service dict.v1.WordService

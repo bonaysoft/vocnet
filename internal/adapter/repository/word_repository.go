@@ -2,14 +2,12 @@ package repository
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/eslsoft/vocnet/internal/entity"
 	db "github.com/eslsoft/vocnet/internal/infrastructure/database/db"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -34,7 +32,10 @@ func (r *wordRepository) Create(ctx context.Context, word *entity.Word) (*entity
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	params := toCreateWordParams(word)
+	params, err := toCreateWordParams(word)
+	if err != nil {
+		return nil, err
+	}
 	row, err := r.q.CreateWord(ctx, params)
 	if err != nil {
 		return nil, translateWordError(err)
@@ -46,7 +47,11 @@ func (r *wordRepository) Update(ctx context.Context, word *entity.Word) (*entity
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	row, err := r.q.UpdateWord(ctx, toUpdateWordParams(word))
+	params, err := toUpdateWordParams(word)
+	if err != nil {
+		return nil, err
+	}
+	row, err := r.q.UpdateWord(ctx, params)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, entity.ErrVocNotFound
@@ -81,7 +86,7 @@ func (r *wordRepository) Lookup(ctx context.Context, text string, language entit
 		}
 		return nil, fmt.Errorf("lookup word: %w", err)
 	}
-	return mapLookupWord(rec)
+	return mapDBWord(rec), nil
 }
 
 func (r *wordRepository) List(ctx context.Context, filter entity.WordFilter) ([]*entity.Word, int64, error) {
@@ -91,10 +96,15 @@ func (r *wordRepository) List(ctx context.Context, filter entity.WordFilter) ([]
 	keyword := filter.Keyword
 	language := filter.Language.Code()
 	wordType := filter.WordType
+	wordsFilter := normalizeLowerStrings(filter.Words)
+	if wordsFilter == nil {
+		wordsFilter = []string{}
+	}
 	rows, err := r.q.ListWords(ctx, db.ListWordsParams{
 		LanguageFilter: language,
 		KeywordFilter:  keyword,
 		WordTypeFilter: wordType,
+		WordsFilter:    wordsFilter,
 		ResultOffset:   filter.Offset,
 		ResultLimit:    filter.Limit,
 	})
@@ -109,6 +119,7 @@ func (r *wordRepository) List(ctx context.Context, filter entity.WordFilter) ([]
 		LanguageFilter: language,
 		KeywordFilter:  keyword,
 		WordTypeFilter: wordType,
+		WordsFilter:    wordsFilter,
 	})
 	if err != nil {
 		return nil, 0, fmt.Errorf("count words: %w", err)
@@ -152,10 +163,14 @@ func mapDBWord(row db.Word) *entity.Word {
 		Text:        row.Text,
 		Language:    entity.ParseLanguage(row.Language),
 		WordType:    row.WordType,
-		Phonetics:   copyPhonetics(row.Phonetics),
+		Phonetics:   row.Phonetics,
 		Definitions: row.Meanings,
 		Tags:        row.Tags,
+		Phrases:     row.Phrases,
+		Sentences:   row.Sentences,
+		Relations:   row.Relations,
 		CreatedAt:   timeValue(row.CreatedAt),
+		UpdatedAt:   timeValue(row.UpdatedAt),
 	}
 	if row.Lemma.Valid {
 		lemma := row.Lemma.String
@@ -164,57 +179,42 @@ func mapDBWord(row db.Word) *entity.Word {
 	return word
 }
 
-func mapLookupWord(row db.LookupWordRow) (*entity.Word, error) {
-	word := &entity.Word{
-		ID:        row.ID,
-		Text:      row.Text,
-		Language:  entity.ParseLanguage(row.Language),
-		WordType:  row.WordType,
-		Tags:      row.Tags,
-		CreatedAt: timeValue(row.CreatedAt),
-	}
-	if row.Lemma.Valid {
-		lemma := row.Lemma.String
-		word.Lemma = &lemma
-	}
-	if len(row.Phonetics) > 0 {
-		var phonetics []entity.WordPhonetic
-		if err := json.Unmarshal(row.Phonetics, &phonetics); err == nil && len(phonetics) > 0 {
-			word.Phonetics = phonetics
-		}
-	}
-	if len(row.Meanings) > 0 {
-		var ms []entity.WordDefinition
-		if err := json.Unmarshal(row.Meanings, &ms); err == nil {
-			word.Definitions = ms
-		}
-	}
-	return word, nil
-}
-
-func toCreateWordParams(word *entity.Word) db.CreateWordParams {
+func toCreateWordParams(word *entity.Word) (db.CreateWordParams, error) {
 	return db.CreateWordParams{
 		Text:      word.Text,
 		Language:  entity.NormalizeLanguage(word.Language).Code(),
 		WordType:  defaultWordType(word.WordType),
 		Lemma:     stringPtrToPgText(word.Lemma),
-		Phonetics: toDBPhonetics(word.Phonetics),
+		Phonetics: word.Phonetics,
 		Meanings:  word.Definitions,
 		Tags:      word.Tags,
-	}
+		Phrases:   word.Phrases,
+		Sentences: word.Sentences,
+		Relations: word.Relations,
+	}, nil
 }
 
-func toUpdateWordParams(word *entity.Word) db.UpdateWordParams {
+func toUpdateWordParams(word *entity.Word) (db.UpdateWordParams, error) {
 	return db.UpdateWordParams{
 		ID:        word.ID,
 		Text:      word.Text,
 		Language:  entity.NormalizeLanguage(word.Language).Code(),
 		WordType:  defaultWordType(word.WordType),
 		Lemma:     stringPtrToPgText(word.Lemma),
-		Phonetics: toDBPhonetics(word.Phonetics),
+		Phonetics: word.Phonetics,
 		Meanings:  word.Definitions,
 		Tags:      word.Tags,
+		Phrases:   word.Phrases,
+		Sentences: word.Sentences,
+		Relations: word.Relations,
+	}, nil
+}
+
+func defaultWordType(vt string) string {
+	if vt == "" {
+		return "lemma"
 	}
+	return vt
 }
 
 func stringPtrToPgText(val *string) pgtype.Text {
@@ -238,24 +238,6 @@ func timeValue(ts pgtype.Timestamptz) (t time.Time) {
 	return
 }
 
-func copyPhonetics(src types.WordPhonetics) []entity.WordPhonetic {
-	if len(src) == 0 {
-		return nil
-	}
-	out := make([]entity.WordPhonetic, len(src))
-	copy(out, []entity.WordPhonetic(src))
-	return out
-}
-
-func toDBPhonetics(src []entity.WordPhonetic) types.WordPhonetics {
-	if len(src) == 0 {
-		return nil
-	}
-	out := make(types.WordPhonetics, len(src))
-	copy(out, types.WordPhonetics(src))
-	return out
-}
-
 func translateWordError(err error) error {
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
@@ -270,11 +252,4 @@ func translateWordError(err error) error {
 		return entity.ErrVocNotFound
 	}
 	return err
-}
-
-func defaultWordType(vt string) string {
-	if vt == "" {
-		return "lemma"
-	}
-	return vt
 }

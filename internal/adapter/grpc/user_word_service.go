@@ -119,10 +119,14 @@ func protoToEntityUserWord(in *vocnetv1.UserWord) *entity.UserWord {
 		uw.UpdatedAt = ts.AsTime()
 	}
 	for _, s := range in.GetSentences() {
-		uw.Sentences = append(uw.Sentences, entity.Sentence{Text: s.GetText(), Source: int32(s.GetSource())})
+		uw.Sentences = append(uw.Sentences, entity.Sentence{
+			Text:      s.GetText(),
+			Source:    int32(s.GetSource()),
+			SourceRef: strings.TrimSpace(s.GetSourceRef()),
+		})
 	}
 	for _, rel := range in.GetRelations() {
-		uw.Relations = append(uw.Relations, entity.WordRelation{
+		uw.Relations = append(uw.Relations, entity.UserWordRelation{
 			Word:         rel.GetWord(),
 			RelationType: int32(rel.GetRelationType()),
 			Note:         rel.GetNote(),
@@ -150,12 +154,16 @@ func entityToProtoUserWord(in *entity.UserWord) *vocnetv1.UserWord {
 		UpdatedAt:    timestampOrNil(in.UpdatedAt),
 	}
 	for _, s := range in.Sentences {
-		out.Sentences = append(out.Sentences, &vocnetv1.Sentence{Text: s.Text, Source: vocnetv1.SourceType(s.Source)})
+		out.Sentences = append(out.Sentences, &vocnetv1.Sentence{
+			Text:      s.Text,
+			Source:    vocnetv1.SourceType(s.Source),
+			SourceRef: s.SourceRef},
+		)
 	}
 	for _, rel := range in.Relations {
-		out.Relations = append(out.Relations, &vocnetv1.WordRelation{
+		out.Relations = append(out.Relations, &vocnetv1.UserWordRelation{
 			Word:         rel.Word,
-			RelationType: vocnetv1.RelationType(rel.RelationType),
+			RelationType: commonv1.RelationType(rel.RelationType),
 			Note:         rel.Note,
 			CreatedBy:    rel.CreatedBy,
 			CreatedAt:    timestampOrNil(rel.CreatedAt),
