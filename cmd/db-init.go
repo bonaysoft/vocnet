@@ -470,21 +470,36 @@ func extractLeadingPOS(line string) (string, string) {
 	lower := strings.ToLower(s)
 	// 候选列表按长度排序，先匹配更长的 (vt, vi 在 v 之前)
 	candidates := []string{"vt", "vi", "adj", "adv", "prep", "pron", "conj", "interj", "int", "num", "art", "aux", "abbr", "pref", "suf", "noun", "n", "v"}
-	// 规范化：把 'noun' 归一为 'n'
-	for _, c := range candidates {
-		if strings.HasPrefix(lower, c+".") || strings.HasPrefix(lower, c+" ") {
-			// 去掉标记 + 可选的 '.' + 空格
-			rest := strings.TrimSpace(s[len(c):])
-			if strings.HasPrefix(rest, ".") {
-				rest = strings.TrimSpace(rest[1:])
+	for _, cand := range candidates {
+		matchLen := len(cand)
+		if len(lower) < matchLen {
+			continue
+		}
+		if strings.HasPrefix(lower, cand) {
+			rest := s[matchLen:]
+			if rest == "" {
+				// 完整行只包含候选字符串，不视为标记
+				break
 			}
-			if c == "noun" {
-				c = "n"
+			next := rest[0]
+			if next != '.' && next != ' ' && next != '\t' {
+				continue
 			}
-			return fmt.Sprintf("%s.", c), rest
+			// 跳过可选的 '.' 以及随后的空白
+			rest = strings.TrimSpace(strings.TrimPrefix(rest, "."))
+			pos := normalizePOSWithDot(cand)
+			return pos, rest
 		}
 	}
 	return "", s
+}
+
+func normalizePOSWithDot(pos string) string {
+	switch pos {
+	case "noun":
+		pos = "n"
+	}
+	return pos + "."
 }
 
 func splitLines(s string) []string {

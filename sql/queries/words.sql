@@ -59,7 +59,12 @@ FROM words
 WHERE (sqlc.arg(language_filter) = '' OR language = sqlc.arg(language_filter))
   AND (sqlc.arg(keyword_filter) = '' OR text ILIKE sqlc.arg(keyword_filter) || '%')
   AND (sqlc.arg(word_type_filter) = '' OR word_type = sqlc.arg(word_type_filter))
-ORDER BY text ASC
+ORDER BY
+  CASE
+    WHEN sqlc.arg(keyword_filter) <> '' AND lower(text) = lower(sqlc.arg(keyword_filter)) THEN 0
+    ELSE 1
+  END,
+  text ASC
 LIMIT sqlc.arg(result_limit) OFFSET sqlc.arg(result_offset);
 
 -- name: ListWordsByPOS :many
