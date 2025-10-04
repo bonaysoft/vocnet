@@ -198,10 +198,10 @@ public struct Common_V1_PaginationRequest: Sendable {
   // methods supported on all messages.
 
   /// Number of items to return (default: 20, max: 100)
-  public var limit: Int32 = 0
+  public var pageNo: Int32 = 0
 
   /// Number of items to skip (default: 0)
-  public var offset: Int32 = 0
+  public var pageSize: Int32 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -269,7 +269,7 @@ extension Common_V1_IDRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
 
 extension Common_V1_PaginationRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PaginationRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}limit\0\u{1}offset\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}page_no\0\u{3}page_size\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -277,26 +277,26 @@ extension Common_V1_PaginationRequest: SwiftProtobuf.Message, SwiftProtobuf._Mes
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularInt32Field(value: &self.limit) }()
-      case 2: try { try decoder.decodeSingularInt32Field(value: &self.offset) }()
+      case 1: try { try decoder.decodeSingularInt32Field(value: &self.pageNo) }()
+      case 2: try { try decoder.decodeSingularInt32Field(value: &self.pageSize) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.limit != 0 {
-      try visitor.visitSingularInt32Field(value: self.limit, fieldNumber: 1)
+    if self.pageNo != 0 {
+      try visitor.visitSingularInt32Field(value: self.pageNo, fieldNumber: 1)
     }
-    if self.offset != 0 {
-      try visitor.visitSingularInt32Field(value: self.offset, fieldNumber: 2)
+    if self.pageSize != 0 {
+      try visitor.visitSingularInt32Field(value: self.pageSize, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Common_V1_PaginationRequest, rhs: Common_V1_PaginationRequest) -> Bool {
-    if lhs.limit != rhs.limit {return false}
-    if lhs.offset != rhs.offset {return false}
+    if lhs.pageNo != rhs.pageNo {return false}
+    if lhs.pageSize != rhs.pageSize {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

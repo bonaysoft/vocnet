@@ -60,14 +60,11 @@ func (s *UserWordServiceServer) UpdateUserWordMastery(ctx context.Context, req *
 func (s *UserWordServiceServer) ListUserWords(ctx context.Context, req *connect.Request[vocnetv1.ListUserWordsRequest]) (*connect.Response[vocnetv1.ListUserWordsResponse], error) {
 	msg := req.Msg
 	userID := int64(1000)
-	pagination := msg.GetPagination()
 	filter := entity.UserWordFilter{
-		UserID:  userID,
-		Keyword: msg.GetKeyword(),
-	}
-	if pagination != nil {
-		filter.Limit = pagination.GetLimit()
-		filter.Offset = pagination.GetOffset()
+		Pagination: convertPagination(req.Msg.GetPagination()),
+		UserID:     userID,
+		Keyword:    msg.GetKeyword(),
+		Words:      msg.GetWords(),
 	}
 
 	items, total, err := s.uc.ListUserWords(ctx, filter)
@@ -78,7 +75,7 @@ func (s *UserWordServiceServer) ListUserWords(ctx context.Context, req *connect.
 	resp := &vocnetv1.ListUserWordsResponse{
 		Pagination: &commonv1.PaginationResponse{
 			Total:  int32(total),
-			PageNo: computePageNo(filter),
+			PageNo: filter.PageNo,
 		},
 	}
 	for _, item := range items {
@@ -246,13 +243,6 @@ func timestampOrNil(t time.Time) *timestamppb.Timestamp {
 		return nil
 	}
 	return timestamppb.New(t)
-}
-
-func computePageNo(filter entity.UserWordFilter) int32 {
-	if filter.Limit <= 0 {
-		return 1
-	}
-	return filter.Offset/filter.Limit + 1
 }
 
 func toStatus(err error) error {

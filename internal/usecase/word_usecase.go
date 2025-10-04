@@ -23,7 +23,7 @@ type WordUsecase interface {
 const (
 	_defaultLanguage = entity.LanguageEnglish
 	_defaultLimit    = int32(20)
-	_maxLimit        = int32(100)
+	_maxLimit        = int32(10000)
 )
 
 type wordUsecase struct {
@@ -82,15 +82,6 @@ func (u *wordUsecase) Lookup(ctx context.Context, lemma string, language entity.
 }
 
 func (u *wordUsecase) List(ctx context.Context, filter entity.WordFilter) ([]*entity.Word, int64, error) {
-	if filter.Limit <= 0 {
-		filter.Limit = _defaultLimit
-	}
-	if filter.Limit > _maxLimit {
-		filter.Limit = _maxLimit
-	}
-	if filter.Offset < 0 {
-		filter.Offset = 0
-	}
 	filter.Keyword = strings.TrimSpace(filter.Keyword)
 	filter.Words = normalizeFilterWords(filter.Words)
 	return u.repo.List(ctx, filter)

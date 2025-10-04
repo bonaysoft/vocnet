@@ -109,12 +109,12 @@ func (r *fakeUserWordRepo) List(ctx context.Context, filter entity.UserWordFilte
 	})
 
 	total := int64(len(filtered))
-	start := int(filter.Offset)
+	start := int(filter.Offset())
 	if start >= len(filtered) {
 		return []*entity.UserWord{}, total, nil
 	}
 	end := len(filtered)
-	if limit := int(filter.Limit); limit > 0 && start+limit < end {
+	if limit := int(filter.PageSize); limit > 0 && start+limit < end {
 		end = start + limit
 	}
 	result := make([]*entity.UserWord, 0, end-start)

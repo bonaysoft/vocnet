@@ -62,12 +62,12 @@ type WordRelation struct {
 
 // WordFilter defines filtering options when listing vocabulary entries.
 type WordFilter struct {
+	Pagination
+
 	Language Language
 	Keyword  string
 	WordType string
 	Words    []string
-	Limit    int32
-	Offset   int32
 }
 
 // NormalizeLanguage ensures the language falls back to a supported value (defaults to English).

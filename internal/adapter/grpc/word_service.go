@@ -68,14 +68,12 @@ func (s *WordServiceServer) ListWords(ctx context.Context, req *connect.Request[
 		return nil, status.Error(codes.InvalidArgument, "request required")
 	}
 	filter := entity.WordFilter{
-		Language: fromProtoLanguage(req.Msg.GetLanguage()),
-		Keyword:  req.Msg.GetKeyword(),
-		Words:    append([]string(nil), req.Msg.GetWords()...),
+		Pagination: convertPagination(req.Msg.GetPagination()),
+		Language:   fromProtoLanguage(req.Msg.GetLanguage()),
+		Keyword:    req.Msg.GetKeyword(),
+		Words:      req.Msg.GetWords(),
 	}
-	if page := req.Msg.GetPagination(); page != nil {
-		filter.Limit = page.GetLimit()
-		filter.Offset = page.GetOffset()
-	}
+
 	items, total, err := s.uc.List(ctx, filter)
 	if err != nil {
 		return nil, mapWordError(err)
@@ -87,7 +85,7 @@ func (s *WordServiceServer) ListWords(ctx context.Context, req *connect.Request[
 		}),
 		Pagination: &commonv1.PaginationResponse{
 			Total:  int32(total),
-			PageNo: makePageNo(filter.Limit, filter.Offset),
+			PageNo: filter.PageNo,
 		},
 	}), nil
 }

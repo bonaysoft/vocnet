@@ -56,11 +56,11 @@ type UserWord struct {
 
 // UserWordFilter allows searching for user words in repository implementations.
 type UserWordFilter struct {
+	Pagination
+
 	UserID  int64
 	Keyword string
 	Words   []string
-	Limit   int32
-	Offset  int32
 }
 
 // Normalize ensures defaults & constraints before persistence.

@@ -103,12 +103,7 @@ func (u *userWordUsecase) ListUserWords(ctx context.Context, filter entity.UserW
 	if filter.UserID <= 0 {
 		return nil, 0, entity.ErrInvalidUserID
 	}
-	if filter.Limit <= 0 {
-		filter.Limit = 20
-	}
-	if filter.Offset < 0 {
-		filter.Offset = 0
-	}
+
 	filter.Keyword = strings.TrimSpace(filter.Keyword)
 	filter.Words = normalizeUserWordFilter(filter.Words)
 	return u.repo.List(ctx, filter)

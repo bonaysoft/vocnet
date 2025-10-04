@@ -105,8 +105,8 @@ func (r *wordRepository) List(ctx context.Context, filter entity.WordFilter) ([]
 		KeywordFilter:  keyword,
 		WordTypeFilter: wordType,
 		WordsFilter:    wordsFilter,
-		ResultOffset:   filter.Offset,
-		ResultLimit:    filter.Limit,
+		ResultOffset:   filter.Offset(),
+		ResultLimit:    filter.PageSize,
 	})
 	if err != nil {
 		return nil, 0, fmt.Errorf("list words: %w", err)

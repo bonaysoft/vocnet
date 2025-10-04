@@ -29,8 +29,8 @@ message IDRequest {
 
 // Pagination request parameters
 message PaginationRequest {
-  int32 limit = 1; // Number of items to return (default: 20, max: 100)
-  int32 offset = 2; // Number of items to skip (default: 0)
+  int32 page_no = 1; // Number of items to return (default: 20, max: 100)
+  int32 page_size = 2; // Number of items to skip (default: 0)
 }
 
 // Pagination response metadata
