@@ -2,7 +2,6 @@ CREATE TABLE IF NOT EXISTS user_words (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     word TEXT NOT NULL,
-    word_normalized TEXT GENERATED ALWAYS AS (lower(word)) STORED,
     language TEXT NOT NULL DEFAULT 'en',
     mastery_listen SMALLINT NOT NULL DEFAULT 0,
     mastery_read SMALLINT NOT NULL DEFAULT 0,
@@ -20,9 +19,8 @@ CREATE TABLE IF NOT EXISTS user_words (
     relations JSONB NOT NULL DEFAULT '[]'::jsonb,
     created_by TEXT NOT NULL DEFAULT '',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT uq_user_words_user_word UNIQUE (user_id, word_normalized)
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_words_user ON user_words(user_id, updated_at DESC);
-CREATE INDEX IF NOT EXISTS idx_user_words_word_lower ON user_words(word_normalized);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_user_words_word_lower ON user_words (user_id, lower(word));

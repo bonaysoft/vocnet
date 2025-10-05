@@ -71,6 +71,9 @@ func FromPbWord(in *dictv1.Word) *entity.Word {
 }
 
 func ToPbWord(v *entity.Word) *dictv1.Word {
+	if v == nil {
+		return nil
+	}
 	pv := &dictv1.Word{
 		Id:       v.ID,
 		Text:     v.Text,

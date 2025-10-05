@@ -82,7 +82,7 @@ func (r *fakeUserWordRepo) FindByWord(ctx context.Context, userID int64, word st
 	return nil, nil
 }
 
-func (r *fakeUserWordRepo) List(ctx context.Context, query *repository.ListUserWordQuery) ([]*entity.UserWord, int64, error) {
+func (r *fakeUserWordRepo) List(ctx context.Context, query *repository.ListUserWordQuery) ([]entity.UserWord, int64, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, 0, err
 	}
@@ -124,7 +124,7 @@ func (r *fakeUserWordRepo) List(ctx context.Context, query *repository.ListUserW
 	}
 	start := int((pageNo - 1) * pageSize)
 	if start >= len(filtered) {
-		return []*entity.UserWord{}, total, nil
+		return []entity.UserWord{}, total, nil
 	}
 	if start < 0 {
 		start = 0
@@ -133,9 +133,11 @@ func (r *fakeUserWordRepo) List(ctx context.Context, query *repository.ListUserW
 	if end > len(filtered) {
 		end = len(filtered)
 	}
-	result := make([]*entity.UserWord, 0, end-start)
+	result := make([]entity.UserWord, 0, end-start)
 	for _, item := range filtered[start:end] {
-		result = append(result, cloneUserWord(item))
+		if clone := cloneUserWord(item); clone != nil {
+			result = append(result, *clone)
+		}
 	}
 	return result, total, nil
 }
@@ -172,14 +174,6 @@ func cloneUserWord(src *entity.UserWord) *entity.UserWord {
 		return nil
 	}
 	copy := *src
-	if src.Review.LastReviewAt != nil {
-		last := *src.Review.LastReviewAt
-		copy.Review.LastReviewAt = &last
-	}
-	if src.Review.NextReviewAt != nil {
-		next := *src.Review.NextReviewAt
-		copy.Review.NextReviewAt = &next
-	}
 	if src.Sentences != nil {
 		copy.Sentences = append([]entity.Sentence(nil), src.Sentences...)
 	}

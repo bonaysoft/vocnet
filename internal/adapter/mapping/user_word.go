@@ -98,8 +98,8 @@ func ToPbMastery(in entity.MasteryBreakdown) *vocnetv1.MasteryBreakdown {
 
 func ToPbReview(in entity.ReviewTiming) *vocnetv1.ReviewTiming {
 	return &vocnetv1.ReviewTiming{
-		LastReviewAt: timestamppb.New(*in.LastReviewAt),
-		NextReviewAt: timestamppb.New(*in.NextReviewAt),
+		LastReviewAt: timestamppb.New(in.LastReviewAt),
+		NextReviewAt: timestamppb.New(in.NextReviewAt),
 		IntervalDays: in.IntervalDays,
 		FailCount:    in.FailCount,
 	}

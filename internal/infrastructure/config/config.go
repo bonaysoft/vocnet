@@ -29,6 +29,7 @@ type DatabaseConfig struct {
 	User     string `mapstructure:"user"`
 	Password string `mapstructure:"password"`
 	SSLMode  string `mapstructure:"sslmode"`
+	LogSQL   bool   `mapstructure:"log_sql"`
 }
 
 // LogConfig holds logging configuration
@@ -80,6 +81,7 @@ func setDefaults() {
 	viper.SetDefault("database.user", "postgres")
 	viper.SetDefault("database.password", "postgres")
 	viper.SetDefault("database.sslmode", "disable")
+	viper.SetDefault("database.log_sql", true)
 
 	// Log defaults
 	viper.SetDefault("log.level", "info")

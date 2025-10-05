@@ -20,6 +20,6 @@ type UserWordRepository interface {
 	Update(ctx context.Context, userWord *entity.UserWord) (*entity.UserWord, error)
 	GetByID(ctx context.Context, userID, id int64) (*entity.UserWord, error)
 	FindByWord(ctx context.Context, userID int64, word string) (*entity.UserWord, error)
-	List(ctx context.Context, filter *ListUserWordQuery) ([]*entity.UserWord, int64, error)
+	List(ctx context.Context, filter *ListUserWordQuery) ([]entity.UserWord, int64, error)
 	Delete(ctx context.Context, userID, id int64) error
 }

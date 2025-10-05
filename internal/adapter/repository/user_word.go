@@ -69,7 +69,7 @@ func (r *userWordRepository) FindByWord(ctx context.Context, userID int64, word 
 	if word == "" {
 		return nil, nil
 	}
-	row, err := r.q.FindUserWordByWord(ctx, db.FindUserWordByWordParams{UserID: userID, Lower: word})
+	row, err := r.q.FindUserWordByWord(ctx, db.FindUserWordByWordParams{UserID: userID, Word: word})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -79,7 +79,7 @@ func (r *userWordRepository) FindByWord(ctx context.Context, userID int64, word 
 	return mapDBUserWord(row), nil
 }
 
-func (r *userWordRepository) List(ctx context.Context, query *repository.ListUserWordQuery) ([]*entity.UserWord, int64, error) {
+func (r *userWordRepository) List(ctx context.Context, query *repository.ListUserWordQuery) ([]entity.UserWord, int64, error) {
 	var p db.ListUserWordsParams
 	if err := filterexpr.Bind(query, &p, listUserWordsSchema); err != nil {
 		return nil, 0, err
@@ -88,10 +88,36 @@ func (r *userWordRepository) List(ctx context.Context, query *repository.ListUse
 	p.UserID = query.UserID
 	p.Offset = query.Offset()
 	p.Limit = query.PageSize
-	fmt.Println(p)
+
 	rows, err := r.q.ListUserWords(ctx, p)
 	if err != nil {
 		return nil, 0, fmt.Errorf("list user words: %w", err)
+	}
+
+	userWords := make([]entity.UserWord, 0, len(rows))
+	for _, row := range rows {
+		userWord := mapDBUserWord(row.UserWord)
+		if row.DictFound && row.DictID != 0 {
+			dict := db.Word{
+				ID:        row.DictID,
+				Text:      row.DictText,
+				Language:  row.DictLanguage,
+				WordType:  row.DictWordType,
+				Lemma:     row.DictLemma,
+				Phonetics: row.DictPhonetics,
+				Meanings:  row.DictMeanings,
+				Tags:      row.DictTags,
+				Phrases:   row.DictPhrases,
+				Sentences: row.DictSentences,
+				Relations: row.DictRelations,
+				CreatedAt: row.DictCreatedAt,
+				UpdatedAt: row.DictUpdatedAt,
+			}
+			if word := mapDBWord(dict); word != nil {
+				userWord.WordContent = word
+			}
+		}
+		userWords = append(userWords, *userWord)
 	}
 
 	total, err := r.q.CountUserWords(ctx, db.CountUserWordsParams{
@@ -100,15 +126,9 @@ func (r *userWordRepository) List(ctx context.Context, query *repository.ListUse
 		Words:   p.Words,
 	})
 	if err != nil {
-		return nil, 0, fmt.Errorf("list user words: %w", err)
+		return nil, 0, fmt.Errorf("count user words: %w", err)
 	}
 
-	userWords := make([]*entity.UserWord, 0, len(rows))
-	for _, row := range rows {
-		userWord := mapDBUserWord(row.UserWord)
-		userWord.WordContent = mapDBWord(row.Word)
-		userWords = append(userWords, userWord)
-	}
 	return userWords, total, nil
 }
 
@@ -149,7 +169,6 @@ func toCreateParams(uw *entity.UserWord) db.CreateUserWordParams {
 		MasteryRead:        int16(uw.Mastery.Read),
 		MasterySpell:       int16(uw.Mastery.Spell),
 		MasteryPronounce:   int16(uw.Mastery.Pronounce),
-		MasteryUse:         int16(uw.Mastery.Use),
 		MasteryOverall:     uw.Mastery.Overall,
 		ReviewLastReviewAt: toPgTimestamp(uw.Review.LastReviewAt),
 		ReviewNextReviewAt: toPgTimestamp(uw.Review.NextReviewAt),
@@ -160,8 +179,8 @@ func toCreateParams(uw *entity.UserWord) db.CreateUserWordParams {
 		Sentences:          uw.Sentences,
 		Relations:          uw.Relations,
 		CreatedBy:          uw.CreatedBy,
-		CreatedAt:          toPgTimestamp(ptrTime(uw.CreatedAt)),
-		UpdatedAt:          toPgTimestamp(ptrTime(uw.UpdatedAt)),
+		CreatedAt:          toPgTimestamp(uw.CreatedAt),
+		UpdatedAt:          toPgTimestamp(uw.UpdatedAt),
 	}
 }
 
@@ -175,7 +194,6 @@ func toUpdateParams(uw *entity.UserWord) db.UpdateUserWordParams {
 		MasteryRead:        int16(uw.Mastery.Read),
 		MasterySpell:       int16(uw.Mastery.Spell),
 		MasteryPronounce:   int16(uw.Mastery.Pronounce),
-		MasteryUse:         int16(uw.Mastery.Use),
 		MasteryOverall:     uw.Mastery.Overall,
 		ReviewLastReviewAt: toPgTimestamp(uw.Review.LastReviewAt),
 		ReviewNextReviewAt: toPgTimestamp(uw.Review.NextReviewAt),
@@ -186,7 +204,7 @@ func toUpdateParams(uw *entity.UserWord) db.UpdateUserWordParams {
 		Sentences:          uw.Sentences,
 		Relations:          uw.Relations,
 		CreatedBy:          uw.CreatedBy,
-		UpdatedAt:          toPgTimestamp(ptrTime(uw.UpdatedAt)),
+		UpdatedAt:          toPgTimestamp(uw.UpdatedAt),
 	}
 }
 
@@ -201,7 +219,6 @@ func mapDBUserWord(row db.UserWord) *entity.UserWord {
 			Read:      int32(row.MasteryRead),
 			Spell:     int32(row.MasterySpell),
 			Pronounce: int32(row.MasteryPronounce),
-			Use:       int32(row.MasteryUse),
 			Overall:   row.MasteryOverall,
 		},
 		Review:     entity.ReviewTiming{IntervalDays: row.ReviewIntervalDays, FailCount: row.ReviewFailCount},
@@ -211,12 +228,10 @@ func mapDBUserWord(row db.UserWord) *entity.UserWord {
 		CreatedBy:  row.CreatedBy,
 	}
 	if row.ReviewLastReviewAt.Valid {
-		reviewTime := row.ReviewLastReviewAt.Time
-		uw.Review.LastReviewAt = &reviewTime
+		uw.Review.LastReviewAt = row.ReviewLastReviewAt.Time
 	}
 	if row.ReviewNextReviewAt.Valid {
-		reviewTime := row.ReviewNextReviewAt.Time
-		uw.Review.NextReviewAt = &reviewTime
+		uw.Review.NextReviewAt = row.ReviewNextReviewAt.Time
 	}
 	if row.Notes.Valid {
 		uw.Notes = row.Notes.String
@@ -230,11 +245,11 @@ func mapDBUserWord(row db.UserWord) *entity.UserWord {
 	return uw
 }
 
-func toPgTimestamp(t *time.Time) pgtype.Timestamptz {
-	if t == nil || t.IsZero() {
+func toPgTimestamp(t time.Time) pgtype.Timestamptz {
+	if t.IsZero() {
 		return pgtype.Timestamptz{Valid: false}
 	}
-	return pgtype.Timestamptz{Time: *t, Valid: true}
+	return pgtype.Timestamptz{Time: t, Valid: true}
 }
 
 func toPgText(s string) pgtype.Text {
@@ -242,11 +257,4 @@ func toPgText(s string) pgtype.Text {
 		return pgtype.Text{Valid: false}
 	}
 	return pgtype.Text{String: s, Valid: true}
-}
-
-func ptrTime(t time.Time) *time.Time {
-	if t.IsZero() {
-		return nil
-	}
-	return &t
 }

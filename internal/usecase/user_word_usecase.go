@@ -13,7 +13,7 @@ import (
 type UserWordUsecase interface {
 	CollectWord(ctx context.Context, userID int64, word *entity.UserWord) (*entity.UserWord, error)
 	UpdateMastery(ctx context.Context, userID, id int64, mastery entity.MasteryBreakdown, review entity.ReviewTiming, notes string) (*entity.UserWord, error)
-	ListUserWords(ctx context.Context, filter *repository.ListUserWordQuery) ([]*entity.UserWord, int64, error)
+	ListUserWords(ctx context.Context, filter *repository.ListUserWordQuery) ([]entity.UserWord, int64, error)
 	DeleteUserWord(ctx context.Context, userID, id int64) error
 }
 
@@ -48,6 +48,9 @@ func (u *userWordUsecase) CollectWord(ctx context.Context, userID int64, word *e
 	if existing != nil {
 		// Update lightweight fields on duplicate collects.
 		existing.QueryCount++
+		if word.Language.Code() != "" {
+			existing.Language = entity.NormalizeLanguage(word.Language)
+		}
 		if word.Notes != "" {
 			existing.Notes = word.Notes
 		}
@@ -95,7 +98,7 @@ func (u *userWordUsecase) UpdateMastery(ctx context.Context, userID, id int64, m
 	return u.repo.Update(ctx, existing)
 }
 
-func (u *userWordUsecase) ListUserWords(ctx context.Context, query *repository.ListUserWordQuery) ([]*entity.UserWord, int64, error) {
+func (u *userWordUsecase) ListUserWords(ctx context.Context, query *repository.ListUserWordQuery) ([]entity.UserWord, int64, error) {
 	return u.repo.List(ctx, query)
 }
 

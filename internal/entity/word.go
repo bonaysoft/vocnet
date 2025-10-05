@@ -5,22 +5,21 @@ import (
 )
 
 type Word struct {
-	ID        int64          `json:"id"` // 自增ID, 基础CRUD用
-	Text      string         `json:"text"`
-	Language  Language       `json:"language"`
-	WordType  string         `json:"word_type"`       // lemma, past, pp (past participle), ing (present participle), 3sg (third person singular), plural, comparative, superlative, variant, derived, other
-	Lemma     *string        `json:"lemma,omitempty"` // nil if this row itself is the lemma
-	Phonetics []WordPhonetic `json:"phonetics,omitempty"`
+	ID          int64
+	Text        string
+	Language    Language
+	WordType    string  // lemma, past, pp (past participle), ing (present participle), 3sg (third person singular), plural, comparative, superlative, variant, derived, other
+	Lemma       *string // nil if this row itself is the lemma
+	Phonetics   []WordPhonetic
+	Definitions []WordDefinition // only populated for lemma rows
+	Tags        []string
+	Phrases     []Phrase
+	Sentences   []Sentence
+	Forms       []WordFormRef // if this is lemma: other forms; if not lemma: empty
+	Relations   []WordRelation
 
-	Definitions []WordDefinition `json:"definitions,omitempty"` // only populated for lemma rows
-	Tags        []string         `json:"tags,omitempty"`
-	Phrases     []Phrase         `json:"phrases,omitempty"`
-	Sentences   []Sentence       `json:"sentences,omitempty"`
-	Relations   []WordRelation   `json:"relations,omitempty"`
-	Forms       []WordFormRef    `json:"forms,omitempty"` // if this is lemma: other forms; if not lemma: empty
-
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type WordPhonetic struct {

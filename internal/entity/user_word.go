@@ -27,14 +27,13 @@ type MasteryBreakdown struct {
 	Read      int32
 	Spell     int32
 	Pronounce int32
-	Use       int32
 	Overall   int32
 }
 
 // ReviewTiming represents spaced repetition metadata for a user word.
 type ReviewTiming struct {
-	LastReviewAt *time.Time
-	NextReviewAt *time.Time
+	LastReviewAt time.Time
+	NextReviewAt time.Time
 	IntervalDays int32
 	FailCount    int32
 }

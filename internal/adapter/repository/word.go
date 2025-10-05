@@ -97,10 +97,10 @@ func (r *wordRepository) List(ctx context.Context, query *repository.ListWordQue
 		words = append(words, mapDBWord(row))
 	}
 	total, err := r.q.CountWords(ctx, db.CountWordsParams{
-		LanguageFilter: p.LanguageFilter,
-		KeywordFilter:  p.KeywordFilter,
-		WordTypeFilter: p.WordTypeFilter,
-		WordsFilter:    p.WordsFilter,
+		Language: p.Language,
+		Keyword:  p.Keyword,
+		WordType: p.WordType,
+		Words:    p.Words,
 	})
 	if err != nil {
 		return nil, 0, fmt.Errorf("count words: %w", err)

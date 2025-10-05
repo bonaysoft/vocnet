@@ -81,7 +81,7 @@ func (s *UserWordServiceServer) ListUserWords(ctx context.Context, req *connect.
 		},
 	}
 	for _, item := range items {
-		resp.UserWords = append(resp.UserWords, mapping.ToPbUserWord(item))
+		resp.UserWords = append(resp.UserWords, mapping.ToPbUserWord(&item))
 	}
 
 	return connect.NewResponse(resp), nil
