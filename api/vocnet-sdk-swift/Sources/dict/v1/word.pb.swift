@@ -199,14 +199,11 @@ public struct Dict_V1_ListWordsRequest: Sendable {
   /// Clears the value of `pagination`. Subsequent reads from it will return its default value.
   public mutating func clearPagination() {self._pagination = nil}
 
-  /// Filter by language
-  public var language: Common_V1_Language = .unspecified
+  /// filtering options using CEL expressions
+  public var filter: String = String()
 
-  /// Filter by keyword in text (partial match)
-  public var keyword: String = String()
-
-  /// Filter by exact words (multiple values allowed)
-  public var words: [String] = []
+  /// ordering options. e.g. "word asc", "mastery.overall desc"
+  public var orderBy: String = String()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -538,7 +535,7 @@ extension Dict_V1_CreateWordRequest: SwiftProtobuf.Message, SwiftProtobuf._Messa
 
 extension Dict_V1_ListWordsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListWordsRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pagination\0\u{1}language\0\u{1}keyword\0\u{1}words\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pagination\0\u{1}filter\0\u{3}order_by\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -547,9 +544,8 @@ extension Dict_V1_ListWordsRequest: SwiftProtobuf.Message, SwiftProtobuf._Messag
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularMessageField(value: &self._pagination) }()
-      case 2: try { try decoder.decodeSingularEnumField(value: &self.language) }()
-      case 3: try { try decoder.decodeSingularStringField(value: &self.keyword) }()
-      case 4: try { try decoder.decodeRepeatedStringField(value: &self.words) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.filter) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.orderBy) }()
       default: break
       }
     }
@@ -563,23 +559,19 @@ extension Dict_V1_ListWordsRequest: SwiftProtobuf.Message, SwiftProtobuf._Messag
     try { if let v = self._pagination {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     } }()
-    if self.language != .unspecified {
-      try visitor.visitSingularEnumField(value: self.language, fieldNumber: 2)
+    if !self.filter.isEmpty {
+      try visitor.visitSingularStringField(value: self.filter, fieldNumber: 2)
     }
-    if !self.keyword.isEmpty {
-      try visitor.visitSingularStringField(value: self.keyword, fieldNumber: 3)
-    }
-    if !self.words.isEmpty {
-      try visitor.visitRepeatedStringField(value: self.words, fieldNumber: 4)
+    if !self.orderBy.isEmpty {
+      try visitor.visitSingularStringField(value: self.orderBy, fieldNumber: 3)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Dict_V1_ListWordsRequest, rhs: Dict_V1_ListWordsRequest) -> Bool {
     if lhs._pagination != rhs._pagination {return false}
-    if lhs.language != rhs.language {return false}
-    if lhs.keyword != rhs.keyword {return false}
-    if lhs.words != rhs.words {return false}
+    if lhs.filter != rhs.filter {return false}
+    if lhs.orderBy != rhs.orderBy {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

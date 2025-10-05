@@ -10,6 +10,7 @@ import (
 	"github.com/eslsoft/vocnet/api/gen/dict/v1/dictv1connect"
 	vocnetv1 "github.com/eslsoft/vocnet/api/gen/vocnet/v1"
 	"github.com/eslsoft/vocnet/internal/entity"
+	"github.com/eslsoft/vocnet/internal/pkg/filterexpr"
 	"github.com/eslsoft/vocnet/internal/usecase"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -58,13 +59,21 @@ func (s *UserWordServiceServer) UpdateUserWordMastery(ctx context.Context, req *
 }
 
 func (s *UserWordServiceServer) ListUserWords(ctx context.Context, req *connect.Request[vocnetv1.ListUserWordsRequest]) (*connect.Response[vocnetv1.ListUserWordsResponse], error) {
+	if req == nil || req.Msg == nil {
+		return nil, status.Error(codes.InvalidArgument, "request required")
+	}
 	msg := req.Msg
 	userID := int64(1000)
+	bindings := listUserWordsBindings{}
+	if err := filterexpr.BindCELTo(msg.GetFilter(), &bindings, listUserWordsSchema); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	filter := entity.UserWordFilter{
-		Pagination: convertPagination(req.Msg.GetPagination()),
+		Pagination: convertPagination(msg.GetPagination()),
 		UserID:     userID,
-		Keyword:    msg.GetKeyword(),
-		Words:      msg.GetWords(),
+		Keyword:    strings.TrimSpace(bindings.Keyword),
+		Words:      bindings.Words,
 	}
 
 	items, total, err := s.uc.ListUserWords(ctx, filter)

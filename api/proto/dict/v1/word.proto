@@ -65,9 +65,10 @@ message CreateWordRequest {
 // ListWords request
 message ListWordsRequest {
   common.v1.PaginationRequest pagination = 1;
-  common.v1.Language language = 2; // Filter by language
-  string keyword = 3; // Filter by keyword in text (partial match)
-  repeated string words = 4; // Filter by exact words (multiple values allowed)
+  // filtering options using CEL expressions
+  string filter = 2;
+  // ordering options. e.g. "word asc", "mastery.overall desc"
+  string order_by = 3;
 }
 
 message ListWordsResponse {

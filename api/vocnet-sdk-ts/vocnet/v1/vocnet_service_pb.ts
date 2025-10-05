@@ -18,7 +18,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file vocnet/v1/vocnet_service.proto.
  */
 export const file_vocnet_v1_vocnet_service: GenFile = /*@__PURE__*/
-  fileDesc("Ch52b2NuZXQvdjEvdm9jbmV0X3NlcnZpY2UucHJvdG8SCXZvY25ldC52MSI3ChJDb2xsZWN0V29yZFJlcXVlc3QSIQoEd29yZBgBIAEoCzITLnZvY25ldC52MS5Vc2VyV29yZCJ1ChxVcGRhdGVVc2VyV29yZE1hc3RlcnlSZXF1ZXN0EhgKB3dvcmRfaWQYASABKANCB/pCBCICIAASLAoHbWFzdGVyeRgCIAEoCzIbLnZvY25ldC52MS5NYXN0ZXJ5QnJlYWtkb3duEg0KBW5vdGVzGAMgASgJImgKFExpc3RVc2VyV29yZHNSZXF1ZXN0EjAKCnBhZ2luYXRpb24YASABKAsyHC5jb21tb24udjEuUGFnaW5hdGlvblJlcXVlc3QSDwoHa2V5d29yZBgFIAEoCRINCgV3b3JkcxgGIAMoCSJzChVMaXN0VXNlcldvcmRzUmVzcG9uc2USMQoKcGFnaW5hdGlvbhgBIAEoCzIdLmNvbW1vbi52MS5QYWdpbmF0aW9uUmVzcG9uc2USJwoKdXNlcl93b3JkcxgCIAMoCzITLnZvY25ldC52MS5Vc2VyV29yZDLVAwoPVXNlcldvcmRTZXJ2aWNlEmIKC0NvbGxlY3RXb3JkEh0udm9jbmV0LnYxLkNvbGxlY3RXb3JkUmVxdWVzdBoTLnZvY25ldC52MS5Vc2VyV29yZCIfgtPkkwIZOgEqIhQvYXBpL3YxL3ZvY25ldC93b3JkcxKIAQoVVXBkYXRlVXNlcldvcmRNYXN0ZXJ5Eicudm9jbmV0LnYxLlVwZGF0ZVVzZXJXb3JkTWFzdGVyeVJlcXVlc3QaEy52b2NuZXQudjEuVXNlcldvcmQiMYLT5JMCKzoBKjImL2FwaS92MS92b2NuZXQvd29yZHMve3dvcmRfaWR9L21hc3RlcnkScAoNTGlzdFVzZXJXb3JkcxIfLnZvY25ldC52MS5MaXN0VXNlcldvcmRzUmVxdWVzdBogLnZvY25ldC52MS5MaXN0VXNlcldvcmRzUmVzcG9uc2UiHILT5JMCFhIUL2FwaS92MS92b2NuZXQvd29yZHMSYQoORGVsZXRlVXNlcldvcmQSFC5jb21tb24udjEuSURSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5IiGC0+STAhsqGS9hcGkvdjEvdm9jbmV0L3dvcmRzL3tpZH1CngEKDWNvbS52b2NuZXQudjFCElZvY25ldFNlcnZpY2VQcm90b1ABWjRnaXRodWIuY29tL2VzbHNvZnQvdm9jbmV0L2FwaS9nZW4vdm9jbmV0L3YxO3ZvY25ldHYxogIDVlhYqgIJVm9jbmV0LlYxygIJVm9jbmV0XFYx4gIVVm9jbmV0XFYxXEdQQk1ldGFkYXRh6gIKVm9jbmV0OjpWMWIGcHJvdG8z", [file_common_v1_types, file_google_api_annotations, file_google_protobuf_empty, file_validate_validate, file_vocnet_v1_vocnet]);
+  fileDesc("Ch52b2NuZXQvdjEvdm9jbmV0X3NlcnZpY2UucHJvdG8SCXZvY25ldC52MSI3ChJDb2xsZWN0V29yZFJlcXVlc3QSIQoEd29yZBgBIAEoCzITLnZvY25ldC52MS5Vc2VyV29yZCJ1ChxVcGRhdGVVc2VyV29yZE1hc3RlcnlSZXF1ZXN0EhgKB3dvcmRfaWQYASABKANCB/pCBCICIAASLAoHbWFzdGVyeRgCIAEoCzIbLnZvY25ldC52MS5NYXN0ZXJ5QnJlYWtkb3duEg0KBW5vdGVzGAMgASgJImoKFExpc3RVc2VyV29yZHNSZXF1ZXN0EjAKCnBhZ2luYXRpb24YASABKAsyHC5jb21tb24udjEuUGFnaW5hdGlvblJlcXVlc3QSDgoGZmlsdGVyGAIgASgJEhAKCG9yZGVyX2J5GAMgASgJInMKFUxpc3RVc2VyV29yZHNSZXNwb25zZRIxCgpwYWdpbmF0aW9uGAEgASgLMh0uY29tbW9uLnYxLlBhZ2luYXRpb25SZXNwb25zZRInCgp1c2VyX3dvcmRzGAIgAygLMhMudm9jbmV0LnYxLlVzZXJXb3JkMtUDCg9Vc2VyV29yZFNlcnZpY2USYgoLQ29sbGVjdFdvcmQSHS52b2NuZXQudjEuQ29sbGVjdFdvcmRSZXF1ZXN0GhMudm9jbmV0LnYxLlVzZXJXb3JkIh+C0+STAhk6ASoiFC9hcGkvdjEvdm9jbmV0L3dvcmRzEogBChVVcGRhdGVVc2VyV29yZE1hc3RlcnkSJy52b2NuZXQudjEuVXBkYXRlVXNlcldvcmRNYXN0ZXJ5UmVxdWVzdBoTLnZvY25ldC52MS5Vc2VyV29yZCIxgtPkkwIrOgEqMiYvYXBpL3YxL3ZvY25ldC93b3Jkcy97d29yZF9pZH0vbWFzdGVyeRJwCg1MaXN0VXNlcldvcmRzEh8udm9jbmV0LnYxLkxpc3RVc2VyV29yZHNSZXF1ZXN0GiAudm9jbmV0LnYxLkxpc3RVc2VyV29yZHNSZXNwb25zZSIcgtPkkwIWEhQvYXBpL3YxL3ZvY25ldC93b3JkcxJhCg5EZWxldGVVc2VyV29yZBIULmNvbW1vbi52MS5JRFJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkiIYLT5JMCGyoZL2FwaS92MS92b2NuZXQvd29yZHMve2lkfUKeAQoNY29tLnZvY25ldC52MUISVm9jbmV0U2VydmljZVByb3RvUAFaNGdpdGh1Yi5jb20vZXNsc29mdC92b2NuZXQvYXBpL2dlbi92b2NuZXQvdjE7dm9jbmV0djGiAgNWWFiqAglWb2NuZXQuVjHKAglWb2NuZXRcVjHiAhVWb2NuZXRcVjFcR1BCTWV0YWRhdGHqAgpWb2NuZXQ6OlYxYgZwcm90bzM", [file_common_v1_types, file_google_api_annotations, file_google_protobuf_empty, file_validate_validate, file_vocnet_v1_vocnet]);
 
 /**
  * CollectWord request - main API for adding words to user vocabulary
@@ -75,25 +75,25 @@ export const UpdateUserWordMasteryRequestSchema: GenMessage<UpdateUserWordMaster
  */
 export type ListUserWordsRequest = Message<"vocnet.v1.ListUserWordsRequest"> & {
   /**
+   * pagination parameters
+   *
    * @generated from field: common.v1.PaginationRequest pagination = 1;
    */
   pagination?: PaginationRequest;
 
   /**
-   * Filtering options
+   * filtering options using CEL expressions
    *
-   * Search in word text or notes
-   *
-   * @generated from field: string keyword = 5;
+   * @generated from field: string filter = 2;
    */
-  keyword: string;
+  filter: string;
 
   /**
-   * Exact match filter for word texts
+   * ordering options. e.g. "word asc", "mastery.overall desc"
    *
-   * @generated from field: repeated string words = 6;
+   * @generated from field: string order_by = 3;
    */
-  words: string[];
+  orderBy: string;
 };
 
 /**

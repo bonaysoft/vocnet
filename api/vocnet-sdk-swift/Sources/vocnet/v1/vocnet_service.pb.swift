@@ -74,6 +74,7 @@ public struct Vocnet_V1_ListUserWordsRequest: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  /// pagination parameters
   public var pagination: Common_V1_PaginationRequest {
     get {return _pagination ?? Common_V1_PaginationRequest()}
     set {_pagination = newValue}
@@ -83,11 +84,11 @@ public struct Vocnet_V1_ListUserWordsRequest: Sendable {
   /// Clears the value of `pagination`. Subsequent reads from it will return its default value.
   public mutating func clearPagination() {self._pagination = nil}
 
-  /// Filtering options
-  public var keyword: String = String()
+  /// filtering options using CEL expressions
+  public var filter: String = String()
 
-  /// Exact match filter for word texts
-  public var words: [String] = []
+  /// ordering options. e.g. "word asc", "mastery.overall desc"
+  public var orderBy: String = String()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -203,7 +204,7 @@ extension Vocnet_V1_UpdateUserWordMasteryRequest: SwiftProtobuf.Message, SwiftPr
 
 extension Vocnet_V1_ListUserWordsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListUserWordsRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pagination\0\u{2}\u{4}keyword\0\u{1}words\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pagination\0\u{1}filter\0\u{3}order_by\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -212,8 +213,8 @@ extension Vocnet_V1_ListUserWordsRequest: SwiftProtobuf.Message, SwiftProtobuf._
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularMessageField(value: &self._pagination) }()
-      case 5: try { try decoder.decodeSingularStringField(value: &self.keyword) }()
-      case 6: try { try decoder.decodeRepeatedStringField(value: &self.words) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.filter) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.orderBy) }()
       default: break
       }
     }
@@ -227,19 +228,19 @@ extension Vocnet_V1_ListUserWordsRequest: SwiftProtobuf.Message, SwiftProtobuf._
     try { if let v = self._pagination {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     } }()
-    if !self.keyword.isEmpty {
-      try visitor.visitSingularStringField(value: self.keyword, fieldNumber: 5)
+    if !self.filter.isEmpty {
+      try visitor.visitSingularStringField(value: self.filter, fieldNumber: 2)
     }
-    if !self.words.isEmpty {
-      try visitor.visitRepeatedStringField(value: self.words, fieldNumber: 6)
+    if !self.orderBy.isEmpty {
+      try visitor.visitSingularStringField(value: self.orderBy, fieldNumber: 3)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Vocnet_V1_ListUserWordsRequest, rhs: Vocnet_V1_ListUserWordsRequest) -> Bool {
     if lhs._pagination != rhs._pagination {return false}
-    if lhs.keyword != rhs.keyword {return false}
-    if lhs.words != rhs.words {return false}
+    if lhs.filter != rhs.filter {return false}
+    if lhs.orderBy != rhs.orderBy {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

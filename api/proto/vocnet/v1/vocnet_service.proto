@@ -51,15 +51,15 @@ message UpdateUserWordMasteryRequest {
 
 // ListUserWords request with comprehensive filtering
 message ListUserWordsRequest {
+  // pagination parameters
   common.v1.PaginationRequest pagination = 1;
-
-  // Filtering options
-  string keyword = 5; // Search in word text or notes
-  repeated string words = 6; // Exact match filter for word texts
+  // filtering options using CEL expressions
+  string filter = 2;
+  // ordering options. e.g. "word asc", "mastery.overall desc"
+  string order_by = 3;
 }
 
 message ListUserWordsResponse {
   common.v1.PaginationResponse pagination = 1;
   repeated UserWord user_words = 2;
 }
-

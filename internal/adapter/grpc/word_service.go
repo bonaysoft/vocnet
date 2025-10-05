@@ -11,6 +11,7 @@ import (
 	"github.com/eslsoft/vocnet/api/gen/dict/v1/dictv1connect"
 	vocnetv1 "github.com/eslsoft/vocnet/api/gen/vocnet/v1"
 	"github.com/eslsoft/vocnet/internal/entity"
+	"github.com/eslsoft/vocnet/internal/pkg/filterexpr"
 	"github.com/eslsoft/vocnet/internal/usecase"
 	"github.com/samber/lo"
 	"google.golang.org/grpc/codes"
@@ -67,11 +68,17 @@ func (s *WordServiceServer) ListWords(ctx context.Context, req *connect.Request[
 	if req.Msg == nil {
 		return nil, status.Error(codes.InvalidArgument, "request required")
 	}
+	msg := req.Msg
+	bindings := listWordsBindings{}
+	if err := filterexpr.BindCELTo(msg.GetFilter(), &bindings, listWordsSchema); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	filter := entity.WordFilter{
-		Pagination: convertPagination(req.Msg.GetPagination()),
-		Language:   fromProtoLanguage(req.Msg.GetLanguage()),
-		Keyword:    req.Msg.GetKeyword(),
-		Words:      req.Msg.GetWords(),
+		Pagination: convertPagination(msg.GetPagination()),
+		Keyword:    strings.TrimSpace(bindings.Keyword),
+		WordType:   strings.TrimSpace(bindings.WordType),
+		Words:      bindings.Words,
 	}
 
 	items, total, err := s.uc.List(ctx, filter)
