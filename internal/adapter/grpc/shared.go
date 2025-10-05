@@ -2,12 +2,12 @@ package grpc
 
 import (
 	commonv1 "github.com/eslsoft/vocnet/api/gen/common/v1"
-	"github.com/eslsoft/vocnet/internal/entity"
+	"github.com/eslsoft/vocnet/internal/repository"
 )
 
 const _maxPageSize = 10000
 
-func convertPagination(p *commonv1.PaginationRequest) entity.Pagination {
+func convertPagination(p *commonv1.PaginationRequest) repository.Pagination {
 	pageNo := p.GetPageNo()
 	if pageNo <= 0 {
 		pageNo = 1
@@ -20,5 +20,5 @@ func convertPagination(p *commonv1.PaginationRequest) entity.Pagination {
 		pageSize = _maxPageSize
 	}
 
-	return entity.Pagination{PageNo: pageNo, PageSize: pageSize}
+	return repository.Pagination{PageNo: pageNo, PageSize: pageSize}
 }

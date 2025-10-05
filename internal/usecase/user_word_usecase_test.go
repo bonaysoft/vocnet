@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"sort"
 	"strings"
 	"sync"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/eslsoft/vocnet/internal/entity"
+	"github.com/eslsoft/vocnet/internal/repository"
 )
 
 type fakeUserWordRepo struct {
@@ -80,21 +82,24 @@ func (r *fakeUserWordRepo) FindByWord(ctx context.Context, userID int64, word st
 	return nil, nil
 }
 
-func (r *fakeUserWordRepo) List(ctx context.Context, filter entity.UserWordFilter) ([]*entity.UserWord, int64, error) {
+func (r *fakeUserWordRepo) List(ctx context.Context, query *repository.ListUserWordQuery) ([]*entity.UserWord, int64, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, 0, err
+	}
+	if query == nil {
+		return nil, 0, errors.New("list query required")
 	}
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
+	keyword := strings.ToLower(strings.TrimSpace(extractKeyword(query.Filter)))
 	var filtered []*entity.UserWord
-	lowerKeyword := strings.ToLower(strings.TrimSpace(filter.Keyword))
 	for _, item := range r.items {
-		if item.UserID != filter.UserID {
+		if item.UserID != query.UserID {
 			continue
 		}
-		if lowerKeyword != "" {
-			if !strings.Contains(strings.ToLower(item.Word), lowerKeyword) && !strings.Contains(strings.ToLower(item.Notes), lowerKeyword) {
+		if keyword != "" {
+			if !strings.Contains(strings.ToLower(item.Word), keyword) && !strings.Contains(strings.ToLower(item.Notes), keyword) {
 				continue
 			}
 		}
@@ -109,13 +114,24 @@ func (r *fakeUserWordRepo) List(ctx context.Context, filter entity.UserWordFilte
 	})
 
 	total := int64(len(filtered))
-	start := int(filter.Offset())
+	pageNo := query.PageNo
+	if pageNo <= 0 {
+		pageNo = 1
+	}
+	pageSize := query.PageSize
+	if pageSize <= 0 {
+		pageSize = int32(len(filtered))
+	}
+	start := int((pageNo - 1) * pageSize)
 	if start >= len(filtered) {
 		return []*entity.UserWord{}, total, nil
 	}
-	end := len(filtered)
-	if limit := int(filter.PageSize); limit > 0 && start+limit < end {
-		end = start + limit
+	if start < 0 {
+		start = 0
+	}
+	end := start + int(pageSize)
+	if end > len(filtered) {
+		end = len(filtered)
 	}
 	result := make([]*entity.UserWord, 0, end-start)
 	for _, item := range filtered[start:end] {
@@ -278,8 +294,12 @@ func TestListUserWordsFiltersByKeyword(t *testing.T) {
 	_, _ = uc.CollectWord(context.Background(), 5, &entity.UserWord{Word: "Comet", Notes: "space"})
 	_, _ = uc.CollectWord(context.Background(), 5, &entity.UserWord{Word: "Forest", Notes: "trees"})
 
-	filter := entity.UserWordFilter{UserID: 5, Keyword: "tre"}
-	items, total, err := uc.ListUserWords(context.Background(), filter)
+	query := &repository.ListUserWordQuery{
+		Pagination:  repository.Pagination{PageNo: 1, PageSize: 10},
+		FilterOrder: repository.FilterOrder{Filter: "keyword == \"tre\""},
+		UserID:      5,
+	}
+	items, total, err := uc.ListUserWords(context.Background(), query)
 	if err != nil {
 		t.Fatalf("ListUserWords returned error: %v", err)
 	}
@@ -289,4 +309,18 @@ func TestListUserWordsFiltersByKeyword(t *testing.T) {
 	if len(items) != 1 || items[0].Word != "Forest" {
 		t.Fatalf("expected to retrieve Forest entry, got %+v", items)
 	}
+}
+
+func extractKeyword(filter string) string {
+	filter = strings.TrimSpace(filter)
+	if filter == "" {
+		return ""
+	}
+	for _, quote := range []string{"\"", "'"} {
+		s := strings.Split(filter, quote)
+		if len(s) >= 3 {
+			return s[1]
+		}
+	}
+	return strings.Trim(filter, "\"'")
 }

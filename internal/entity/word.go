@@ -62,8 +62,6 @@ type WordRelation struct {
 
 // WordFilter defines filtering options when listing vocabulary entries.
 type WordFilter struct {
-	Pagination
-
 	Language Language
 	Keyword  string
 	WordType string

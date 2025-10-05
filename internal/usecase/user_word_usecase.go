@@ -5,15 +5,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eslsoft/vocnet/internal/adapter/repository"
 	"github.com/eslsoft/vocnet/internal/entity"
+	"github.com/eslsoft/vocnet/internal/repository"
 )
 
 // UserWordUsecase encapsulates business logic for managing user vocabulary entries.
 type UserWordUsecase interface {
 	CollectWord(ctx context.Context, userID int64, word *entity.UserWord) (*entity.UserWord, error)
 	UpdateMastery(ctx context.Context, userID, id int64, mastery entity.MasteryBreakdown, review entity.ReviewTiming, notes string) (*entity.UserWord, error)
-	ListUserWords(ctx context.Context, filter entity.UserWordFilter) ([]*entity.UserWord, int64, error)
+	ListUserWords(ctx context.Context, filter *repository.ListUserWordQuery) ([]*entity.UserWord, int64, error)
 	DeleteUserWord(ctx context.Context, userID, id int64) error
 }
 
@@ -99,14 +99,8 @@ func (u *userWordUsecase) UpdateMastery(ctx context.Context, userID, id int64, m
 	return u.repo.Update(ctx, existing)
 }
 
-func (u *userWordUsecase) ListUserWords(ctx context.Context, filter entity.UserWordFilter) ([]*entity.UserWord, int64, error) {
-	if filter.UserID <= 0 {
-		return nil, 0, entity.ErrInvalidUserID
-	}
-
-	filter.Keyword = strings.TrimSpace(filter.Keyword)
-	filter.Words = normalizeUserWordFilter(filter.Words)
-	return u.repo.List(ctx, filter)
+func (u *userWordUsecase) ListUserWords(ctx context.Context, query *repository.ListUserWordQuery) ([]*entity.UserWord, int64, error) {
+	return u.repo.List(ctx, query)
 }
 
 func (u *userWordUsecase) DeleteUserWord(ctx context.Context, userID, id int64) error {
@@ -114,28 +108,4 @@ func (u *userWordUsecase) DeleteUserWord(ctx context.Context, userID, id int64) 
 		return entity.ErrUserWordNotFound
 	}
 	return u.repo.Delete(ctx, userID, id)
-}
-
-func normalizeUserWordFilter(words []string) []string {
-	if len(words) == 0 {
-		return nil
-	}
-	seen := make(map[string]struct{}, len(words))
-	out := make([]string, 0, len(words))
-	for _, w := range words {
-		trimmed := strings.TrimSpace(w)
-		if trimmed == "" {
-			continue
-		}
-		key := strings.ToLower(trimmed)
-		if _, ok := seen[key]; ok {
-			continue
-		}
-		seen[key] = struct{}{}
-		out = append(out, trimmed)
-	}
-	if len(out) == 0 {
-		return nil
-	}
-	return out
 }

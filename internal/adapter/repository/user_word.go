@@ -8,27 +8,19 @@ import (
 
 	"github.com/eslsoft/vocnet/internal/entity"
 	db "github.com/eslsoft/vocnet/internal/infrastructure/database/db"
+	"github.com/eslsoft/vocnet/internal/repository"
+	"github.com/eslsoft/vocnet/pkg/filterexpr"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
-
-// UserWordRepository abstracts persistence for user words to keep usecases storage agnostic.
-type UserWordRepository interface {
-	Create(ctx context.Context, userWord *entity.UserWord) (*entity.UserWord, error)
-	Update(ctx context.Context, userWord *entity.UserWord) (*entity.UserWord, error)
-	GetByID(ctx context.Context, userID, id int64) (*entity.UserWord, error)
-	FindByWord(ctx context.Context, userID int64, word string) (*entity.UserWord, error)
-	List(ctx context.Context, filter entity.UserWordFilter) ([]*entity.UserWord, int64, error)
-	Delete(ctx context.Context, userID, id int64) error
-}
 
 type userWordRepository struct {
 	q *db.Queries
 }
 
 // NewUserWordRepository constructs a sqlc-backed repository.
-func NewUserWordRepository(q *db.Queries) UserWordRepository {
+func NewUserWordRepository(q *db.Queries) repository.UserWordRepository {
 	return &userWordRepository{q: q}
 }
 
@@ -87,25 +79,25 @@ func (r *userWordRepository) FindByWord(ctx context.Context, userID int64, word 
 	return mapDBUserWord(row), nil
 }
 
-func (r *userWordRepository) List(ctx context.Context, filter entity.UserWordFilter) ([]*entity.UserWord, int64, error) {
-	if err := ctx.Err(); err != nil {
+func (r *userWordRepository) List(ctx context.Context, query *repository.ListUserWordQuery) ([]*entity.UserWord, int64, error) {
+	var p db.ListUserWordsParams
+	if err := filterexpr.Bind(query, &p, listUserWordsSchema); err != nil {
 		return nil, 0, err
 	}
-	words := normalizeLowerStrings(filter.Words)
-	total, err := r.q.CountUserWords(ctx, db.CountUserWordsParams{
-		UserID:  filter.UserID,
-		Keyword: filter.Keyword,
-		Words:   words,
-	})
+
+	p.UserID = query.UserID
+	p.Offset = query.Offset()
+	p.Limit = query.PageSize
+	fmt.Println(p)
+	rows, err := r.q.ListUserWords(ctx, p)
 	if err != nil {
 		return nil, 0, fmt.Errorf("list user words: %w", err)
 	}
-	rows, err := r.q.ListUserWords(ctx, db.ListUserWordsParams{
-		UserID:  filter.UserID,
-		Keyword: filter.Keyword,
-		Words:   words,
-		Offset:  filter.Offset(),
-		Limit:   filter.PageSize,
+
+	total, err := r.q.CountUserWords(ctx, db.CountUserWordsParams{
+		UserID:  p.UserID,
+		Keyword: p.Keyword,
+		Words:   p.Words,
 	})
 	if err != nil {
 		return nil, 0, fmt.Errorf("list user words: %w", err)

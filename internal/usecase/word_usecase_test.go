@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/eslsoft/vocnet/internal/entity"
+	"github.com/eslsoft/vocnet/internal/repository"
 )
 
 // minimal in-memory mock repository for testing forms logic
@@ -28,7 +29,7 @@ func (m *mockVocRepo) GetByID(ctx context.Context, id int64) (*entity.Word, erro
 func (m *mockVocRepo) Lookup(ctx context.Context, text string, language entity.Language) (*entity.Word, error) {
 	return m.word, m.lookupErr
 }
-func (m *mockVocRepo) List(ctx context.Context, filter entity.WordFilter) ([]*entity.Word, int64, error) {
+func (m *mockVocRepo) List(ctx context.Context, filter *repository.ListWordQuery) ([]*entity.Word, int64, error) {
 	return nil, 0, errors.New("not implemented")
 }
 func (m *mockVocRepo) ListFormsByLemma(ctx context.Context, lemma string, language entity.Language) ([]entity.WordFormRef, error) {

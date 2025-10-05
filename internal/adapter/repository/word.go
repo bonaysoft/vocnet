@@ -8,25 +8,16 @@ import (
 
 	"github.com/eslsoft/vocnet/internal/entity"
 	db "github.com/eslsoft/vocnet/internal/infrastructure/database/db"
+	"github.com/eslsoft/vocnet/internal/repository"
+	"github.com/eslsoft/vocnet/pkg/filterexpr"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-// WordRepository defines data access for word entries.
-type WordRepository interface {
-	Create(ctx context.Context, word *entity.Word) (*entity.Word, error)
-	Update(ctx context.Context, word *entity.Word) (*entity.Word, error)
-	GetByID(ctx context.Context, id int64) (*entity.Word, error)
-	Lookup(ctx context.Context, text string, language entity.Language) (*entity.Word, error)
-	List(ctx context.Context, filter entity.WordFilter) ([]*entity.Word, int64, error)
-	Delete(ctx context.Context, id int64) error
-	ListFormsByLemma(ctx context.Context, lemma string, language entity.Language) ([]entity.WordFormRef, error)
-}
-
 type wordRepository struct{ q *db.Queries }
 
-func NewWordRepository(q *db.Queries) WordRepository { return &wordRepository{q: q} }
+func NewWordRepository(q *db.Queries) repository.WordRepository { return &wordRepository{q: q} }
 
 func (r *wordRepository) Create(ctx context.Context, word *entity.Word) (*entity.Word, error) {
 	if err := ctx.Err(); err != nil {
@@ -89,25 +80,15 @@ func (r *wordRepository) Lookup(ctx context.Context, text string, language entit
 	return mapDBWord(rec), nil
 }
 
-func (r *wordRepository) List(ctx context.Context, filter entity.WordFilter) ([]*entity.Word, int64, error) {
-	if err := ctx.Err(); err != nil {
+func (r *wordRepository) List(ctx context.Context, query *repository.ListWordQuery) ([]*entity.Word, int64, error) {
+	var p db.ListWordsParams
+	if err := filterexpr.Bind(query, &p, listWordsSchema); err != nil {
 		return nil, 0, err
 	}
-	keyword := filter.Keyword
-	language := filter.Language.Code()
-	wordType := filter.WordType
-	wordsFilter := normalizeLowerStrings(filter.Words)
-	if wordsFilter == nil {
-		wordsFilter = []string{}
-	}
-	rows, err := r.q.ListWords(ctx, db.ListWordsParams{
-		LanguageFilter: language,
-		KeywordFilter:  keyword,
-		WordTypeFilter: wordType,
-		WordsFilter:    wordsFilter,
-		ResultOffset:   filter.Offset(),
-		ResultLimit:    filter.PageSize,
-	})
+
+	p.Offset = query.Offset()
+	p.Limit = query.PageSize
+	rows, err := r.q.ListWords(ctx, p)
 	if err != nil {
 		return nil, 0, fmt.Errorf("list words: %w", err)
 	}
@@ -116,10 +97,10 @@ func (r *wordRepository) List(ctx context.Context, filter entity.WordFilter) ([]
 		words = append(words, mapDBWord(row))
 	}
 	total, err := r.q.CountWords(ctx, db.CountWordsParams{
-		LanguageFilter: language,
-		KeywordFilter:  keyword,
-		WordTypeFilter: wordType,
-		WordsFilter:    wordsFilter,
+		LanguageFilter: p.LanguageFilter,
+		KeywordFilter:  p.KeywordFilter,
+		WordTypeFilter: p.WordTypeFilter,
+		WordsFilter:    p.WordsFilter,
 	})
 	if err != nil {
 		return nil, 0, fmt.Errorf("count words: %w", err)

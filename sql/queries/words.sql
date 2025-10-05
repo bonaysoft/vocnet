@@ -74,8 +74,25 @@ ORDER BY
     WHEN sqlc.arg(keyword_filter) <> '' AND lower(text) = lower(sqlc.arg(keyword_filter)) THEN 0
     ELSE 1
   END,
-  text ASC
-LIMIT sqlc.arg(result_limit) OFFSET sqlc.arg(result_offset);
+  CASE WHEN sqlc.arg(primary_key) = 'created_at' AND sqlc.arg(primary_desc) THEN created_at END DESC NULLS LAST,
+  CASE WHEN sqlc.arg(primary_key) = 'created_at' AND NOT sqlc.arg(primary_desc) THEN created_at END ASC NULLS LAST,
+  CASE WHEN sqlc.arg(primary_key) = 'updated_at' AND sqlc.arg(primary_desc) THEN updated_at END DESC NULLS LAST,
+  CASE WHEN sqlc.arg(primary_key) = 'updated_at' AND NOT sqlc.arg(primary_desc) THEN updated_at END ASC NULLS LAST,
+  CASE WHEN sqlc.arg(primary_key) = 'text' AND sqlc.arg(primary_desc) THEN text END DESC NULLS LAST,
+  CASE WHEN sqlc.arg(primary_key) = 'text' AND NOT sqlc.arg(primary_desc) THEN text END ASC NULLS LAST,
+  CASE WHEN sqlc.arg(primary_key) = 'id' AND sqlc.arg(primary_desc) THEN id END DESC,
+  CASE WHEN sqlc.arg(primary_key) = 'id' AND NOT sqlc.arg(primary_desc) THEN id END ASC,
+  CASE WHEN sqlc.arg(secondary_key) = 'created_at' AND sqlc.arg(secondary_desc) THEN created_at END DESC NULLS LAST,
+  CASE WHEN sqlc.arg(secondary_key) = 'created_at' AND NOT sqlc.arg(secondary_desc) THEN created_at END ASC NULLS LAST,
+  CASE WHEN sqlc.arg(secondary_key) = 'updated_at' AND sqlc.arg(secondary_desc) THEN updated_at END DESC NULLS LAST,
+  CASE WHEN sqlc.arg(secondary_key) = 'updated_at' AND NOT sqlc.arg(secondary_desc) THEN updated_at END ASC NULLS LAST,
+  CASE WHEN sqlc.arg(secondary_key) = 'text' AND sqlc.arg(secondary_desc) THEN text END DESC NULLS LAST,
+  CASE WHEN sqlc.arg(secondary_key) = 'text' AND NOT sqlc.arg(secondary_desc) THEN text END ASC NULLS LAST,
+  CASE WHEN sqlc.arg(secondary_key) = 'id' AND sqlc.arg(secondary_desc) THEN id END DESC,
+  CASE WHEN sqlc.arg(secondary_key) = 'id' AND NOT sqlc.arg(secondary_desc) THEN id END ASC,
+  id ASC
+LIMIT sqlc.arg('limit')
+OFFSET sqlc.arg('offset');
 
 -- name: ListWordsByPOS :many
 SELECT id, text, language, word_type, lemma, phonetics, meanings, tags, phrases, sentences, relations, created_at, updated_at

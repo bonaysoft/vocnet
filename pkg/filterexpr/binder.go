@@ -12,27 +12,20 @@ import (
 	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
-// FieldKind describes the kind of literal value a field accepts.
-type FieldKind int
+// Msg wraps request DTOs that expose filter and order_by raw inputs.
+type Msg interface {
+	GetFilter() string
+	GetOrderBy() string
+}
+
+// ValueKind describes the kind of literal value a field accepts.
+type ValueKind string
 
 const (
-	KindString FieldKind = iota
-	KindNumber
-	KindTimestamp
+	KindString    ValueKind = "string"
+	KindNumber    ValueKind = "number"
+	KindTimestamp ValueKind = "timestamp"
 )
-
-func (k FieldKind) String() string {
-	switch k {
-	case KindString:
-		return "string"
-	case KindNumber:
-		return "number"
-	case KindTimestamp:
-		return "timestamp"
-	default:
-		return "unknown"
-	}
-}
 
 // Op represents a supported comparison operation.
 type Op string
@@ -48,36 +41,70 @@ const (
 // SetterFunc allows custom assignment of literal values to struct fields.
 type SetterFunc func(field reflect.Value, value any) error
 
-// FieldRule describes how a filter field maps to a params struct field and which operations are allowed.
-type FieldRule struct {
-	Kind   FieldKind
+// FilterField describes how a filter field maps to a params struct field and which operations are allowed.
+type FilterField struct {
+	Expr   string
+	Kind   ValueKind
 	Ops    map[Op]string
 	Setter SetterFunc
 }
 
-// Schema defines the allowed fields for a filter expression.
-type Schema struct {
-	Fields map[string]FieldRule
+// OrderField maps an order key to a SQL expression.
+type OrderField struct {
+	Expr  string
+	Nulls string
+}
+
+// OrderSchema describes ordering defaults and whitelisted keys.
+type OrderSchema struct {
+	DefaultPrimary     string
+	DefaultPrimaryDesc bool
+	FallbackKey        string
+	FallbackDesc       bool
+	Fields             map[string]OrderField
+}
+
+// ResourceSchema aggregates filtering and ordering rules for a resource.
+type ResourceSchema struct {
+	Filter map[string]FilterField
+	Order  OrderSchema
 }
 
 var timeType = reflect.TypeOf(time.Time{})
 
-// BindCELTo parses the provided filter expression and binds recognised predicates into params according to the schema.
-func BindCELTo[T any](filter string, params *T, schema Schema) error {
-	if params == nil {
-		return errors.New("params must not be nil")
+// Bind parses the request filter & order_by and populates the sqlc params struct accordingly.
+func Bind[M Msg, P any](msg M, binding *P, schema ResourceSchema) error {
+	if binding == nil {
+		return errors.New("binding must not be nil")
 	}
 
+	if err := bindFilterTo(binding, msg.GetFilter(), schema.Filter); err != nil {
+		return fmt.Errorf("filter: %w", err)
+	}
+
+	order, err := parseOrderBy(msg.GetOrderBy(), schema.Order)
+	if err != nil {
+		return fmt.Errorf("order_by: %w", err)
+	}
+
+	if err := setOrderParams(binding, order); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func bindFilterTo(binding any, filter string, fields map[string]FilterField) error {
 	filter = strings.TrimSpace(filter)
 	if filter == "" {
 		return nil
 	}
 
-	if len(schema.Fields) == 0 {
-		return errors.New("schema has no fields defined")
+	if len(fields) == 0 {
+		return errors.New("filter schema has no fields defined")
 	}
 
-	env, err := buildEnv(schema)
+	env, err := buildEnv(fields)
 	if err != nil {
 		return err
 	}
@@ -96,14 +123,14 @@ func BindCELTo[T any](filter string, params *T, schema Schema) error {
 		return err
 	}
 
-	paramsVal := reflect.ValueOf(params)
+	paramsVal := reflect.ValueOf(binding)
 	if paramsVal.Kind() != reflect.Ptr || paramsVal.IsNil() {
-		return errors.New("params must be a non-nil pointer")
+		return errors.New("binding must be a non-nil pointer")
 	}
 
 	dest := paramsVal.Elem()
 	if dest.Kind() != reflect.Struct {
-		return errors.New("params must point to a struct")
+		return errors.New("binding must point to a struct")
 	}
 
 	for _, expr := range conjuncts {
@@ -112,7 +139,7 @@ func BindCELTo[T any](filter string, params *T, schema Schema) error {
 			return err
 		}
 
-		rule, ok := schema.Fields[pred.Field]
+		rule, ok := fields[pred.Field]
 		if !ok {
 			return fmt.Errorf("field %q is not allowed", pred.Field)
 		}
@@ -128,7 +155,7 @@ func BindCELTo[T any](filter string, params *T, schema Schema) error {
 
 		field := dest.FieldByName(targetName)
 		if !field.IsValid() {
-			return fmt.Errorf("params struct %T has no field named %q", params, targetName)
+			return fmt.Errorf("params struct %s has no field named %q", dest.Type(), targetName)
 		}
 		if !field.CanSet() {
 			return fmt.Errorf("cannot set field %q on params struct", targetName)
@@ -155,9 +182,9 @@ type atomicPredicate struct {
 	Value any
 }
 
-func buildEnv(schema Schema) (*cel.Env, error) {
-	opts := make([]cel.EnvOption, 0, len(schema.Fields))
-	for name, rule := range schema.Fields {
+func buildEnv(fields map[string]FilterField) (*cel.Env, error) {
+	opts := make([]cel.EnvOption, 0, len(fields))
+	for name, rule := range fields {
 		celType, err := celTypeForKind(rule.Kind)
 		if err != nil {
 			return nil, fmt.Errorf("field %q: %w", name, err)
@@ -171,7 +198,7 @@ func buildEnv(schema Schema) (*cel.Env, error) {
 	return cel.NewEnv(opts...)
 }
 
-func celTypeForKind(kind FieldKind) (*cel.Type, error) {
+func celTypeForKind(kind ValueKind) (*cel.Type, error) {
 	switch kind {
 	case KindString:
 		return cel.StringType, nil
@@ -180,7 +207,7 @@ func celTypeForKind(kind FieldKind) (*cel.Type, error) {
 	case KindTimestamp:
 		return cel.TimestampType, nil
 	default:
-		return nil, fmt.Errorf("unsupported field kind %d", kind)
+		return nil, fmt.Errorf("unsupported field kind %s", kind)
 	}
 }
 
@@ -388,7 +415,7 @@ func parseLiteral(expr *exprpb.Expr) (any, error) {
 	return nil, errors.New("right-hand side must be a literal, list literal, or timestamp() call")
 }
 
-func validateLiteral(kind FieldKind, op Op, value any) error {
+func validateLiteral(kind ValueKind, op Op, value any) error {
 	switch kind {
 	case KindString:
 		switch op {
@@ -419,7 +446,7 @@ func validateLiteral(kind FieldKind, op Op, value any) error {
 			return fmt.Errorf("expected %s literal", kind)
 		}
 	default:
-		return fmt.Errorf("unsupported field kind %d", kind)
+		return fmt.Errorf("unsupported field kind %s", kind)
 	}
 	return nil
 }
@@ -440,6 +467,11 @@ func assignValue(field reflect.Value, value any) error {
 			field.Set(reflect.New(field.Type().Elem()))
 		}
 		return assignValue(field.Elem(), value)
+	}
+
+	if field.Kind() == reflect.Interface {
+		field.Set(reflect.ValueOf(value))
+		return nil
 	}
 
 	switch v := value.(type) {

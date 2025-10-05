@@ -10,7 +10,7 @@ import (
 	"github.com/eslsoft/vocnet/api/gen/dict/v1/dictv1connect"
 	vocnetv1 "github.com/eslsoft/vocnet/api/gen/vocnet/v1"
 	"github.com/eslsoft/vocnet/internal/entity"
-	"github.com/eslsoft/vocnet/internal/pkg/filterexpr"
+	"github.com/eslsoft/vocnet/internal/repository"
 	"github.com/eslsoft/vocnet/internal/usecase"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -63,20 +63,15 @@ func (s *UserWordServiceServer) ListUserWords(ctx context.Context, req *connect.
 		return nil, status.Error(codes.InvalidArgument, "request required")
 	}
 	msg := req.Msg
-	userID := int64(1000)
-	bindings := listUserWordsBindings{}
-	if err := filterexpr.BindCELTo(msg.GetFilter(), &bindings, listUserWordsSchema); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	filter := entity.UserWordFilter{
+	query := &repository.ListUserWordQuery{
 		Pagination: convertPagination(msg.GetPagination()),
-		UserID:     userID,
-		Keyword:    strings.TrimSpace(bindings.Keyword),
-		Words:      bindings.Words,
+		FilterOrder: repository.FilterOrder{
+			Filter:  msg.GetFilter(),
+			OrderBy: msg.GetOrderBy(),
+		},
+		UserID: int64(1000),
 	}
-
-	items, total, err := s.uc.ListUserWords(ctx, filter)
+	items, total, err := s.uc.ListUserWords(ctx, query)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -84,7 +79,7 @@ func (s *UserWordServiceServer) ListUserWords(ctx context.Context, req *connect.
 	resp := &vocnetv1.ListUserWordsResponse{
 		Pagination: &commonv1.PaginationResponse{
 			Total:  int32(total),
-			PageNo: filter.PageNo,
+			PageNo: query.PageNo,
 		},
 	}
 	for _, item := range items {

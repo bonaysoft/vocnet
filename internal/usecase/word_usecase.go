@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/eslsoft/vocnet/internal/adapter/repository"
 	"github.com/eslsoft/vocnet/internal/entity"
+	"github.com/eslsoft/vocnet/internal/repository"
 )
 
 // WordUsecase defines business logic for words.
@@ -16,7 +16,7 @@ type WordUsecase interface {
 	Update(ctx context.Context, word *entity.Word) (*entity.Word, error)
 	Get(ctx context.Context, id int64) (*entity.Word, error)
 	Lookup(ctx context.Context, lemma string, language entity.Language) (*entity.Word, error)
-	List(ctx context.Context, filter entity.WordFilter) ([]*entity.Word, int64, error)
+	List(ctx context.Context, filter *repository.ListWordQuery) ([]*entity.Word, int64, error)
 	Delete(ctx context.Context, id int64) error
 }
 
@@ -81,10 +81,8 @@ func (u *wordUsecase) Lookup(ctx context.Context, lemma string, language entity.
 	return v, nil
 }
 
-func (u *wordUsecase) List(ctx context.Context, filter entity.WordFilter) ([]*entity.Word, int64, error) {
-	filter.Keyword = strings.TrimSpace(filter.Keyword)
-	filter.Words = normalizeFilterWords(filter.Words)
-	return u.repo.List(ctx, filter)
+func (u *wordUsecase) List(ctx context.Context, query *repository.ListWordQuery) ([]*entity.Word, int64, error) {
+	return u.repo.List(ctx, query)
 }
 
 func (u *wordUsecase) Delete(ctx context.Context, id int64) error {
@@ -217,8 +215,4 @@ func normalizeWordRelations(in []entity.WordRelation) []entity.WordRelation {
 		return nil
 	}
 	return out
-}
-
-func normalizeFilterWords(words []string) []string {
-	return normalizeStringSlice(words)
 }

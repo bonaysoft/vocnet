@@ -10,18 +10,29 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type ListItemsParams struct {
-	State        *string
-	PriceMin     *float64
-	PriceMax     *float64
-	NamePrefix   *string
-	CreatedAfter *time.Time
-	Limit        int32
-	Offset       int32
+type listMsg struct {
+	filter  string
+	orderBy string
 }
 
-var ItemsSchema = Schema{
-	Fields: map[string]FieldRule{
+func (m listMsg) GetFilter() string  { return m.filter }
+func (m listMsg) GetOrderBy() string { return m.orderBy }
+
+type listParams struct {
+	State         *string
+	PriceMin      *float64
+	PriceMax      *float64
+	NamePrefix    *string
+	CreatedAfter  *time.Time
+	Names         []string
+	PrimaryKey    string
+	PrimaryDesc   bool
+	SecondaryKey  string
+	SecondaryDesc bool
+}
+
+var testSchema = ResourceSchema{
+	Filter: map[string]FilterField{
 		"state": {
 			Kind: KindString,
 			Ops:  map[Op]string{OpEQ: "State"},
@@ -35,22 +46,40 @@ var ItemsSchema = Schema{
 		},
 		"name": {
 			Kind: KindString,
-			Ops:  map[Op]string{OpSW: "NamePrefix"},
+			Ops: map[Op]string{
+				OpSW: "NamePrefix",
+				OpIN: "Names",
+			},
 		},
 		"create_time": {
 			Kind: KindTimestamp,
 			Ops:  map[Op]string{OpGTE: "CreatedAfter"},
 		},
 	},
+	Order: OrderSchema{
+		DefaultPrimary:     "create_time",
+		DefaultPrimaryDesc: true,
+		FallbackKey:        "id",
+		FallbackDesc:       false,
+		Fields: map[string]OrderField{
+			"create_time": {Expr: "create_time", Nulls: "last"},
+			"updated_at":  {Expr: "updated_at", Nulls: "last"},
+			"text":        {Expr: "text", Nulls: "last"},
+			"id":          {Expr: "id", Nulls: "last"},
+		},
+	},
 }
 
-func TestBindCELTo_ListItems(t *testing.T) {
-	var params ListItemsParams
+func TestBind_FilterAndOrder(t *testing.T) {
 	timestamp := "2025-01-01T00:00:00Z"
-	filter := fmt.Sprintf("state == 'ACTIVE' && price <= 1000 && name.startsWith('A') && create_time >= timestamp('%s')", timestamp)
+	msg := listMsg{
+		filter:  fmt.Sprintf("state == 'ACTIVE' && price <= 1000 && name.startsWith('A') && create_time >= timestamp('%s')", timestamp),
+		orderBy: "text asc, updated_at desc",
+	}
 
-	if err := BindCELTo(filter, &params, ItemsSchema); err != nil {
-		t.Fatalf("BindCELTo returned error: %v", err)
+	var params listParams
+	if err := Bind(msg, &params, testSchema); err != nil {
+		t.Fatalf("Bind returned error: %v", err)
 	}
 
 	if params.State == nil || *params.State != "ACTIVE" {
@@ -76,44 +105,26 @@ func TestBindCELTo_ListItems(t *testing.T) {
 	if !params.CreatedAfter.Equal(wantTime) {
 		t.Fatalf("expected CreatedAfter %v, got %v", wantTime, params.CreatedAfter)
 	}
-}
 
-func TestBindCELTo_NumberBounds(t *testing.T) {
-	var params ListItemsParams
-	filter := "price >= 10 && price <= 20"
-
-	if err := BindCELTo(filter, &params, ItemsSchema); err != nil {
-		t.Fatalf("BindCELTo returned error: %v", err)
+	if params.PrimaryKey != "text" || params.PrimaryDesc {
+		t.Fatalf("expected primary order text asc, got key=%q desc=%v", params.PrimaryKey, params.PrimaryDesc)
 	}
-
-	if params.PriceMin == nil || *params.PriceMin != 10 {
-		t.Fatalf("expected PriceMin 10, got %v", params.PriceMin)
-	}
-	if params.PriceMax == nil || *params.PriceMax != 20 {
-		t.Fatalf("expected PriceMax 20, got %v", params.PriceMax)
+	if params.SecondaryKey != "updated_at" || !params.SecondaryDesc {
+		t.Fatalf("expected secondary order updated_at desc, got key=%q desc=%v", params.SecondaryKey, params.SecondaryDesc)
 	}
 }
 
-func TestBindCELTo_ReceiverStartsWith(t *testing.T) {
-	var params ListItemsParams
-	filter := "name.startsWith('Pre')"
-
-	if err := BindCELTo(filter, &params, ItemsSchema); err != nil {
-		t.Fatalf("BindCELTo returned error: %v", err)
+func TestBind_CustomSetter(t *testing.T) {
+	type withPG struct {
+		State         pgtype.Text
+		PrimaryKey    string
+		PrimaryDesc   bool
+		SecondaryKey  string
+		SecondaryDesc bool
 	}
 
-	if params.NamePrefix == nil || *params.NamePrefix != "Pre" {
-		t.Fatalf("expected NamePrefix 'Pre', got %v", params.NamePrefix)
-	}
-}
-
-func TestBindCELTo_CustomSetter(t *testing.T) {
-	type WithPG struct {
-		State pgtype.Text
-	}
-
-	schema := Schema{
-		Fields: map[string]FieldRule{
+	schema := ResourceSchema{
+		Filter: map[string]FilterField{
 			"state": {
 				Kind: KindString,
 				Ops:  map[Op]string{OpEQ: "State"},
@@ -122,19 +133,21 @@ func TestBindCELTo_CustomSetter(t *testing.T) {
 					if !ok {
 						return fmt.Errorf("expected string, got %T", v)
 					}
-					ft := field.Interface().(pgtype.Text)
-					ft.String = text
-					ft.Valid = true
-					field.Set(reflect.ValueOf(ft))
+					t := field.Interface().(pgtype.Text)
+					t.String = text
+					t.Valid = true
+					field.Set(reflect.ValueOf(t))
 					return nil
 				},
 			},
 		},
+		Order: testSchema.Order,
 	}
 
-	var params WithPG
-	if err := BindCELTo("state == 'ACTIVE'", &params, schema); err != nil {
-		t.Fatalf("BindCELTo returned error: %v", err)
+	msg := listMsg{filter: "state == 'ACTIVE'"}
+	var params withPG
+	if err := Bind(msg, &params, schema); err != nil {
+		t.Fatalf("Bind returned error: %v", err)
 	}
 
 	if !params.State.Valid || params.State.String != "ACTIVE" {
@@ -142,23 +155,12 @@ func TestBindCELTo_CustomSetter(t *testing.T) {
 	}
 }
 
-func TestBindCELTo_InOperator(t *testing.T) {
-	type Params struct {
-		Names []string
-	}
+func TestBind_InOperator(t *testing.T) {
+	msg := listMsg{filter: "name in ['Alice', 'Bob']"}
 
-	schema := Schema{
-		Fields: map[string]FieldRule{
-			"name": {
-				Kind: KindString,
-				Ops:  map[Op]string{OpIN: "Names"},
-			},
-		},
-	}
-
-	var params Params
-	if err := BindCELTo("name in ['Alice', 'Bob']", &params, schema); err != nil {
-		t.Fatalf("BindCELTo returned error: %v", err)
+	var params listParams
+	if err := Bind(msg, &params, testSchema); err != nil {
+		t.Fatalf("Bind returned error: %v", err)
 	}
 
 	want := []string{"Alice", "Bob"}
@@ -167,7 +169,46 @@ func TestBindCELTo_InOperator(t *testing.T) {
 	}
 }
 
-func TestBindCELTo_Errors(t *testing.T) {
+func TestBind_OrderDefaults(t *testing.T) {
+	var params listParams
+	if err := Bind(listMsg{}, &params, testSchema); err != nil {
+		t.Fatalf("Bind returned error: %v", err)
+	}
+
+	if params.PrimaryKey != "create_time" || !params.PrimaryDesc {
+		t.Fatalf("expected default primary create_time desc, got key=%q desc=%v", params.PrimaryKey, params.PrimaryDesc)
+	}
+	if params.SecondaryKey != "id" || params.SecondaryDesc {
+		t.Fatalf("expected fallback id asc, got key=%q desc=%v", params.SecondaryKey, params.SecondaryDesc)
+	}
+}
+
+func TestBind_OrderErrors(t *testing.T) {
+	tests := []struct {
+		name    string
+		orderBy string
+		want    string
+	}{
+		{"unknown field", "rating desc", "cannot be used"},
+		{"bad direction", "text downward", "invalid direction"},
+		{"too many keys", "text asc, updated_at desc, create_time asc", "at most two"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var params listParams
+			err := Bind(listMsg{orderBy: tc.orderBy}, &params, testSchema)
+			if err == nil {
+				t.Fatalf("expected error for order_by %q", tc.orderBy)
+			}
+			if !strings.Contains(strings.ToLower(err.Error()), strings.ToLower(tc.want)) {
+				t.Fatalf("expected error to contain %q, got %v", tc.want, err)
+			}
+		})
+	}
+}
+
+func TestBind_FilterErrors(t *testing.T) {
 	tests := []struct {
 		name   string
 		filter string
@@ -177,13 +218,13 @@ func TestBindCELTo_Errors(t *testing.T) {
 		{"unsupported operator", "state <= 'A'", "operator"},
 		{"bad literal type", "state == 1", "expected string"},
 		{"bad logical op", "state == 'A' || price <= 10", "only AND"},
-		{"non literal", "price <= foo", "right-hand side"},
+		{"non literal", "price <= foo", "right-hand"},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			var params ListItemsParams
-			err := BindCELTo(tc.filter, &params, ItemsSchema)
+			var params listParams
+			err := Bind(listMsg{filter: tc.filter}, &params, testSchema)
 			if err == nil {
 				t.Fatalf("expected error for %q", tc.filter)
 			}
@@ -194,30 +235,9 @@ func TestBindCELTo_Errors(t *testing.T) {
 	}
 }
 
-func TestBindCELTo_ListWrongType(t *testing.T) {
-	schema := Schema{
-		Fields: map[string]FieldRule{
-			"state": {
-				Kind: KindString,
-				Ops:  map[Op]string{OpIN: "States"},
-			},
-		},
-	}
-
-	type params struct {
-		States []string
-	}
-
-	var p params
-	err := BindCELTo("state in [1]", &p, schema)
-	if err == nil || !strings.Contains(err.Error(), "list literal elements must be strings") {
-		t.Fatalf("expected list literal error, got %v", err)
-	}
-}
-
-func TestBindCELTo_InvalidParams(t *testing.T) {
-	var params *ListItemsParams
-	if err := BindCELTo("state == 'ACTIVE'", params, ItemsSchema); err == nil {
-		t.Fatalf("expected error when params is nil pointer")
+func TestBind_InvalidBinding(t *testing.T) {
+	var params *listParams
+	if err := Bind(listMsg{filter: "state == 'ACTIVE'"}, params, testSchema); err == nil {
+		t.Fatalf("expected error when binding is nil pointer")
 	}
 }

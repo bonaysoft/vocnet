@@ -11,7 +11,7 @@ import (
 	"github.com/eslsoft/vocnet/api/gen/dict/v1/dictv1connect"
 	vocnetv1 "github.com/eslsoft/vocnet/api/gen/vocnet/v1"
 	"github.com/eslsoft/vocnet/internal/entity"
-	"github.com/eslsoft/vocnet/internal/pkg/filterexpr"
+	"github.com/eslsoft/vocnet/internal/repository"
 	"github.com/eslsoft/vocnet/internal/usecase"
 	"github.com/samber/lo"
 	"google.golang.org/grpc/codes"
@@ -69,19 +69,14 @@ func (s *WordServiceServer) ListWords(ctx context.Context, req *connect.Request[
 		return nil, status.Error(codes.InvalidArgument, "request required")
 	}
 	msg := req.Msg
-	bindings := listWordsBindings{}
-	if err := filterexpr.BindCELTo(msg.GetFilter(), &bindings, listWordsSchema); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	filter := entity.WordFilter{
+	query := &repository.ListWordQuery{
 		Pagination: convertPagination(msg.GetPagination()),
-		Keyword:    strings.TrimSpace(bindings.Keyword),
-		WordType:   strings.TrimSpace(bindings.WordType),
-		Words:      bindings.Words,
+		FilterOrder: repository.FilterOrder{
+			Filter:  msg.GetFilter(),
+			OrderBy: msg.GetOrderBy(),
+		},
 	}
-
-	items, total, err := s.uc.List(ctx, filter)
+	items, total, err := s.uc.List(ctx, query)
 	if err != nil {
 		return nil, mapWordError(err)
 	}
@@ -92,7 +87,7 @@ func (s *WordServiceServer) ListWords(ctx context.Context, req *connect.Request[
 		}),
 		Pagination: &commonv1.PaginationResponse{
 			Total:  int32(total),
-			PageNo: filter.PageNo,
+			PageNo: query.PageNo,
 		},
 	}), nil
 }
