@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file dict/v1/phrase.proto.
  */
 export const file_dict_v1_phrase: GenFile = /*@__PURE__*/
-  fileDesc("ChRkaWN0L3YxL3BocmFzZS5wcm90bxIHZGljdC52MSJJCgZQaHJhc2USCgoCaWQYASABKAMSDAoEdGV4dBgCIAEoCRIlCghsYW5ndWFnZRgDIAEoDjITLmNvbW1vbi52MS5MYW5ndWFnZTITChFEaWN0UGhyYXNlU2VydmljZUKJAQoLY29tLmRpY3QudjFCC1BocmFzZVByb3RvUAFaMGdpdGh1Yi5jb20vZXNsc29mdC92b2NuZXQvYXBpL2dlbi9kaWN0L3YxO2RpY3R2MaICA0RYWKoCB0RpY3QuVjHKAgdEaWN0XFYx4gITRGljdFxWMVxHUEJNZXRhZGF0YeoCCERpY3Q6OlYxYgZwcm90bzM", [file_common_v1_types]);
+  fileDesc("ChRkaWN0L3YxL3BocmFzZS5wcm90bxIHZGljdC52MSJ5CgZQaHJhc2USCgoCaWQYASABKAMSDAoEdGV4dBgCIAEoCRIlCghsYW5ndWFnZRgDIAEoDjITLmNvbW1vbi52MS5MYW5ndWFnZRIuCgtkZWZpbml0aW9ucxgEIAMoCzIZLmRpY3QudjEuUGhyYXNlRGVmaW5pdGlvbiJHChBQaHJhc2VEZWZpbml0aW9uEiUKCGxhbmd1YWdlGAEgASgOMhMuY29tbW9uLnYxLkxhbmd1YWdlEgwKBHRleHQYAiABKAkyEwoRRGljdFBocmFzZVNlcnZpY2VCiQEKC2NvbS5kaWN0LnYxQgtQaHJhc2VQcm90b1ABWjBnaXRodWIuY29tL2VzbHNvZnQvdm9jbmV0L2FwaS9nZW4vZGljdC92MTtkaWN0djGiAgNEWFiqAgdEaWN0LlYxygIHRGljdFxWMeICE0RpY3RcVjFcR1BCTWV0YWRhdGHqAghEaWN0OjpWMWIGcHJvdG8z", [file_common_v1_types]);
 
 /**
  * @generated from message dict.v1.Phrase
@@ -38,6 +38,13 @@ export type Phrase = Message<"dict.v1.Phrase"> & {
    * @generated from field: common.v1.Language language = 3;
    */
   language: Language;
+
+  /**
+   * Possibly multiple languages' definitions
+   *
+   * @generated from field: repeated dict.v1.PhraseDefinition definitions = 4;
+   */
+  definitions: PhraseDefinition[];
 };
 
 /**
@@ -46,6 +53,32 @@ export type Phrase = Message<"dict.v1.Phrase"> & {
  */
 export const PhraseSchema: GenMessage<Phrase> = /*@__PURE__*/
   messageDesc(file_dict_v1_phrase, 0);
+
+/**
+ * @generated from message dict.v1.PhraseDefinition
+ */
+export type PhraseDefinition = Message<"dict.v1.PhraseDefinition"> & {
+  /**
+   * Language of the translation
+   *
+   * @generated from field: common.v1.Language language = 1;
+   */
+  language: Language;
+
+  /**
+   * Definition text
+   *
+   * @generated from field: string text = 2;
+   */
+  text: string;
+};
+
+/**
+ * Describes the message dict.v1.PhraseDefinition.
+ * Use `create(PhraseDefinitionSchema)` to create a new message.
+ */
+export const PhraseDefinitionSchema: GenMessage<PhraseDefinition> = /*@__PURE__*/
+  messageDesc(file_dict_v1_phrase, 1);
 
 /**
  * @generated from service dict.v1.DictPhraseService

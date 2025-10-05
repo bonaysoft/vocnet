@@ -50,10 +50,10 @@ public struct Dict_V1_Word: Sendable {
   public var tags: [String] = []
 
   /// Common phrases/idioms containing this word
-  public var phrases: [String] = []
+  public var phrases: [Dict_V1_Phrase] = []
 
   /// Example sentences
-  public var sentences: [Vocnet_V1_Sentence] = []
+  public var sentences: [Dict_V1_Sentence] = []
 
   /// When this entry is a lemma (word_type == "lemma"), forms lists all other surface forms
   /// (e.g. past, past_participle, plural, etc.) referencing this lemma. It MUST NOT include
@@ -156,6 +156,25 @@ public struct Dict_V1_WordRelation: Sendable {
 
   /// Type of relationship
   public var relationType: Common_V1_RelationType = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct Dict_V1_Sentence: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Surface form of the sentence
+  public var text: String = String()
+
+  /// How this sentence was added
+  public var source: Common_V1_SourceType = .unspecified
+
+  /// Optional reference (book or article title)
+  public var sourceRef: String = String()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -273,7 +292,7 @@ extension Dict_V1_Word: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       case 6: try { try decoder.decodeRepeatedMessageField(value: &self.phonetics) }()
       case 7: try { try decoder.decodeRepeatedMessageField(value: &self.definitions) }()
       case 8: try { try decoder.decodeRepeatedStringField(value: &self.tags) }()
-      case 9: try { try decoder.decodeRepeatedStringField(value: &self.phrases) }()
+      case 9: try { try decoder.decodeRepeatedMessageField(value: &self.phrases) }()
       case 10: try { try decoder.decodeRepeatedMessageField(value: &self.sentences) }()
       case 30: try { try decoder.decodeRepeatedMessageField(value: &self.forms) }()
       case 31: try { try decoder.decodeRepeatedMessageField(value: &self.relations) }()
@@ -314,7 +333,7 @@ extension Dict_V1_Word: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       try visitor.visitRepeatedStringField(value: self.tags, fieldNumber: 8)
     }
     if !self.phrases.isEmpty {
-      try visitor.visitRepeatedStringField(value: self.phrases, fieldNumber: 9)
+      try visitor.visitRepeatedMessageField(value: self.phrases, fieldNumber: 9)
     }
     if !self.sentences.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.sentences, fieldNumber: 10)
@@ -494,6 +513,46 @@ extension Dict_V1_WordRelation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   public static func ==(lhs: Dict_V1_WordRelation, rhs: Dict_V1_WordRelation) -> Bool {
     if lhs.word != rhs.word {return false}
     if lhs.relationType != rhs.relationType {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Dict_V1_Sentence: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".Sentence"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}text\0\u{1}source\0\u{3}source_ref\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.source) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.sourceRef) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.text.isEmpty {
+      try visitor.visitSingularStringField(value: self.text, fieldNumber: 1)
+    }
+    if self.source != .unspecified {
+      try visitor.visitSingularEnumField(value: self.source, fieldNumber: 2)
+    }
+    if !self.sourceRef.isEmpty {
+      try visitor.visitSingularStringField(value: self.sourceRef, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Dict_V1_Sentence, rhs: Dict_V1_Sentence) -> Bool {
+    if lhs.text != rhs.text {return false}
+    if lhs.source != rhs.source {return false}
+    if lhs.sourceRef != rhs.sourceRef {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

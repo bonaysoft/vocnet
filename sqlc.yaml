@@ -20,7 +20,9 @@ sql:
           - column: words.phonetics
             go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.WordPhonetics
           - column: words.sentences
-            go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.WordSentences
+            go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.Sentences
+          - column: words.phrases
+            go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.Phrases
           - column: words.relations
             go_type: github.com/eslsoft/vocnet/internal/infrastructure/database/types.WordRelations
           - column: words.forms

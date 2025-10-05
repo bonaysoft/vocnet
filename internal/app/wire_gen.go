@@ -9,7 +9,7 @@ package app
 import (
 	"github.com/eslsoft/vocnet/api/gen/dict/v1/dictv1connect"
 	"github.com/eslsoft/vocnet/api/gen/vocnet/v1/vocnetv1connect"
-	"github.com/eslsoft/vocnet/internal/adapter/grpc"
+	"github.com/eslsoft/vocnet/internal/adapter/connectrpc"
 	"github.com/eslsoft/vocnet/internal/adapter/repository"
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database"

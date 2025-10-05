@@ -7,7 +7,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "validate/validate.proto";
-import "vocnet/v1/vocnet.proto";
+import "dict/v1/phrase.proto";
 
 message Word {
   int64 id = 1; // Auto-increment ID (CRUD only)
@@ -18,8 +18,8 @@ message Word {
   repeated Phonetic phonetics = 6; // IPAs for this word
   repeated Definition definitions = 7; // Possibly multiple languages' definitions
   repeated string tags = 8; // Level / topic tags
-  repeated string phrases = 9; // Common phrases/idioms containing this word
-  repeated vocnet.v1.Sentence sentences = 10; // Example sentences
+  repeated Phrase phrases = 9; // Common phrases/idioms containing this word
+  repeated Sentence sentences = 10; // Example sentences
 
   // When this entry is a lemma (word_type == "lemma"), forms lists all other surface forms
   // (e.g. past, past_participle, plural, etc.) referencing this lemma. It MUST NOT include
@@ -55,6 +55,12 @@ message WordFormRef {
 message WordRelation {
   string word = 1;
   common.v1.RelationType relation_type = 2; // Type of relationship
+}
+
+message Sentence {
+  string text = 1; // Surface form of the sentence
+  common.v1.SourceType source = 2; // How this sentence was added
+  string source_ref = 3; // Optional reference (book or article title)
 }
 
 // CreateWord request (creates either a lemma entry or a derived/inflected form)

@@ -8,8 +8,10 @@ type WordMeanings []entity.WordDefinition
 
 type WordPhonetics []entity.WordPhonetic
 
-type WordForms []entity.WordFormRef
+type Sentences []entity.Sentence
 
-type WordSentences []entity.Sentence
+type Phrases []entity.Phrase
+
+type WordForms []entity.WordFormRef
 
 type WordRelations []entity.WordRelation

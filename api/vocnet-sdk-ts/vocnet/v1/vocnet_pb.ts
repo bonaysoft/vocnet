@@ -4,19 +4,19 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { RelationType } from "../../common/v1/types_pb";
+import type { Language, RelationType } from "../../common/v1/types_pb";
 import { file_common_v1_types } from "../../common/v1/types_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
-import type { SourceType } from "./enums_pb";
-import { file_vocnet_v1_enums } from "./enums_pb";
+import type { Sentence, Word } from "../../dict/v1/word_pb";
+import { file_dict_v1_word } from "../../dict/v1/word_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file vocnet/v1/vocnet.proto.
  */
 export const file_vocnet_v1_vocnet: GenFile = /*@__PURE__*/
-  fileDesc("ChZ2b2NuZXQvdjEvdm9jbmV0LnByb3RvEgl2b2NuZXQudjEi8gIKCFVzZXJXb3JkEgoKAmlkGAEgASgDEgwKBHdvcmQYAiABKAkSLAoHbWFzdGVyeRgDIAEoCzIbLnZvY25ldC52MS5NYXN0ZXJ5QnJlYWtkb3duEi4KDXJldmlld190aW1pbmcYBCABKAsyFy52b2NuZXQudjEuUmV2aWV3VGltaW5nEhMKC3F1ZXJ5X2NvdW50GAUgASgDEg0KBW5vdGVzGAYgASgJEiYKCXNlbnRlbmNlcxgHIAMoCzITLnZvY25ldC52MS5TZW50ZW5jZRIuCglyZWxhdGlvbnMYCCADKAsyGy52b2NuZXQudjEuVXNlcldvcmRSZWxhdGlvbhISCgpjcmVhdGVkX2J5GBQgASgJEi4KCmNyZWF0ZWRfYXQYFSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYFiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wInAKEE1hc3RlcnlCcmVha2Rvd24SDgoGbGlzdGVuGAEgASgFEgwKBHJlYWQYAiABKAUSDQoFc3BlbGwYAyABKAUSEQoJcHJvbm91bmNlGAQgASgFEgsKA3VzZRgFIAEoBRIPCgdvdmVyYWxsGAYgASgFIqEBCgxSZXZpZXdUaW1pbmcSMgoObGFzdF9yZXZpZXdfYXQYASABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjIKDm5leHRfcmV2aWV3X2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIVCg1pbnRlcnZhbF9kYXlzGAMgASgFEhIKCmZhaWxfY291bnQYBCABKAUiUwoIU2VudGVuY2USDAoEdGV4dBgBIAEoCRIlCgZzb3VyY2UYAiABKA4yFS52b2NuZXQudjEuU291cmNlVHlwZRISCgpzb3VyY2VfcmVmGAMgASgJItIBChBVc2VyV29yZFJlbGF0aW9uEgwKBHdvcmQYASABKAkSLgoNcmVsYXRpb25fdHlwZRgCIAEoDjIXLmNvbW1vbi52MS5SZWxhdGlvblR5cGUSDAoEbm90ZRgDIAEoCRISCgpjcmVhdGVkX2J5GBQgASgJEi4KCmNyZWF0ZWRfYXQYFSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYFiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQpcBCg1jb20udm9jbmV0LnYxQgtWb2NuZXRQcm90b1ABWjRnaXRodWIuY29tL2VzbHNvZnQvdm9jbmV0L2FwaS9nZW4vdm9jbmV0L3YxO3ZvY25ldHYxogIDVlhYqgIJVm9jbmV0LlYxygIJVm9jbmV0XFYx4gIVVm9jbmV0XFYxXEdQQk1ldGFkYXRh6gIKVm9jbmV0OjpWMWIGcHJvdG8z", [file_common_v1_types, file_google_protobuf_timestamp, file_vocnet_v1_enums]);
+  fileDesc("ChZ2b2NuZXQvdjEvdm9jbmV0LnByb3RvEgl2b2NuZXQudjEiaAoIVXNlcldvcmQSCgoCaWQYASABKAMSJQoEc3BlYxgCIAEoCzIXLnZvY25ldC52MS5Vc2VyV29yZFNwZWMSKQoGc3RhdHVzGAMgASgLMhkudm9jbmV0LnYxLlVzZXJXb3JkU3RhdHVzIs0BCgxVc2VyV29yZFNwZWMSDAoEd29yZBgBIAEoCRIlCghsYW5ndWFnZRgCIAEoDjITLmNvbW1vbi52MS5MYW5ndWFnZRIVCg1tYXN0ZXJ5X2xldmVsGAMgASgFEi4KCXJlbGF0aW9ucxgFIAMoCzIbLnZvY25ldC52MS5Vc2VyV29yZFJlbGF0aW9uEiQKCXNlbnRlbmNlcxgGIAMoCzIRLmRpY3QudjEuU2VudGVuY2USDAoEdGFncxgHIAMoCRINCgVub3RlcxgIIAMoCSKUAgoOVXNlcldvcmRTdGF0dXMSGwoEd29yZBgBIAEoCzINLmRpY3QudjEuV29yZBIsCgdtYXN0ZXJ5GAMgASgLMhsudm9jbmV0LnYxLk1hc3RlcnlCcmVha2Rvd24SLgoNcmV2aWV3X3RpbWluZxgEIAEoCzIXLnZvY25ldC52MS5SZXZpZXdUaW1pbmcSEwoLcXVlcnlfY291bnQYBSABKAMSEgoKY3JlYXRlZF9ieRgUIAEoCRIuCgpjcmVhdGVkX2F0GBUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GBYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJjChBNYXN0ZXJ5QnJlYWtkb3duEg4KBmxpc3RlbhgBIAEoBRIMCgRyZWFkGAIgASgFEg0KBXNwZWxsGAMgASgFEhEKCXByb25vdW5jZRgEIAEoBRIPCgdvdmVyYWxsGAYgASgFIqEBCgxSZXZpZXdUaW1pbmcSMgoObGFzdF9yZXZpZXdfYXQYASABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjIKDm5leHRfcmV2aWV3X2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIVCg1pbnRlcnZhbF9kYXlzGAMgASgFEhIKCmZhaWxfY291bnQYBCABKAUivgEKEFVzZXJXb3JkUmVsYXRpb24SDAoEd29yZBgBIAEoCRIuCg1yZWxhdGlvbl90eXBlGAIgASgOMhcuY29tbW9uLnYxLlJlbGF0aW9uVHlwZRIMCgRub3RlGAMgASgJEi4KCmNyZWF0ZWRfYXQYFSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYFiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQpcBCg1jb20udm9jbmV0LnYxQgtWb2NuZXRQcm90b1ABWjRnaXRodWIuY29tL2VzbHNvZnQvdm9jbmV0L2FwaS9nZW4vdm9jbmV0L3YxO3ZvY25ldHYxogIDVlhYqgIJVm9jbmV0LlYxygIJVm9jbmV0XFYx4gIVVm9jbmV0XFYxXEdQQk1ldGFkYXRh6gIKVm9jbmV0OjpWMWIGcHJvdG8z", [file_common_v1_types, file_google_protobuf_timestamp, file_dict_v1_word]);
 
 /**
  * User's personal word record with learning context
@@ -30,11 +30,94 @@ export type UserWord = Message<"vocnet.v1.UserWord"> & {
   id: bigint;
 
   /**
-   * Reference to global word (nullable)
-   *
-   * @generated from field: string word = 2;
+   * @generated from field: vocnet.v1.UserWordSpec spec = 2;
+   */
+  spec?: UserWordSpec;
+
+  /**
+   * @generated from field: vocnet.v1.UserWordStatus status = 3;
+   */
+  status?: UserWordStatus;
+};
+
+/**
+ * Describes the message vocnet.v1.UserWord.
+ * Use `create(UserWordSchema)` to create a new message.
+ */
+export const UserWordSchema: GenMessage<UserWord> = /*@__PURE__*/
+  messageDesc(file_vocnet_v1_vocnet, 0);
+
+/**
+ * Spec is user-provided data for the word
+ *
+ * @generated from message vocnet.v1.UserWordSpec
+ */
+export type UserWordSpec = Message<"vocnet.v1.UserWordSpec"> & {
+  /**
+   * @generated from field: string word = 1;
    */
   word: string;
+
+  /**
+   * Language of the word
+   *
+   * @generated from field: common.v1.Language language = 2;
+   */
+  language: Language;
+
+  /**
+   * Mastery level (0-5), self-assessed by user
+   *
+   * @generated from field: int32 mastery_level = 3;
+   */
+  masteryLevel: number;
+
+  /**
+   * Relationships to other words
+   *
+   * @generated from field: repeated vocnet.v1.UserWordRelation relations = 5;
+   */
+  relations: UserWordRelation[];
+
+  /**
+   * Contextual example sentences
+   *
+   * @generated from field: repeated dict.v1.Sentence sentences = 6;
+   */
+  sentences: Sentence[];
+
+  /**
+   * User-defined tags
+   *
+   * @generated from field: repeated string tags = 7;
+   */
+  tags: string[];
+
+  /**
+   * User's personal notes
+   *
+   * @generated from field: repeated string notes = 8;
+   */
+  notes: string[];
+};
+
+/**
+ * Describes the message vocnet.v1.UserWordSpec.
+ * Use `create(UserWordSpecSchema)` to create a new message.
+ */
+export const UserWordSpecSchema: GenMessage<UserWordSpec> = /*@__PURE__*/
+  messageDesc(file_vocnet_v1_vocnet, 1);
+
+/**
+ * Status is read-only, maintained by the system
+ *
+ * @generated from message vocnet.v1.UserWordStatus
+ */
+export type UserWordStatus = Message<"vocnet.v1.UserWordStatus"> & {
+  /**
+   * @generated from field: dict.v1.Word word = 1;
+   */
+  word?: Word;
 
   /**
    * Detailed mastery scores
@@ -58,27 +141,6 @@ export type UserWord = Message<"vocnet.v1.UserWord"> & {
   queryCount: bigint;
 
   /**
-   * User's personal notes
-   *
-   * @generated from field: string notes = 6;
-   */
-  notes: string;
-
-  /**
-   * Contextual example sentences
-   *
-   * @generated from field: repeated vocnet.v1.Sentence sentences = 7;
-   */
-  sentences: Sentence[];
-
-  /**
-   * Relationships to other words
-   *
-   * @generated from field: repeated vocnet.v1.UserWordRelation relations = 8;
-   */
-  relations: UserWordRelation[];
-
-  /**
    * Owner username (read-only)
    *
    * @generated from field: string created_by = 20;
@@ -97,11 +159,11 @@ export type UserWord = Message<"vocnet.v1.UserWord"> & {
 };
 
 /**
- * Describes the message vocnet.v1.UserWord.
- * Use `create(UserWordSchema)` to create a new message.
+ * Describes the message vocnet.v1.UserWordStatus.
+ * Use `create(UserWordStatusSchema)` to create a new message.
  */
-export const UserWordSchema: GenMessage<UserWord> = /*@__PURE__*/
-  messageDesc(file_vocnet_v1_vocnet, 0);
+export const UserWordStatusSchema: GenMessage<UserWordStatus> = /*@__PURE__*/
+  messageDesc(file_vocnet_v1_vocnet, 2);
 
 /**
  * Mastery breakdown for different skills
@@ -138,13 +200,6 @@ export type MasteryBreakdown = Message<"vocnet.v1.MasteryBreakdown"> & {
   pronounce: number;
 
   /**
-   * Usage in context mastery (0-5)
-   *
-   * @generated from field: int32 use = 5;
-   */
-  use: number;
-
-  /**
    * Overall mastery score (0-500, stored as *100)
    *
    * @generated from field: int32 overall = 6;
@@ -157,7 +212,7 @@ export type MasteryBreakdown = Message<"vocnet.v1.MasteryBreakdown"> & {
  * Use `create(MasteryBreakdownSchema)` to create a new message.
  */
 export const MasteryBreakdownSchema: GenMessage<MasteryBreakdown> = /*@__PURE__*/
-  messageDesc(file_vocnet_v1_vocnet, 1);
+  messageDesc(file_vocnet_v1_vocnet, 3);
 
 /**
  * Review timing information
@@ -195,40 +250,7 @@ export type ReviewTiming = Message<"vocnet.v1.ReviewTiming"> & {
  * Use `create(ReviewTimingSchema)` to create a new message.
  */
 export const ReviewTimingSchema: GenMessage<ReviewTiming> = /*@__PURE__*/
-  messageDesc(file_vocnet_v1_vocnet, 2);
-
-/**
- * @generated from message vocnet.v1.Sentence
- */
-export type Sentence = Message<"vocnet.v1.Sentence"> & {
-  /**
-   * Surface form of the sentence
-   *
-   * @generated from field: string text = 1;
-   */
-  text: string;
-
-  /**
-   * How this sentence was added
-   *
-   * @generated from field: vocnet.v1.SourceType source = 2;
-   */
-  source: SourceType;
-
-  /**
-   * Optional reference (book or article title)
-   *
-   * @generated from field: string source_ref = 3;
-   */
-  sourceRef: string;
-};
-
-/**
- * Describes the message vocnet.v1.Sentence.
- * Use `create(SentenceSchema)` to create a new message.
- */
-export const SentenceSchema: GenMessage<Sentence> = /*@__PURE__*/
-  messageDesc(file_vocnet_v1_vocnet, 3);
+  messageDesc(file_vocnet_v1_vocnet, 4);
 
 /**
  * Word-to-word relationship for building vocabulary networks
@@ -256,13 +278,6 @@ export type UserWordRelation = Message<"vocnet.v1.UserWordRelation"> & {
   note: string;
 
   /**
-   * Owner username (read-only)
-   *
-   * @generated from field: string created_by = 20;
-   */
-  createdBy: string;
-
-  /**
    * @generated from field: google.protobuf.Timestamp created_at = 21;
    */
   createdAt?: Timestamp;
@@ -278,5 +293,5 @@ export type UserWordRelation = Message<"vocnet.v1.UserWordRelation"> & {
  * Use `create(UserWordRelationSchema)` to create a new message.
  */
 export const UserWordRelationSchema: GenMessage<UserWordRelation> = /*@__PURE__*/
-  messageDesc(file_vocnet_v1_vocnet, 4);
+  messageDesc(file_vocnet_v1_vocnet, 5);
 

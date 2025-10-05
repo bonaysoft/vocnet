@@ -178,6 +178,73 @@ public enum Common_V1_RelationType: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
+/// Source types for sentences and content
+public enum Common_V1_SourceType: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+
+  /// 书籍
+  case book // = 1
+
+  /// 网页
+  case web // = 2
+
+  /// 音频
+  case audio // = 3
+
+  /// 视频
+  case video // = 4
+
+  /// 手动输入
+  case manual // = 5
+
+  /// 其他
+  case other // = 10
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 1: self = .book
+    case 2: self = .web
+    case 3: self = .audio
+    case 4: self = .video
+    case 5: self = .manual
+    case 10: self = .other
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .book: return 1
+    case .web: return 2
+    case .audio: return 3
+    case .video: return 4
+    case .manual: return 5
+    case .other: return 10
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Common_V1_SourceType] = [
+    .unspecified,
+    .book,
+    .web,
+    .audio,
+    .video,
+    .manual,
+    .other,
+  ]
+
+}
+
 /// ID request message
 public struct Common_V1_IDRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -235,6 +302,10 @@ extension Common_V1_Language: SwiftProtobuf._ProtoNameProviding {
 
 extension Common_V1_RelationType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0RELATION_TYPE_UNSPECIFIED\0\u{1}RELATION_TYPE_SYNONYM\0\u{1}RELATION_TYPE_ANTONYM\0\u{1}RELATION_TYPE_HYPERNYM\0\u{1}RELATION_TYPE_HYPONYM\0\u{1}RELATION_TYPE_ASSOCIATION\0\u{1}RELATION_TYPE_CAUSE_EFFECT\0\u{1}RELATION_TYPE_PART_WHOLE\0\u{2}\u{3}RELATION_TYPE_MNEMONIC\0\u{2}Z\u{1}RELATION_TYPE_CUSTOM\0")
+}
+
+extension Common_V1_SourceType: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SOURCE_TYPE_UNSPECIFIED\0\u{1}SOURCE_TYPE_BOOK\0\u{1}SOURCE_TYPE_WEB\0\u{1}SOURCE_TYPE_AUDIO\0\u{1}SOURCE_TYPE_VIDEO\0\u{1}SOURCE_TYPE_MANUAL\0\u{2}\u{5}SOURCE_TYPE_OTHER\0")
 }
 
 extension Common_V1_IDRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {

@@ -105,7 +105,9 @@ func (r *userWordRepository) List(ctx context.Context, query *repository.ListUse
 
 	userWords := make([]*entity.UserWord, 0, len(rows))
 	for _, row := range rows {
-		userWords = append(userWords, mapDBUserWord(row))
+		userWord := mapDBUserWord(row.UserWord)
+		userWord.WordContent = mapDBWord(row.Word)
+		userWords = append(userWords, userWord)
 	}
 	return userWords, total, nil
 }
@@ -142,7 +144,7 @@ func toCreateParams(uw *entity.UserWord) db.CreateUserWordParams {
 	return db.CreateUserWordParams{
 		UserID:             uw.UserID,
 		Word:               uw.Word,
-		Language:           uw.Language,
+		Language:           uw.Language.Code(),
 		MasteryListen:      int16(uw.Mastery.Listen),
 		MasteryRead:        int16(uw.Mastery.Read),
 		MasterySpell:       int16(uw.Mastery.Spell),
@@ -168,7 +170,7 @@ func toUpdateParams(uw *entity.UserWord) db.UpdateUserWordParams {
 		ID:                 uw.ID,
 		UserID:             uw.UserID,
 		Word:               uw.Word,
-		Language:           uw.Language,
+		Language:           uw.Language.Code(),
 		MasteryListen:      int16(uw.Mastery.Listen),
 		MasteryRead:        int16(uw.Mastery.Read),
 		MasterySpell:       int16(uw.Mastery.Spell),
@@ -193,7 +195,7 @@ func mapDBUserWord(row db.UserWord) *entity.UserWord {
 		ID:       row.ID,
 		UserID:   row.UserID,
 		Word:     row.Word,
-		Language: row.Language,
+		Language: entity.ParseLanguage(row.Language),
 		Mastery: entity.MasteryBreakdown{
 			Listen:    int32(row.MasteryListen),
 			Read:      int32(row.MasteryRead),

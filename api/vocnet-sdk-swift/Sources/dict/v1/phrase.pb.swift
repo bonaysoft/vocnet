@@ -34,6 +34,25 @@ public struct Dict_V1_Phrase: Sendable {
   /// Language of the phrase
   public var language: Common_V1_Language = .unspecified
 
+  /// Possibly multiple languages' definitions
+  public var definitions: [Dict_V1_PhraseDefinition] = []
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct Dict_V1_PhraseDefinition: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Language of the translation
+  public var language: Common_V1_Language = .unspecified
+
+  /// Definition text
+  public var text: String = String()
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -45,7 +64,7 @@ fileprivate let _protobuf_package = "dict.v1"
 
 extension Dict_V1_Phrase: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Phrase"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}text\0\u{1}language\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}text\0\u{1}language\0\u{1}definitions\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -56,6 +75,7 @@ extension Dict_V1_Phrase: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       case 1: try { try decoder.decodeSingularInt64Field(value: &self.id) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.text) }()
       case 3: try { try decoder.decodeSingularEnumField(value: &self.language) }()
+      case 4: try { try decoder.decodeRepeatedMessageField(value: &self.definitions) }()
       default: break
       }
     }
@@ -71,6 +91,9 @@ extension Dict_V1_Phrase: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.language != .unspecified {
       try visitor.visitSingularEnumField(value: self.language, fieldNumber: 3)
     }
+    if !self.definitions.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.definitions, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -78,6 +101,42 @@ extension Dict_V1_Phrase: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if lhs.id != rhs.id {return false}
     if lhs.text != rhs.text {return false}
     if lhs.language != rhs.language {return false}
+    if lhs.definitions != rhs.definitions {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Dict_V1_PhraseDefinition: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".PhraseDefinition"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}language\0\u{1}text\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.language) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.text) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.language != .unspecified {
+      try visitor.visitSingularEnumField(value: self.language, fieldNumber: 1)
+    }
+    if !self.text.isEmpty {
+      try visitor.visitSingularStringField(value: self.text, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Dict_V1_PhraseDefinition, rhs: Dict_V1_PhraseDefinition) -> Bool {
+    if lhs.language != rhs.language {return false}
+    if lhs.text != rhs.text {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

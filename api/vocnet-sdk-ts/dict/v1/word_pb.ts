@@ -4,21 +4,21 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { IDRequestSchema, Language, PaginationRequest, PaginationResponse, RelationType } from "../../common/v1/types_pb";
+import type { IDRequestSchema, Language, PaginationRequest, PaginationResponse, RelationType, SourceType } from "../../common/v1/types_pb";
 import { file_common_v1_types } from "../../common/v1/types_pb";
 import { file_google_api_annotations } from "../../google/api/annotations_pb";
 import type { EmptySchema, Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_empty, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import { file_validate_validate } from "../../validate/validate_pb";
-import type { Sentence } from "../../vocnet/v1/vocnet_pb";
-import { file_vocnet_v1_vocnet } from "../../vocnet/v1/vocnet_pb";
+import type { Phrase } from "./phrase_pb";
+import { file_dict_v1_phrase } from "./phrase_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file dict/v1/word.proto.
  */
 export const file_dict_v1_word: GenFile = /*@__PURE__*/
-  fileDesc("ChJkaWN0L3YxL3dvcmQucHJvdG8SB2RpY3QudjEirwMKBFdvcmQSCgoCaWQYASABKAMSDAoEdGV4dBgCIAEoCRIlCghsYW5ndWFnZRgDIAEoDjITLmNvbW1vbi52MS5MYW5ndWFnZRIRCgl3b3JkX3R5cGUYBCABKAkSDQoFbGVtbWEYBSABKAkSJAoJcGhvbmV0aWNzGAYgAygLMhEuZGljdC52MS5QaG9uZXRpYxIoCgtkZWZpbml0aW9ucxgHIAMoCzITLmRpY3QudjEuRGVmaW5pdGlvbhIMCgR0YWdzGAggAygJEg8KB3BocmFzZXMYCSADKAkSJgoJc2VudGVuY2VzGAogAygLMhMudm9jbmV0LnYxLlNlbnRlbmNlEiMKBWZvcm1zGB4gAygLMhQuZGljdC52MS5Xb3JkRm9ybVJlZhIoCglyZWxhdGlvbnMYHyADKAsyFS5kaWN0LnYxLldvcmRSZWxhdGlvbhIuCgpjcmVhdGVkX2F0GGQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GGUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIoCghQaG9uZXRpYxILCgNpcGEYASABKAkSDwoHZGlhbGVjdBgCIAEoCSJOCgpEZWZpbml0aW9uEgsKA3BvcxgBIAEoCRIMCgR0ZXh0GAIgASgJEiUKCGxhbmd1YWdlGAMgASgOMhMuY29tbW9uLnYxLkxhbmd1YWdlIi4KC1dvcmRGb3JtUmVmEgwKBHRleHQYASABKAkSEQoJd29yZF90eXBlGAIgASgJIkwKDFdvcmRSZWxhdGlvbhIMCgR3b3JkGAEgASgJEi4KDXJlbGF0aW9uX3R5cGUYAiABKA4yFy5jb21tb24udjEuUmVsYXRpb25UeXBlIjoKEUNyZWF0ZVdvcmRSZXF1ZXN0EiUKBHdvcmQYASABKAsyDS5kaWN0LnYxLldvcmRCCPpCBYoBAhABImYKEExpc3RXb3Jkc1JlcXVlc3QSMAoKcGFnaW5hdGlvbhgBIAEoCzIcLmNvbW1vbi52MS5QYWdpbmF0aW9uUmVxdWVzdBIOCgZmaWx0ZXIYAiABKAkSEAoIb3JkZXJfYnkYAyABKAkiZAoRTGlzdFdvcmRzUmVzcG9uc2USMQoKcGFnaW5hdGlvbhgBIAEoCzIdLmNvbW1vbi52MS5QYWdpbmF0aW9uUmVzcG9uc2USHAoFd29yZHMYAiADKAsyDS5kaWN0LnYxLldvcmQiUQoRTG9va3VwV29yZFJlcXVlc3QSFQoEd29yZBgBIAEoCUIH+kIEcgIQARIlCghsYW5ndWFnZRgCIAEoDjITLmNvbW1vbi52MS5MYW5ndWFnZTKBBAoLV29yZFNlcnZpY2USUQoKQ3JlYXRlV29yZBIaLmRpY3QudjEuQ3JlYXRlV29yZFJlcXVlc3QaDS5kaWN0LnYxLldvcmQiGILT5JMCEjoBKiINL2FwaS92MS93b3JkcxJJCgpVcGRhdGVXb3JkEg0uZGljdC52MS5Xb3JkGg0uZGljdC52MS5Xb3JkIh2C0+STAhc6ASoaEi9hcGkvdjEvd29yZHMve2lkfRJKCgdHZXRXb3JkEhQuY29tbW9uLnYxLklEUmVxdWVzdBoNLmRpY3QudjEuV29yZCIagtPkkwIUEhIvYXBpL3YxL3dvcmRzL3tpZH0SWQoJTGlzdFdvcmRzEhkuZGljdC52MS5MaXN0V29yZHNSZXF1ZXN0GhouZGljdC52MS5MaXN0V29yZHNSZXNwb25zZSIVgtPkkwIPEg0vYXBpL3YxL3dvcmRzElUKCkxvb2t1cFdvcmQSGi5kaWN0LnYxLkxvb2t1cFdvcmRSZXF1ZXN0Gg0uZGljdC52MS5Xb3JkIhyC0+STAhYSFC9hcGkvdjEvd29yZHM6bG9va3VwElYKCkRlbGV0ZVdvcmQSFC5jb21tb24udjEuSURSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5IhqC0+STAhQqEi9hcGkvdjEvd29yZHMve2lkfUKHAQoLY29tLmRpY3QudjFCCVdvcmRQcm90b1ABWjBnaXRodWIuY29tL2VzbHNvZnQvdm9jbmV0L2FwaS9nZW4vZGljdC92MTtkaWN0djGiAgNEWFiqAgdEaWN0LlYxygIHRGljdFxWMeICE0RpY3RcVjFcR1BCTWV0YWRhdGHqAghEaWN0OjpWMWIGcHJvdG8z", [file_common_v1_types, file_google_api_annotations, file_google_protobuf_empty, file_google_protobuf_timestamp, file_validate_validate, file_vocnet_v1_vocnet]);
+  fileDesc("ChJkaWN0L3YxL3dvcmQucHJvdG8SB2RpY3QudjEivgMKBFdvcmQSCgoCaWQYASABKAMSDAoEdGV4dBgCIAEoCRIlCghsYW5ndWFnZRgDIAEoDjITLmNvbW1vbi52MS5MYW5ndWFnZRIRCgl3b3JkX3R5cGUYBCABKAkSDQoFbGVtbWEYBSABKAkSJAoJcGhvbmV0aWNzGAYgAygLMhEuZGljdC52MS5QaG9uZXRpYxIoCgtkZWZpbml0aW9ucxgHIAMoCzITLmRpY3QudjEuRGVmaW5pdGlvbhIMCgR0YWdzGAggAygJEiAKB3BocmFzZXMYCSADKAsyDy5kaWN0LnYxLlBocmFzZRIkCglzZW50ZW5jZXMYCiADKAsyES5kaWN0LnYxLlNlbnRlbmNlEiMKBWZvcm1zGB4gAygLMhQuZGljdC52MS5Xb3JkRm9ybVJlZhIoCglyZWxhdGlvbnMYHyADKAsyFS5kaWN0LnYxLldvcmRSZWxhdGlvbhIuCgpjcmVhdGVkX2F0GGQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GGUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIoCghQaG9uZXRpYxILCgNpcGEYASABKAkSDwoHZGlhbGVjdBgCIAEoCSJOCgpEZWZpbml0aW9uEgsKA3BvcxgBIAEoCRIMCgR0ZXh0GAIgASgJEiUKCGxhbmd1YWdlGAMgASgOMhMuY29tbW9uLnYxLkxhbmd1YWdlIi4KC1dvcmRGb3JtUmVmEgwKBHRleHQYASABKAkSEQoJd29yZF90eXBlGAIgASgJIkwKDFdvcmRSZWxhdGlvbhIMCgR3b3JkGAEgASgJEi4KDXJlbGF0aW9uX3R5cGUYAiABKA4yFy5jb21tb24udjEuUmVsYXRpb25UeXBlIlMKCFNlbnRlbmNlEgwKBHRleHQYASABKAkSJQoGc291cmNlGAIgASgOMhUuY29tbW9uLnYxLlNvdXJjZVR5cGUSEgoKc291cmNlX3JlZhgDIAEoCSI6ChFDcmVhdGVXb3JkUmVxdWVzdBIlCgR3b3JkGAEgASgLMg0uZGljdC52MS5Xb3JkQgj6QgWKAQIQASJmChBMaXN0V29yZHNSZXF1ZXN0EjAKCnBhZ2luYXRpb24YASABKAsyHC5jb21tb24udjEuUGFnaW5hdGlvblJlcXVlc3QSDgoGZmlsdGVyGAIgASgJEhAKCG9yZGVyX2J5GAMgASgJImQKEUxpc3RXb3Jkc1Jlc3BvbnNlEjEKCnBhZ2luYXRpb24YASABKAsyHS5jb21tb24udjEuUGFnaW5hdGlvblJlc3BvbnNlEhwKBXdvcmRzGAIgAygLMg0uZGljdC52MS5Xb3JkIlEKEUxvb2t1cFdvcmRSZXF1ZXN0EhUKBHdvcmQYASABKAlCB/pCBHICEAESJQoIbGFuZ3VhZ2UYAiABKA4yEy5jb21tb24udjEuTGFuZ3VhZ2UygQQKC1dvcmRTZXJ2aWNlElEKCkNyZWF0ZVdvcmQSGi5kaWN0LnYxLkNyZWF0ZVdvcmRSZXF1ZXN0Gg0uZGljdC52MS5Xb3JkIhiC0+STAhI6ASoiDS9hcGkvdjEvd29yZHMSSQoKVXBkYXRlV29yZBINLmRpY3QudjEuV29yZBoNLmRpY3QudjEuV29yZCIdgtPkkwIXOgEqGhIvYXBpL3YxL3dvcmRzL3tpZH0SSgoHR2V0V29yZBIULmNvbW1vbi52MS5JRFJlcXVlc3QaDS5kaWN0LnYxLldvcmQiGoLT5JMCFBISL2FwaS92MS93b3Jkcy97aWR9ElkKCUxpc3RXb3JkcxIZLmRpY3QudjEuTGlzdFdvcmRzUmVxdWVzdBoaLmRpY3QudjEuTGlzdFdvcmRzUmVzcG9uc2UiFYLT5JMCDxINL2FwaS92MS93b3JkcxJVCgpMb29rdXBXb3JkEhouZGljdC52MS5Mb29rdXBXb3JkUmVxdWVzdBoNLmRpY3QudjEuV29yZCIcgtPkkwIWEhQvYXBpL3YxL3dvcmRzOmxvb2t1cBJWCgpEZWxldGVXb3JkEhQuY29tbW9uLnYxLklEUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eSIagtPkkwIUKhIvYXBpL3YxL3dvcmRzL3tpZH1ChwEKC2NvbS5kaWN0LnYxQglXb3JkUHJvdG9QAVowZ2l0aHViLmNvbS9lc2xzb2Z0L3ZvY25ldC9hcGkvZ2VuL2RpY3QvdjE7ZGljdHYxogIDRFhYqgIHRGljdC5WMcoCB0RpY3RcVjHiAhNEaWN0XFYxXEdQQk1ldGFkYXRh6gIIRGljdDo6VjFiBnByb3RvMw", [file_common_v1_types, file_google_api_annotations, file_google_protobuf_empty, file_google_protobuf_timestamp, file_validate_validate, file_dict_v1_phrase]);
 
 /**
  * @generated from message dict.v1.Word
@@ -83,14 +83,14 @@ export type Word = Message<"dict.v1.Word"> & {
   /**
    * Common phrases/idioms containing this word
    *
-   * @generated from field: repeated string phrases = 9;
+   * @generated from field: repeated dict.v1.Phrase phrases = 9;
    */
-  phrases: string[];
+  phrases: Phrase[];
 
   /**
    * Example sentences
    *
-   * @generated from field: repeated vocnet.v1.Sentence sentences = 10;
+   * @generated from field: repeated dict.v1.Sentence sentences = 10;
    */
   sentences: Sentence[];
 
@@ -249,6 +249,39 @@ export const WordRelationSchema: GenMessage<WordRelation> = /*@__PURE__*/
   messageDesc(file_dict_v1_word, 4);
 
 /**
+ * @generated from message dict.v1.Sentence
+ */
+export type Sentence = Message<"dict.v1.Sentence"> & {
+  /**
+   * Surface form of the sentence
+   *
+   * @generated from field: string text = 1;
+   */
+  text: string;
+
+  /**
+   * How this sentence was added
+   *
+   * @generated from field: common.v1.SourceType source = 2;
+   */
+  source: SourceType;
+
+  /**
+   * Optional reference (book or article title)
+   *
+   * @generated from field: string source_ref = 3;
+   */
+  sourceRef: string;
+};
+
+/**
+ * Describes the message dict.v1.Sentence.
+ * Use `create(SentenceSchema)` to create a new message.
+ */
+export const SentenceSchema: GenMessage<Sentence> = /*@__PURE__*/
+  messageDesc(file_dict_v1_word, 5);
+
+/**
  * CreateWord request (creates either a lemma entry or a derived/inflected form)
  *
  * @generated from message dict.v1.CreateWordRequest
@@ -265,7 +298,7 @@ export type CreateWordRequest = Message<"dict.v1.CreateWordRequest"> & {
  * Use `create(CreateWordRequestSchema)` to create a new message.
  */
 export const CreateWordRequestSchema: GenMessage<CreateWordRequest> = /*@__PURE__*/
-  messageDesc(file_dict_v1_word, 5);
+  messageDesc(file_dict_v1_word, 6);
 
 /**
  * ListWords request
@@ -298,7 +331,7 @@ export type ListWordsRequest = Message<"dict.v1.ListWordsRequest"> & {
  * Use `create(ListWordsRequestSchema)` to create a new message.
  */
 export const ListWordsRequestSchema: GenMessage<ListWordsRequest> = /*@__PURE__*/
-  messageDesc(file_dict_v1_word, 6);
+  messageDesc(file_dict_v1_word, 7);
 
 /**
  * @generated from message dict.v1.ListWordsResponse
@@ -320,7 +353,7 @@ export type ListWordsResponse = Message<"dict.v1.ListWordsResponse"> & {
  * Use `create(ListWordsResponseSchema)` to create a new message.
  */
 export const ListWordsResponseSchema: GenMessage<ListWordsResponse> = /*@__PURE__*/
-  messageDesc(file_dict_v1_word, 7);
+  messageDesc(file_dict_v1_word, 8);
 
 /**
  * LookupWordRequest performs an exact text lookup in specified language (default en)
@@ -346,7 +379,7 @@ export type LookupWordRequest = Message<"dict.v1.LookupWordRequest"> & {
  * Use `create(LookupWordRequestSchema)` to create a new message.
  */
 export const LookupWordRequestSchema: GenMessage<LookupWordRequest> = /*@__PURE__*/
-  messageDesc(file_dict_v1_word, 8);
+  messageDesc(file_dict_v1_word, 9);
 
 /**
  * @generated from service dict.v1.WordService

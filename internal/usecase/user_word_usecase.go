@@ -51,9 +51,6 @@ func (u *userWordUsecase) CollectWord(ctx context.Context, userID int64, word *e
 		if word.Notes != "" {
 			existing.Notes = word.Notes
 		}
-		if trimmedLang := strings.TrimSpace(word.Language); trimmedLang != "" {
-			existing.Language = trimmedLang
-		}
 		existing.Mastery = word.Mastery
 		existing.Review = word.Review
 		existing.Normalize(now)
@@ -63,7 +60,6 @@ func (u *userWordUsecase) CollectWord(ctx context.Context, userID int64, word *e
 	copy := *word
 	copy.Word = text
 	copy.UserID = userID
-	copy.Language = strings.TrimSpace(copy.Language)
 	if copy.QueryCount == 0 {
 		copy.QueryCount = 1
 	}

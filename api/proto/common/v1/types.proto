@@ -64,3 +64,14 @@ enum RelationType {
   RELATION_TYPE_MNEMONIC = 10; // 联想/助记 (arbitrary user associations)
   RELATION_TYPE_CUSTOM = 100; // 自定义关系 (reserved for extension)
 }
+
+// Source types for sentences and content
+enum SourceType {
+  SOURCE_TYPE_UNSPECIFIED = 0;
+  SOURCE_TYPE_BOOK = 1; // 书籍
+  SOURCE_TYPE_WEB = 2; // 网页
+  SOURCE_TYPE_AUDIO = 3; // 音频
+  SOURCE_TYPE_VIDEO = 4; // 视频
+  SOURCE_TYPE_MANUAL = 5; // 手动输入
+  SOURCE_TYPE_OTHER = 10; // 其他
+}

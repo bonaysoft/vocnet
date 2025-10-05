@@ -7,7 +7,7 @@ import (
 	"github.com/google/wire"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	adaptergrpc "github.com/eslsoft/vocnet/internal/adapter/grpc"
+	adaptergrpc "github.com/eslsoft/vocnet/internal/adapter/connectrpc"
 	"github.com/eslsoft/vocnet/internal/adapter/repository"
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database"

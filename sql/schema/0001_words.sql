@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS words (
     phonetics JSONB NOT NULL DEFAULT '[]'::jsonb,
     meanings JSONB NOT NULL DEFAULT '[]'::jsonb,  -- Array of {pos, definition, translation} (只在 lemma 行一般有值)
     tags TEXT[] NULL,
-    phrases TEXT[] NULL,
+    phrases JSONB NOT NULL DEFAULT '[]'::jsonb,
     sentences JSONB NOT NULL DEFAULT '[]'::jsonb,
     relations JSONB NOT NULL DEFAULT '[]'::jsonb,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

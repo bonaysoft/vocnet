@@ -21,21 +21,84 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 }
 
 /// User's personal word record with learning context
-public struct Vocnet_V1_UserWord: @unchecked Sendable {
+public struct Vocnet_V1_UserWord: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var id: Int64 {
-    get {return _storage._id}
-    set {_uniqueStorage()._id = newValue}
-  }
+  public var id: Int64 = 0
 
-  /// Reference to global word (nullable)
-  public var word: String {
-    get {return _storage._word}
+  public var spec: Vocnet_V1_UserWordSpec {
+    get {return _spec ?? Vocnet_V1_UserWordSpec()}
+    set {_spec = newValue}
+  }
+  /// Returns true if `spec` has been explicitly set.
+  public var hasSpec: Bool {return self._spec != nil}
+  /// Clears the value of `spec`. Subsequent reads from it will return its default value.
+  public mutating func clearSpec() {self._spec = nil}
+
+  public var status: Vocnet_V1_UserWordStatus {
+    get {return _status ?? Vocnet_V1_UserWordStatus()}
+    set {_status = newValue}
+  }
+  /// Returns true if `status` has been explicitly set.
+  public var hasStatus: Bool {return self._status != nil}
+  /// Clears the value of `status`. Subsequent reads from it will return its default value.
+  public mutating func clearStatus() {self._status = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _spec: Vocnet_V1_UserWordSpec? = nil
+  fileprivate var _status: Vocnet_V1_UserWordStatus? = nil
+}
+
+/// Spec is user-provided data for the word
+public struct Vocnet_V1_UserWordSpec: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var word: String = String()
+
+  /// Language of the word
+  public var language: Common_V1_Language = .unspecified
+
+  /// Mastery level (0-5), self-assessed by user
+  public var masteryLevel: Int32 = 0
+
+  /// Relationships to other words
+  public var relations: [Vocnet_V1_UserWordRelation] = []
+
+  /// Contextual example sentences
+  public var sentences: [Dict_V1_Sentence] = []
+
+  /// User-defined tags
+  public var tags: [String] = []
+
+  /// User's personal notes
+  public var notes: [String] = []
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Status is read-only, maintained by the system
+public struct Vocnet_V1_UserWordStatus: @unchecked Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var word: Dict_V1_Word {
+    get {return _storage._word ?? Dict_V1_Word()}
     set {_uniqueStorage()._word = newValue}
   }
+  /// Returns true if `word` has been explicitly set.
+  public var hasWord: Bool {return _storage._word != nil}
+  /// Clears the value of `word`. Subsequent reads from it will return its default value.
+  public mutating func clearWord() {_uniqueStorage()._word = nil}
 
   /// Detailed mastery scores
   public var mastery: Vocnet_V1_MasteryBreakdown {
@@ -61,24 +124,6 @@ public struct Vocnet_V1_UserWord: @unchecked Sendable {
   public var queryCount: Int64 {
     get {return _storage._queryCount}
     set {_uniqueStorage()._queryCount = newValue}
-  }
-
-  /// User's personal notes
-  public var notes: String {
-    get {return _storage._notes}
-    set {_uniqueStorage()._notes = newValue}
-  }
-
-  /// Contextual example sentences
-  public var sentences: [Vocnet_V1_Sentence] {
-    get {return _storage._sentences}
-    set {_uniqueStorage()._sentences = newValue}
-  }
-
-  /// Relationships to other words
-  public var relations: [Vocnet_V1_UserWordRelation] {
-    get {return _storage._relations}
-    set {_uniqueStorage()._relations = newValue}
   }
 
   /// Owner username (read-only)
@@ -130,9 +175,6 @@ public struct Vocnet_V1_MasteryBreakdown: Sendable {
   /// Pronunciation mastery (0-5)
   public var pronounce: Int32 = 0
 
-  /// Usage in context mastery (0-5)
-  public var use: Int32 = 0
-
   /// Overall mastery score (0-500, stored as *100)
   public var overall: Int32 = 0
 
@@ -179,25 +221,6 @@ public struct Vocnet_V1_ReviewTiming: Sendable {
   fileprivate var _nextReviewAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
 }
 
-public struct Vocnet_V1_Sentence: Sendable {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  /// Surface form of the sentence
-  public var text: String = String()
-
-  /// How this sentence was added
-  public var source: Vocnet_V1_SourceType = .unspecified
-
-  /// Optional reference (book or article title)
-  public var sourceRef: String = String()
-
-  public var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  public init() {}
-}
-
 /// Word-to-word relationship for building vocabulary networks
 public struct Vocnet_V1_UserWordRelation: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -211,9 +234,6 @@ public struct Vocnet_V1_UserWordRelation: Sendable {
 
   /// User's note about this relation
   public var note: String = String()
-
-  /// Owner username (read-only)
-  public var createdBy: String = String()
 
   public var createdAt: SwiftProtobuf.Google_Protobuf_Timestamp {
     get {return _createdAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
@@ -247,17 +267,117 @@ fileprivate let _protobuf_package = "vocnet.v1"
 
 extension Vocnet_V1_UserWord: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UserWord"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}word\0\u{1}mastery\0\u{3}review_timing\0\u{3}query_count\0\u{1}notes\0\u{1}sentences\0\u{1}relations\0\u{4}\u{c}created_by\0\u{3}created_at\0\u{3}updated_at\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}spec\0\u{1}status\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularInt64Field(value: &self.id) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._spec) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._status) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.id != 0 {
+      try visitor.visitSingularInt64Field(value: self.id, fieldNumber: 1)
+    }
+    try { if let v = self._spec {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._status {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Vocnet_V1_UserWord, rhs: Vocnet_V1_UserWord) -> Bool {
+    if lhs.id != rhs.id {return false}
+    if lhs._spec != rhs._spec {return false}
+    if lhs._status != rhs._status {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Vocnet_V1_UserWordSpec: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".UserWordSpec"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}word\0\u{1}language\0\u{3}mastery_level\0\u{2}\u{2}relations\0\u{1}sentences\0\u{1}tags\0\u{1}notes\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.word) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.language) }()
+      case 3: try { try decoder.decodeSingularInt32Field(value: &self.masteryLevel) }()
+      case 5: try { try decoder.decodeRepeatedMessageField(value: &self.relations) }()
+      case 6: try { try decoder.decodeRepeatedMessageField(value: &self.sentences) }()
+      case 7: try { try decoder.decodeRepeatedStringField(value: &self.tags) }()
+      case 8: try { try decoder.decodeRepeatedStringField(value: &self.notes) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.word.isEmpty {
+      try visitor.visitSingularStringField(value: self.word, fieldNumber: 1)
+    }
+    if self.language != .unspecified {
+      try visitor.visitSingularEnumField(value: self.language, fieldNumber: 2)
+    }
+    if self.masteryLevel != 0 {
+      try visitor.visitSingularInt32Field(value: self.masteryLevel, fieldNumber: 3)
+    }
+    if !self.relations.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.relations, fieldNumber: 5)
+    }
+    if !self.sentences.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.sentences, fieldNumber: 6)
+    }
+    if !self.tags.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.tags, fieldNumber: 7)
+    }
+    if !self.notes.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.notes, fieldNumber: 8)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Vocnet_V1_UserWordSpec, rhs: Vocnet_V1_UserWordSpec) -> Bool {
+    if lhs.word != rhs.word {return false}
+    if lhs.language != rhs.language {return false}
+    if lhs.masteryLevel != rhs.masteryLevel {return false}
+    if lhs.relations != rhs.relations {return false}
+    if lhs.sentences != rhs.sentences {return false}
+    if lhs.tags != rhs.tags {return false}
+    if lhs.notes != rhs.notes {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Vocnet_V1_UserWordStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".UserWordStatus"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}word\0\u{2}\u{2}mastery\0\u{3}review_timing\0\u{3}query_count\0\u{4}\u{f}created_by\0\u{3}created_at\0\u{3}updated_at\0")
 
   fileprivate class _StorageClass {
-    var _id: Int64 = 0
-    var _word: String = String()
+    var _word: Dict_V1_Word? = nil
     var _mastery: Vocnet_V1_MasteryBreakdown? = nil
     var _reviewTiming: Vocnet_V1_ReviewTiming? = nil
     var _queryCount: Int64 = 0
-    var _notes: String = String()
-    var _sentences: [Vocnet_V1_Sentence] = []
-    var _relations: [Vocnet_V1_UserWordRelation] = []
     var _createdBy: String = String()
     var _createdAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
     var _updatedAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
@@ -271,14 +391,10 @@ extension Vocnet_V1_UserWord: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     private init() {}
 
     init(copying source: _StorageClass) {
-      _id = source._id
       _word = source._word
       _mastery = source._mastery
       _reviewTiming = source._reviewTiming
       _queryCount = source._queryCount
-      _notes = source._notes
-      _sentences = source._sentences
-      _relations = source._relations
       _createdBy = source._createdBy
       _createdAt = source._createdAt
       _updatedAt = source._updatedAt
@@ -300,14 +416,10 @@ extension Vocnet_V1_UserWord: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
         // allocates stack space for every case branch when no optimizations are
         // enabled. https://github.com/apple/swift-protobuf/issues/1034
         switch fieldNumber {
-        case 1: try { try decoder.decodeSingularInt64Field(value: &_storage._id) }()
-        case 2: try { try decoder.decodeSingularStringField(value: &_storage._word) }()
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._word) }()
         case 3: try { try decoder.decodeSingularMessageField(value: &_storage._mastery) }()
         case 4: try { try decoder.decodeSingularMessageField(value: &_storage._reviewTiming) }()
         case 5: try { try decoder.decodeSingularInt64Field(value: &_storage._queryCount) }()
-        case 6: try { try decoder.decodeSingularStringField(value: &_storage._notes) }()
-        case 7: try { try decoder.decodeRepeatedMessageField(value: &_storage._sentences) }()
-        case 8: try { try decoder.decodeRepeatedMessageField(value: &_storage._relations) }()
         case 20: try { try decoder.decodeSingularStringField(value: &_storage._createdBy) }()
         case 21: try { try decoder.decodeSingularMessageField(value: &_storage._createdAt) }()
         case 22: try { try decoder.decodeSingularMessageField(value: &_storage._updatedAt) }()
@@ -323,12 +435,9 @@ extension Vocnet_V1_UserWord: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       // allocates stack space for every if/case branch local when no optimizations
       // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
       // https://github.com/apple/swift-protobuf/issues/1182
-      if _storage._id != 0 {
-        try visitor.visitSingularInt64Field(value: _storage._id, fieldNumber: 1)
-      }
-      if !_storage._word.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._word, fieldNumber: 2)
-      }
+      try { if let v = _storage._word {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      } }()
       try { if let v = _storage._mastery {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
       } }()
@@ -337,15 +446,6 @@ extension Vocnet_V1_UserWord: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       } }()
       if _storage._queryCount != 0 {
         try visitor.visitSingularInt64Field(value: _storage._queryCount, fieldNumber: 5)
-      }
-      if !_storage._notes.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._notes, fieldNumber: 6)
-      }
-      if !_storage._sentences.isEmpty {
-        try visitor.visitRepeatedMessageField(value: _storage._sentences, fieldNumber: 7)
-      }
-      if !_storage._relations.isEmpty {
-        try visitor.visitRepeatedMessageField(value: _storage._relations, fieldNumber: 8)
       }
       if !_storage._createdBy.isEmpty {
         try visitor.visitSingularStringField(value: _storage._createdBy, fieldNumber: 20)
@@ -360,19 +460,15 @@ extension Vocnet_V1_UserWord: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Vocnet_V1_UserWord, rhs: Vocnet_V1_UserWord) -> Bool {
+  public static func ==(lhs: Vocnet_V1_UserWordStatus, rhs: Vocnet_V1_UserWordStatus) -> Bool {
     if lhs._storage !== rhs._storage {
       let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
         let _storage = _args.0
         let rhs_storage = _args.1
-        if _storage._id != rhs_storage._id {return false}
         if _storage._word != rhs_storage._word {return false}
         if _storage._mastery != rhs_storage._mastery {return false}
         if _storage._reviewTiming != rhs_storage._reviewTiming {return false}
         if _storage._queryCount != rhs_storage._queryCount {return false}
-        if _storage._notes != rhs_storage._notes {return false}
-        if _storage._sentences != rhs_storage._sentences {return false}
-        if _storage._relations != rhs_storage._relations {return false}
         if _storage._createdBy != rhs_storage._createdBy {return false}
         if _storage._createdAt != rhs_storage._createdAt {return false}
         if _storage._updatedAt != rhs_storage._updatedAt {return false}
@@ -387,7 +483,7 @@ extension Vocnet_V1_UserWord: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
 
 extension Vocnet_V1_MasteryBreakdown: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MasteryBreakdown"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}listen\0\u{1}read\0\u{1}spell\0\u{1}pronounce\0\u{1}use\0\u{1}overall\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}listen\0\u{1}read\0\u{1}spell\0\u{1}pronounce\0\u{2}\u{2}overall\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -399,7 +495,6 @@ extension Vocnet_V1_MasteryBreakdown: SwiftProtobuf.Message, SwiftProtobuf._Mess
       case 2: try { try decoder.decodeSingularInt32Field(value: &self.read) }()
       case 3: try { try decoder.decodeSingularInt32Field(value: &self.spell) }()
       case 4: try { try decoder.decodeSingularInt32Field(value: &self.pronounce) }()
-      case 5: try { try decoder.decodeSingularInt32Field(value: &self.use) }()
       case 6: try { try decoder.decodeSingularInt32Field(value: &self.overall) }()
       default: break
       }
@@ -419,9 +514,6 @@ extension Vocnet_V1_MasteryBreakdown: SwiftProtobuf.Message, SwiftProtobuf._Mess
     if self.pronounce != 0 {
       try visitor.visitSingularInt32Field(value: self.pronounce, fieldNumber: 4)
     }
-    if self.use != 0 {
-      try visitor.visitSingularInt32Field(value: self.use, fieldNumber: 5)
-    }
     if self.overall != 0 {
       try visitor.visitSingularInt32Field(value: self.overall, fieldNumber: 6)
     }
@@ -433,7 +525,6 @@ extension Vocnet_V1_MasteryBreakdown: SwiftProtobuf.Message, SwiftProtobuf._Mess
     if lhs.read != rhs.read {return false}
     if lhs.spell != rhs.spell {return false}
     if lhs.pronounce != rhs.pronounce {return false}
-    if lhs.use != rhs.use {return false}
     if lhs.overall != rhs.overall {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -489,49 +580,9 @@ extension Vocnet_V1_ReviewTiming: SwiftProtobuf.Message, SwiftProtobuf._MessageI
   }
 }
 
-extension Vocnet_V1_Sentence: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".Sentence"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}text\0\u{1}source\0\u{3}source_ref\0")
-
-  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
-      case 2: try { try decoder.decodeSingularEnumField(value: &self.source) }()
-      case 3: try { try decoder.decodeSingularStringField(value: &self.sourceRef) }()
-      default: break
-      }
-    }
-  }
-
-  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.text.isEmpty {
-      try visitor.visitSingularStringField(value: self.text, fieldNumber: 1)
-    }
-    if self.source != .unspecified {
-      try visitor.visitSingularEnumField(value: self.source, fieldNumber: 2)
-    }
-    if !self.sourceRef.isEmpty {
-      try visitor.visitSingularStringField(value: self.sourceRef, fieldNumber: 3)
-    }
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  public static func ==(lhs: Vocnet_V1_Sentence, rhs: Vocnet_V1_Sentence) -> Bool {
-    if lhs.text != rhs.text {return false}
-    if lhs.source != rhs.source {return false}
-    if lhs.sourceRef != rhs.sourceRef {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
-}
-
 extension Vocnet_V1_UserWordRelation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UserWordRelation"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}word\0\u{3}relation_type\0\u{1}note\0\u{4}\u{11}created_by\0\u{3}created_at\0\u{3}updated_at\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}word\0\u{3}relation_type\0\u{1}note\0\u{4}\u{12}created_at\0\u{3}updated_at\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -542,7 +593,6 @@ extension Vocnet_V1_UserWordRelation: SwiftProtobuf.Message, SwiftProtobuf._Mess
       case 1: try { try decoder.decodeSingularStringField(value: &self.word) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self.relationType) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.note) }()
-      case 20: try { try decoder.decodeSingularStringField(value: &self.createdBy) }()
       case 21: try { try decoder.decodeSingularMessageField(value: &self._createdAt) }()
       case 22: try { try decoder.decodeSingularMessageField(value: &self._updatedAt) }()
       default: break
@@ -564,9 +614,6 @@ extension Vocnet_V1_UserWordRelation: SwiftProtobuf.Message, SwiftProtobuf._Mess
     if !self.note.isEmpty {
       try visitor.visitSingularStringField(value: self.note, fieldNumber: 3)
     }
-    if !self.createdBy.isEmpty {
-      try visitor.visitSingularStringField(value: self.createdBy, fieldNumber: 20)
-    }
     try { if let v = self._createdAt {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 21)
     } }()
@@ -580,7 +627,6 @@ extension Vocnet_V1_UserWordRelation: SwiftProtobuf.Message, SwiftProtobuf._Mess
     if lhs.word != rhs.word {return false}
     if lhs.relationType != rhs.relationType {return false}
     if lhs.note != rhs.note {return false}
-    if lhs.createdBy != rhs.createdBy {return false}
     if lhs._createdAt != rhs._createdAt {return false}
     if lhs._updatedAt != rhs._updatedAt {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}

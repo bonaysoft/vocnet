@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/eslsoft/vocnet/internal/entity"
@@ -121,98 +120,5 @@ func normalizeVocForUpsert(in *entity.Word) (*entity.Word, error) {
 	if len(out.Tags) == 0 {
 		out.Tags = nil
 	}
-	out.Phrases = normalizeStringSlice(out.Phrases)
-	out.Sentences = normalizeSentences(out.Sentences)
-	out.Relations = normalizeWordRelations(out.Relations)
-	out.Phonetics = normalizePhonetics(out.Phonetics)
 	return &out, nil
-}
-
-func normalizePhonetics(in []entity.WordPhonetic) []entity.WordPhonetic {
-	if len(in) == 0 {
-		return nil
-	}
-	out := make([]entity.WordPhonetic, 0, len(in))
-	for _, p := range in {
-		ipa := strings.TrimSpace(p.IPA)
-		if ipa == "" {
-			continue
-		}
-		dialect := strings.TrimSpace(p.Dialect)
-		out = append(out, entity.WordPhonetic{IPA: ipa, Dialect: dialect})
-	}
-	if len(out) == 0 {
-		return nil
-	}
-	return out
-}
-
-func normalizeStringSlice(in []string) []string {
-	if len(in) == 0 {
-		return nil
-	}
-	seen := make(map[string]struct{}, len(in))
-	out := make([]string, 0, len(in))
-	for _, item := range in {
-		trimmed := strings.TrimSpace(item)
-		if trimmed == "" {
-			continue
-		}
-		key := strings.ToLower(trimmed)
-		if _, exists := seen[key]; exists {
-			continue
-		}
-		seen[key] = struct{}{}
-		out = append(out, trimmed)
-	}
-	if len(out) == 0 {
-		return nil
-	}
-	return out
-}
-
-func normalizeSentences(in []entity.Sentence) []entity.Sentence {
-	if len(in) == 0 {
-		return nil
-	}
-	out := make([]entity.Sentence, 0, len(in))
-	for _, s := range in {
-		text := strings.TrimSpace(s.Text)
-		if text == "" {
-			continue
-		}
-		out = append(out, entity.Sentence{
-			Text:      text,
-			Source:    s.Source,
-			SourceRef: strings.TrimSpace(s.SourceRef),
-		})
-	}
-	if len(out) == 0 {
-		return nil
-	}
-	return out
-}
-
-func normalizeWordRelations(in []entity.WordRelation) []entity.WordRelation {
-	if len(in) == 0 {
-		return nil
-	}
-	out := make([]entity.WordRelation, 0, len(in))
-	seen := make(map[string]struct{}, len(in))
-	for _, rel := range in {
-		word := strings.TrimSpace(rel.Word)
-		if word == "" {
-			continue
-		}
-		key := strings.ToLower(word) + "|" + fmt.Sprint(rel.RelationType)
-		if _, exists := seen[key]; exists {
-			continue
-		}
-		seen[key] = struct{}{}
-		out = append(out, entity.WordRelation{Word: word, RelationType: rel.RelationType})
-	}
-	if len(out) == 0 {
-		return nil
-	}
-	return out
 }

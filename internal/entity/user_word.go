@@ -2,6 +2,25 @@ package entity
 
 import "time"
 
+// UserWord represents a user's personalised vocabulary entry.
+type UserWord struct {
+	ID         int64
+	UserID     int64
+	Word       string
+	Language   Language
+	Mastery    MasteryBreakdown
+	Review     ReviewTiming
+	QueryCount int64
+	Notes      string
+	Sentences  []Sentence
+	Relations  []UserWordRelation
+	CreatedBy  string
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+
+	WordContent *Word // Optional linked dictionary word entry
+}
+
 // MasteryBreakdown captures skill-specific mastery scores for a user word.
 type MasteryBreakdown struct {
 	Listen    int32
@@ -20,13 +39,6 @@ type ReviewTiming struct {
 	FailCount    int32
 }
 
-// Sentence captures a short contextual example recorded by the user.
-type Sentence struct {
-	Text      string `json:"text"`
-	Source    int32  `json:"source"`
-	SourceRef string `json:"source_ref,omitempty"`
-}
-
 // UserWordRelation links a user word to another concept in their vocabulary graph.
 type UserWordRelation struct {
 	Word         string    `json:"word"`
@@ -35,30 +47,6 @@ type UserWordRelation struct {
 	CreatedBy    string    `json:"created_by"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
-}
-
-// UserWord represents a user's personalised vocabulary entry.
-type UserWord struct {
-	ID         int64
-	UserID     int64
-	Word       string
-	Language   string
-	Mastery    MasteryBreakdown
-	Review     ReviewTiming
-	QueryCount int64
-	Notes      string
-	Sentences  []Sentence
-	Relations  []UserWordRelation
-	CreatedBy  string
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-}
-
-// UserWordFilter allows searching for user words in repository implementations.
-type UserWordFilter struct {
-	UserID  int64
-	Keyword string
-	Words   []string
 }
 
 // Normalize ensures defaults & constraints before persistence.
