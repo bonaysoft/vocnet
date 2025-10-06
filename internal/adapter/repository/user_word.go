@@ -96,27 +96,7 @@ func (r *userWordRepository) List(ctx context.Context, query *repository.ListUse
 
 	userWords := make([]entity.UserWord, 0, len(rows))
 	for _, row := range rows {
-		userWord := mapDBUserWord(row.UserWord)
-		if row.DictFound && row.DictID != 0 {
-			dict := db.Word{
-				ID:        row.DictID,
-				Text:      row.DictText,
-				Language:  row.DictLanguage,
-				WordType:  row.DictWordType,
-				Lemma:     row.DictLemma,
-				Phonetics: row.DictPhonetics,
-				Meanings:  row.DictMeanings,
-				Tags:      row.DictTags,
-				Phrases:   row.DictPhrases,
-				Sentences: row.DictSentences,
-				Relations: row.DictRelations,
-				CreatedAt: row.DictCreatedAt,
-				UpdatedAt: row.DictUpdatedAt,
-			}
-			if word := mapDBWord(dict); word != nil {
-				userWord.WordContent = word
-			}
-		}
+		userWord := mapDBUserWord(row)
 		userWords = append(userWords, *userWord)
 	}
 

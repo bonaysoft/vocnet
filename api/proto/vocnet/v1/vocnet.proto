@@ -27,7 +27,6 @@ message UserWordSpec {
 
 // Status is read-only, maintained by the system
 message UserWordStatus {
-  dict.v1.Word word = 1; 
   MasteryBreakdown mastery = 3; // Detailed mastery scores
   ReviewTiming review_timing = 4; // Review scheduling info
   int64 query_count = 5; // How many times user looked up this word

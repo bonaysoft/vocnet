@@ -63,7 +63,6 @@ func ToPbUserWord(in *entity.UserWord) *vocnetv1.UserWord {
 			// Notes: in.Notes,
 		},
 		Status: &vocnetv1.UserWordStatus{
-			Word:         ToPbWord(in.WordContent),
 			Mastery:      ToPbMastery(in.Mastery),
 			ReviewTiming: ToPbReview(in.Review),
 			QueryCount:   in.QueryCount,

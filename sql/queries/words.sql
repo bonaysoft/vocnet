@@ -38,6 +38,16 @@ RETURNING id, text, language, word_type, lemma, phonetics, meanings, tags, phras
 DELETE FROM words
 WHERE id = $1;
 
+-- Lookup any word entry by text (prefer lemma). We return the lemma row if exists, else any row.
+-- name: LookupWord :one
+SELECT id, text, language, word_type, lemma, phonetics, meanings, tags, phrases, sentences, relations, created_at, updated_at
+FROM words
+WHERE text = $1 AND language = $2
+ORDER BY
+  CASE WHEN word_type = 'lemma' THEN 0 ELSE 1 END,
+  id
+LIMIT 1;
+
 -- name: CountWords :one
 SELECT COUNT(*)
 FROM words
@@ -48,16 +58,6 @@ WHERE (COALESCE(sqlc.arg('language')::text, '') = '' OR language = sqlc.arg('lan
         COALESCE(array_length(sqlc.arg('words')::text[], 1), 0) = 0
         OR lower(text) = ANY(sqlc.arg('words')::text[])
       );
-
--- Lookup any word entry by text (prefer lemma). We return the lemma row if exists, else any row.
--- name: LookupWord :one
-SELECT id, text, language, word_type, lemma, phonetics, meanings, tags, phrases, sentences, relations, created_at, updated_at
-FROM words
-WHERE lower(text) = lower($1) AND language = $2
-ORDER BY
-  CASE WHEN word_type = 'lemma' THEN 0 ELSE 1 END,
-  id
-LIMIT 1;
 
 -- name: ListWords :many
 SELECT id, text, language, word_type, lemma, phonetics, meanings, tags, phrases, sentences, relations, created_at, updated_at
@@ -71,7 +71,7 @@ WHERE (COALESCE(sqlc.arg('language')::text, '') = '' OR language = sqlc.arg('lan
       )
 ORDER BY
   CASE
-    WHEN COALESCE(sqlc.arg('keyword')::text, '') <> '' AND lower(text) = lower(COALESCE(sqlc.arg('keyword')::text, '')) THEN 0
+    WHEN COALESCE(sqlc.arg('keyword')::text, '') <> '' AND text = COALESCE(sqlc.arg('keyword')::text, '') THEN 0
     ELSE 1
   END,
   CASE WHEN COALESCE(sqlc.arg('primary_key')::text, '') = 'created_at' AND COALESCE(sqlc.arg('primary_desc')::bool, false) THEN created_at END DESC NULLS LAST,

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/eslsoft/vocnet/internal/entity"
@@ -13,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/samber/lo"
 )
 
 type wordRepository struct{ q *db.Queries }
@@ -70,7 +72,7 @@ func (r *wordRepository) Lookup(ctx context.Context, text string, language entit
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	rec, err := r.q.LookupWord(ctx, db.LookupWordParams{Lower: text, Language: entity.NormalizeLanguage(language).Code()})
+	rec, err := r.q.LookupWord(ctx, db.LookupWordParams{Text: text, Language: entity.NormalizeLanguage(language).Code()})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -81,11 +83,14 @@ func (r *wordRepository) Lookup(ctx context.Context, text string, language entit
 }
 
 func (r *wordRepository) List(ctx context.Context, query *repository.ListWordQuery) ([]*entity.Word, int64, error) {
+	fmt.Println("List words with query:", query)
 	var p db.ListWordsParams
 	if err := filterexpr.Bind(query, &p, listWordsSchema); err != nil {
 		return nil, 0, err
 	}
 
+	// Normalize words to lowercase for case-insensitive search
+	p.Words = lo.Map(p.Words, func(s string, _ int) string { return strings.ToLower(s) })
 	p.Offset = query.Offset()
 	p.Limit = query.PageSize
 	rows, err := r.q.ListWords(ctx, p)

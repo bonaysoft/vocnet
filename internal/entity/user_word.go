@@ -17,8 +17,6 @@ type UserWord struct {
 	CreatedBy  string
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
-
-	WordContent *Word // Optional linked dictionary word entry
 }
 
 // MasteryBreakdown captures skill-specific mastery scores for a user word.

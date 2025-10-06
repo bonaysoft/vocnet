@@ -79,33 +79,29 @@ WHERE id = $1 AND user_id = $2;
 SELECT user_words.*
 FROM user_words
 WHERE user_id = sqlc.arg('user_id')
-    AND lower(word) = lower(sqlc.arg('word'))
+    AND word = sqlc.arg('word')
 LIMIT 1;
 
--- name: ListUserWords :many
-SELECT
-    sqlc.embed(user_words),
-    COALESCE(dict.id, 0)::bigint AS dict_id,
-    COALESCE(dict.text, '') AS dict_text,
-    COALESCE(dict.language, '') AS dict_language,
-    COALESCE(dict.word_type, '') AS dict_word_type,
-    dict.lemma AS dict_lemma,
-    COALESCE(dict.phonetics, '[]'::jsonb) AS dict_phonetics,
-    COALESCE(dict.meanings, '[]'::jsonb) AS dict_meanings,
-    COALESCE(dict.tags, ARRAY[]::text[]) AS dict_tags,
-    COALESCE(dict.phrases, '[]'::jsonb) AS dict_phrases,
-    COALESCE(dict.sentences, '[]'::jsonb) AS dict_sentences,
-    COALESCE(dict.relations, '[]'::jsonb) AS dict_relations,
-    COALESCE(dict.created_at, '1970-01-01 00:00:00+00'::timestamptz) AS dict_created_at,
-    COALESCE(dict.updated_at, '1970-01-01 00:00:00+00'::timestamptz) AS dict_updated_at,
-    (dict.id IS NOT NULL)::bool AS dict_found
+-- name: CountUserWords :one
+SELECT COUNT(*)
 FROM user_words
-LEFT JOIN words AS dict ON lower(user_words.word) = lower(dict.text) AND user_words.language = dict.language
 WHERE user_id = sqlc.arg('user_id')
     AND (
         sqlc.arg('keyword')::text = ''
         OR word ILIKE '%' || sqlc.arg('keyword') || '%'
-        OR notes ILIKE '%' || sqlc.arg('keyword') || '%'
+    )
+    AND (
+        COALESCE(array_length(sqlc.arg('words')::text[], 1), 0) = 0
+        OR lower(word) = ANY(sqlc.arg('words')::text[])
+    );
+
+-- name: ListUserWords :many
+SELECT user_words.*
+FROM user_words
+WHERE user_id = sqlc.arg('user_id')
+    AND (
+        sqlc.arg('keyword')::text = ''
+        OR word ILIKE '%' || sqlc.arg('keyword') || '%'
     )
     AND (
         COALESCE(array_length(sqlc.arg('words')::text[], 1), 0) = 0
@@ -135,20 +131,6 @@ ORDER BY
     user_words.id ASC
 LIMIT sqlc.arg('limit')
 OFFSET sqlc.arg('offset');
-
--- name: CountUserWords :one
-SELECT COUNT(*)
-FROM user_words
-WHERE user_id = sqlc.arg('user_id')
-    AND (
-        sqlc.arg('keyword')::text = ''
-        OR word ILIKE '%' || sqlc.arg('keyword') || '%'
-        OR notes ILIKE '%' || sqlc.arg('keyword') || '%'
-    )
-    AND (
-        COALESCE(array_length(sqlc.arg('words')::text[], 1), 0) = 0
-        OR lower(word) = ANY(sqlc.arg('words')::text[])
-    );
 
 -- name: DeleteUserWord :execresult
 DELETE FROM user_words

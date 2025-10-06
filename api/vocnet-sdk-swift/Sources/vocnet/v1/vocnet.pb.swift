@@ -91,15 +91,6 @@ public struct Vocnet_V1_UserWordStatus: @unchecked Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var word: Dict_V1_Word {
-    get {return _storage._word ?? Dict_V1_Word()}
-    set {_uniqueStorage()._word = newValue}
-  }
-  /// Returns true if `word` has been explicitly set.
-  public var hasWord: Bool {return _storage._word != nil}
-  /// Clears the value of `word`. Subsequent reads from it will return its default value.
-  public mutating func clearWord() {_uniqueStorage()._word = nil}
-
   /// Detailed mastery scores
   public var mastery: Vocnet_V1_MasteryBreakdown {
     get {return _storage._mastery ?? Vocnet_V1_MasteryBreakdown()}
@@ -371,10 +362,9 @@ extension Vocnet_V1_UserWordSpec: SwiftProtobuf.Message, SwiftProtobuf._MessageI
 
 extension Vocnet_V1_UserWordStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UserWordStatus"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}word\0\u{2}\u{2}mastery\0\u{3}review_timing\0\u{3}query_count\0\u{4}\u{f}created_by\0\u{3}created_at\0\u{3}updated_at\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\u{3}mastery\0\u{3}review_timing\0\u{3}query_count\0\u{4}\u{f}created_by\0\u{3}created_at\0\u{3}updated_at\0")
 
   fileprivate class _StorageClass {
-    var _word: Dict_V1_Word? = nil
     var _mastery: Vocnet_V1_MasteryBreakdown? = nil
     var _reviewTiming: Vocnet_V1_ReviewTiming? = nil
     var _queryCount: Int64 = 0
@@ -391,7 +381,6 @@ extension Vocnet_V1_UserWordStatus: SwiftProtobuf.Message, SwiftProtobuf._Messag
     private init() {}
 
     init(copying source: _StorageClass) {
-      _word = source._word
       _mastery = source._mastery
       _reviewTiming = source._reviewTiming
       _queryCount = source._queryCount
@@ -416,7 +405,6 @@ extension Vocnet_V1_UserWordStatus: SwiftProtobuf.Message, SwiftProtobuf._Messag
         // allocates stack space for every case branch when no optimizations are
         // enabled. https://github.com/apple/swift-protobuf/issues/1034
         switch fieldNumber {
-        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._word) }()
         case 3: try { try decoder.decodeSingularMessageField(value: &_storage._mastery) }()
         case 4: try { try decoder.decodeSingularMessageField(value: &_storage._reviewTiming) }()
         case 5: try { try decoder.decodeSingularInt64Field(value: &_storage._queryCount) }()
@@ -435,9 +423,6 @@ extension Vocnet_V1_UserWordStatus: SwiftProtobuf.Message, SwiftProtobuf._Messag
       // allocates stack space for every if/case branch local when no optimizations
       // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
       // https://github.com/apple/swift-protobuf/issues/1182
-      try { if let v = _storage._word {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-      } }()
       try { if let v = _storage._mastery {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
       } }()
@@ -465,7 +450,6 @@ extension Vocnet_V1_UserWordStatus: SwiftProtobuf.Message, SwiftProtobuf._Messag
       let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
         let _storage = _args.0
         let rhs_storage = _args.1
-        if _storage._word != rhs_storage._word {return false}
         if _storage._mastery != rhs_storage._mastery {return false}
         if _storage._reviewTiming != rhs_storage._reviewTiming {return false}
         if _storage._queryCount != rhs_storage._queryCount {return false}
