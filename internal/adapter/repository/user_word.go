@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/eslsoft/vocnet/internal/entity"
@@ -13,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/samber/lo"
 )
 
 type userWordRepository struct {
@@ -86,9 +88,10 @@ func (r *userWordRepository) List(ctx context.Context, query *repository.ListUse
 	}
 
 	p.UserID = query.UserID
+	// Normalize words to lowercase for case-insensitive search
+	p.Words = lo.Map(p.Words, func(s string, _ int) string { return strings.ToLower(s) })
 	p.Offset = query.Offset()
 	p.Limit = query.PageSize
-
 	rows, err := r.q.ListUserWords(ctx, p)
 	if err != nil {
 		return nil, 0, fmt.Errorf("list user words: %w", err)
