@@ -7,9 +7,7 @@ BINARY_NAME := vocnet
 
 # Tool versions
 PROTOC_VERSION := 3.21.12
-SQLC_VERSION := 1.30.0
 MOCKGEN_VERSION := 1.6.0
-MIGRATE_VERSION := 4.16.2
 
 # Directories
 BUILD_DIR := bin
@@ -27,10 +25,8 @@ install-tools: ## Install development tools
 	@echo "Installing development tools..."
 	# Install buf
 	go install github.com/bufbuild/buf/cmd/buf@latest
-	# Install sqlc and other tools
-	go install github.com/sqlc-dev/sqlc/cmd/sqlc@v$(SQLC_VERSION)
+	# Install schema/codegen tools
 	go install github.com/golang/mock/mockgen@v$(MOCKGEN_VERSION)
-	GOFLAGS='-tags=postgres' go install github.com/golang-migrate/migrate/v4/cmd/migrate@v$(MIGRATE_VERSION)
 	@echo "Tools installed successfully"
 
 .PHONY: deps
@@ -63,11 +59,12 @@ generate: buf-deps ## Generate code from protobuf files using buf
 	@echo "Generating OpenAPI v3 specification..."
 	curl -X POST -H "Content-Type: application/json" -T api/openapi/apidocs.swagger.json https://converter.swagger.io/api/convert | yq -P -oy '.' > api/openapi/apidocs.openapi.yaml
 	@echo "OpenAPI v3 specification generated at $(OPENAPI_DIR)/apidocs.openapi.yaml"
+	$(MAKE) ent-generate
 
-.PHONY: sqlc
-sqlc: ## Generate type-safe database code
-	@echo "Generating sqlc files..."
-	sqlc generate
+.PHONY: ent-generate
+ent-generate: ## Generate ent ORM code
+	@echo "Generating ent schema code..."
+	go generate ./internal/infrastructure/database/entschema
 
 .PHONY: mocks
 mocks: ## Generate mock files
@@ -75,7 +72,7 @@ mocks: ## Generate mock files
 	go generate ./...
 
 .PHONY: build
-build: generate sqlc ## Build the unified CLI binary
+build: generate ## Build the unified CLI binary
 	@echo "Building $(BINARY_NAME)..."
 	@mkdir -p $(BUILD_DIR)
 	go build -o $(BUILD_DIR)/$(BINARY_NAME) .
@@ -123,7 +120,6 @@ clean: ## Clean build artifacts
 	rm -rf $(BUILD_DIR)
 	rm -rf $(GEN_DIR)
 	rm -rf $(OPENAPI_DIR)
-	rm -rf internal/infrastructure/database/db
 	rm -f coverage.out coverage.html
 	@echo "Clean completed"
 
@@ -153,27 +149,17 @@ db-down: ## Stop PostgreSQL database
 	docker stop $(PROJECT_NAME)-postgres || true
 	docker rm $(PROJECT_NAME)-postgres || true
 
-.PHONY: migrate-up
-migrate-up: ## Run database migrations up
-	@echo "Running database migrations up..."
-	migrate -path sql/migrations -database "postgres://postgres:postgres@localhost:5432/rockd?sslmode=disable" up
-
-.PHONY: migrate-down
-migrate-down: ## Run database migrations down
-	@echo "Running database migrations down..."
-	migrate -path sql/migrations -database "postgres://postgres:postgres@localhost:5432/rockd?sslmode=disable" down
-
-.PHONY: migrate-force
-migrate-force: ## Force database migration version (usage: make migrate-force VERSION=1)
-	@echo "Forcing database migration version..."
-	migrate -path sql/migrations -database "postgres://postgres:postgres@localhost:5432/rockd?sslmode=disable" force $(VERSION)
+.PHONY: migrate
+migrate: ## Apply ent schema migrations
+	@echo "Applying ent migrations..."
+	go run . db-init --schema-only
 
 .PHONY: setup
-setup: install-tools deps generate sqlc ## Setup development environment
+setup: install-tools deps generate ## Setup development environment
 	@echo "Development environment setup complete!"
 
 .PHONY: dev
-dev: db-up migrate-up run ## Start development environment
+dev: db-up migrate run ## Start development environment
 
 .PHONY: all
 all: clean setup build test ## Clean, setup, build, and test

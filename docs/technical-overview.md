@@ -29,10 +29,10 @@
 │   │   ├── config/        # 配置加载
 │   │   └── server/        # gRPC 与 HTTP Server 启动
 │   └── mocks/             # 生成的 Mock 文件
-├── sql/
-│   ├── schema/            # 数据库 Schema (迁移初始结构)
-│   ├── queries/           # sqlc 查询定义
-│   └── migrations/        # 数据库迁移脚本
+├── internal/infrastructure/database/entschema/
+│                        # ent Schema 定义
+├── internal/infrastructure/database/ent/
+│                        # ent 生成代码
 ├── docs/                  # 文档 (本文件等)
 └── Makefile               # 开发辅助命令
 ```
@@ -43,7 +43,7 @@
 |------|------|------|
 | 语言 | Go (>=1.23) | 现代化并发、静态类型 |
 | API | gRPC + grpc-gateway | gRPC 为主，自动映射 HTTP/JSON |
-| 数据库 | PostgreSQL + sqlc | 类型安全 SQL 访问代码生成 |
+| 数据库 | PostgreSQL + ent | 图式 schema & ORM 代码生成 |
 | 配置 | Viper | 支持多源配置与热加载 |
 | 日志 | logrus | 结构化日志 |
 | 测试 | go test + gomock + testify | 单元与集成测试 |
@@ -67,15 +67,15 @@ LOG_LEVEL=info
 LOG_FORMAT=json
 ```
 
-## 数据访问与 sqlc
+## 数据访问与 ent
 
-所有 SQL 查询位于 `sql/queries/`，通过 `sqlc generate` 生成类型安全代码至 `internal/infrastructure/database/db/`。
+领域仓储依赖 ent 代码生成，实体 Schema 定义在 `internal/infrastructure/database/entschema/`，生成代码输出到 `internal/infrastructure/database/ent/`（通过 `go generate ./internal/infrastructure/database/entschema` 更新）。
 
 最佳实践：
-- 查询按业务对象分文件：`user_words.sql`, `sentences.sql` 等
-- 使用事务封装跨表操作
-- 使用 `context.Context` 传递请求生命周期
-- 利用 PostgreSQL 特性（CTE、索引、约束）保证一致性
+- Schema 位于内圈，业务仓储通过 ent Client 执行查询
+- 保持 `internal/adapter/repository` 与 `internal/usecase` 间的接口契约不变
+- 利用 ent 的 Query Builder 编写组合条件、排序及事务逻辑
+- 需要原生 SQL 时可通过 `sql.ExprP` 注入自定义表达式
 
 ## gRPC 与 HTTP 网关
 
@@ -95,8 +95,8 @@ HTTP 网关通过 `RegisterXxxHandlerFromEndpoint` 绑定到同一端口或不�
 
 统一通过 Makefile：
 ```
-make generate   # 生成 protobuf / gateway / openapi
-make sqlc       # 生成数据访问代码
+make generate      # 生成 protobuf / gateway / openapi / ent 代码
+make ent-generate  # 仅重新生成 ent 代码
 make mocks      # 生成 gomock 接口实现
 ```
 
@@ -131,9 +131,8 @@ make mocks      # 生成 gomock 接口实现
 | `internal/usecase` | 应用用例 orchestrator |
 | `internal/adapter/grpc` | gRPC 服务实现 |
 | `internal/adapter/repository` | 数据持久化实现 |
-| `internal/infrastructure/database` | 连接、事务、sqlc 生成代码 |
-| `sql/schema` | 初始 schema 定义 |
-| `sql/queries` | sqlc 查询文件 |
+| `internal/infrastructure/database` | 数据库连接、ent 生成代码 |
+| `internal/infrastructure/database/entschema` | ent Schema 定义 |
 | `docs` | 技术与项目文档 |
 
 ## 未来可扩展方向

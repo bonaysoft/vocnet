@@ -16,11 +16,8 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Install build tools
-RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.20.0
-
 # Generate code and build
-RUN make generate sqlc
+RUN make generate
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/rockd-server ./cmd/server
 
 # Production stage

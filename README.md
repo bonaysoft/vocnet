@@ -133,15 +133,15 @@ make setup
 ### 2. 启动数据库并迁移
 本地快速试用（Docker 推荐）：
 ```bash
-make db-up       # 启动 PostgreSQL (docker)
-make migrate-up  # 应用迁移
+make db-up     # 启动 PostgreSQL (docker)
+make migrate   # 使用 ent 应用最新 schema
 ```
 
-亦可使用自建 PostgreSQL，确保配置环境变量后直接执行 `make migrate-up`。
+亦可使用自建 PostgreSQL，确保配置环境变量后直接执行 `make migrate`。
 
 ### 3. 生成代码（如需要）
 ```bash
-make generate sqlc mocks
+make generate mocks
 ```
 
 ### 4. 启动服务
@@ -187,10 +187,8 @@ make help
 make run            # 启动服务
 make test           # 运行测试
 make generate       # 生成 gRPC / Gateway / OpenAPI
-make sqlc           # 生成数据库访问代码
 make mocks          # 生成 gomock
-make migrate-up     # 迁移上
-make migrate-down   # 迁移回滚
+make migrate        # ent schema 迁移
 ```
 
 ## 相关文档 (Docs)

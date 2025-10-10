@@ -39,9 +39,7 @@ import (
 
 	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
-	migrate "github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/mattn/go-sqlite3"
@@ -630,26 +628,65 @@ func nullStringVal(ns sql.NullString) string {
 	return ""
 }
 
-// runMigrations executes SQL migrations in sql/migrations via golang-migrate if available.
+// runMigrations applies ent-managed schema migrations to the target database.
 func runMigrations() error {
-	// Build source URL (local file path). We assume working directory is repo root.
-	src := "file://sql/migrations"
-	// Use DATABASE_URL env or config for connection; prefer same config loader for consistency.
 	cfg, err := config.Load()
 	if err != nil {
 		return fmt.Errorf("加载配置失败: %w", err)
 	}
-	dbURL := cfg.DatabaseURL()
-	m, err := migrate.New(src, dbURL)
+	client, cleanup, err := database.NewEntClient(cfg)
+	if err != nil {
+		return fmt.Errorf("创建 ent 客户端失败: %w", err)
+	}
+	defer cleanup()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := client.Schema.Create(ctx); err != nil {
+		return fmt.Errorf("执行 ent 迁移失败: %w", err)
+	}
+
+	if err := ensurePostgresJSONTags(ctx, cfg.DatabaseURL()); err != nil {
+		return fmt.Errorf("升级 tags 列到 jsonb 失败: %w", err)
+	}
+
+	log.Println("数据库迁移完成")
+	return nil
+}
+
+func ensurePostgresJSONTags(ctx context.Context, dsn string) error {
+	if !(strings.HasPrefix(dsn, "postgres://") || strings.HasPrefix(dsn, "postgresql://")) {
+		return nil
+	}
+
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return err
 	}
-	defer m.Close()
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+	defer db.Close()
+
+	const q = `SELECT udt_name FROM information_schema.columns WHERE table_name = 'words' AND column_name = 'tags'`
+	var udt sql.NullString
+	if err := db.QueryRowContext(ctx, q).Scan(&udt); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
 		return err
 	}
-	log.Println("数据库迁移完成")
-	return nil
+	if !udt.Valid {
+		return nil
+	}
+	if udt.String == "jsonb" {
+		return nil
+	}
+	if udt.String != "text[]" {
+		return nil
+	}
+
+	_, err = db.ExecContext(ctx, `ALTER TABLE words ALTER COLUMN tags TYPE jsonb USING to_jsonb(tags);
+		ALTER TABLE words ALTER COLUMN tags SET DEFAULT '[]'::jsonb;`)
+	return err
 }
 
 // prepareCachePath decides cache location and returns (cacheDir, zipPath, fromCache, error)
