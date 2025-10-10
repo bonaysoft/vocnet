@@ -5,13 +5,11 @@ package app
 
 import (
 	"github.com/google/wire"
-	"github.com/jackc/pgx/v5/pgxpool"
 
 	adaptergrpc "github.com/eslsoft/vocnet/internal/adapter/connectrpc"
 	"github.com/eslsoft/vocnet/internal/adapter/repository"
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database"
-	dbpkg "github.com/eslsoft/vocnet/internal/infrastructure/database/db"
 	"github.com/eslsoft/vocnet/internal/infrastructure/server"
 	"github.com/eslsoft/vocnet/internal/usecase"
 
@@ -24,9 +22,7 @@ var configSet = wire.NewSet(
 )
 
 var databaseSet = wire.NewSet(
-	database.NewConnection,
-	wire.Bind(new(dbpkg.DBTX), new(*pgxpool.Pool)),
-	dbpkg.New,
+	database.NewEntClient,
 )
 
 var repositorySet = wire.NewSet(
@@ -60,7 +56,7 @@ func Initialize() (*Container, func(), error) {
 		usecaseSet,
 		serviceSet,
 		serverSet,
-		wire.Struct(new(Container), "Logger", "Server"),
+		wire.Struct(new(Container), "Logger", "Server", "EntClient"),
 	)
 	return nil, nil, nil
 }

@@ -5,63 +5,144 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/eslsoft/vocnet/internal/entity"
-	db "github.com/eslsoft/vocnet/internal/infrastructure/database/db"
+	entdb "github.com/eslsoft/vocnet/internal/infrastructure/database/ent"
+	entpredicate "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/predicate"
+	entuserword "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/userword"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
 	"github.com/eslsoft/vocnet/internal/repository"
 	"github.com/eslsoft/vocnet/pkg/filterexpr"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/samber/lo"
 )
 
 type userWordRepository struct {
-	q *db.Queries
+	client *entdb.Client
 }
 
-// NewUserWordRepository constructs a sqlc-backed repository.
-func NewUserWordRepository(q *db.Queries) repository.UserWordRepository {
-	return &userWordRepository{q: q}
+// NewUserWordRepository constructs an ent-backed repository.
+func NewUserWordRepository(client *entdb.Client) repository.UserWordRepository {
+	return &userWordRepository{client: client}
+}
+
+type listUserWordsParams struct {
+	Keyword       string
+	Words         []string
+	PrimaryKey    string
+	PrimaryDesc   bool
+	SecondaryKey  string
+	SecondaryDesc bool
 }
 
 func (r *userWordRepository) Create(ctx context.Context, userWord *entity.UserWord) (*entity.UserWord, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	params := toCreateParams(userWord)
-	row, err := r.q.CreateUserWord(ctx, params)
-	if err != nil {
-		return nil, translatePgError(err)
+
+	builder := r.client.UserWord.Create().
+		SetUserID(userWord.UserID).
+		SetWord(userWord.Word).
+		SetLanguage(entity.NormalizeLanguage(userWord.Language).Code()).
+		SetMasteryListen(int16(userWord.Mastery.Listen)).
+		SetMasteryRead(int16(userWord.Mastery.Read)).
+		SetMasterySpell(int16(userWord.Mastery.Spell)).
+		SetMasteryPronounce(int16(userWord.Mastery.Pronounce)).
+		SetMasteryOverall(userWord.Mastery.Overall).
+		SetReviewIntervalDays(userWord.Review.IntervalDays).
+		SetReviewFailCount(userWord.Review.FailCount).
+		SetQueryCount(userWord.QueryCount).
+		SetSentences(types.UserSentences(userWord.Sentences)).
+		SetRelations(types.UserWordRelations(userWord.Relations)).
+		SetCreatedBy(userWord.CreatedBy).
+		SetCreatedAt(userWord.CreatedAt).
+		SetUpdatedAt(userWord.UpdatedAt)
+
+	if !userWord.Review.LastReviewAt.IsZero() {
+		builder.SetReviewLastReviewAt(userWord.Review.LastReviewAt)
 	}
-	return mapDBUserWord(row), nil
+	if !userWord.Review.NextReviewAt.IsZero() {
+		builder.SetReviewNextReviewAt(userWord.Review.NextReviewAt)
+	}
+	if userWord.Notes != "" {
+		builder.SetNotes(userWord.Notes)
+	}
+
+	rec, err := builder.Save(ctx)
+	if err != nil {
+		return nil, translateUserWordError(err)
+	}
+	return mapEntUserWord(rec), nil
 }
 
 func (r *userWordRepository) Update(ctx context.Context, userWord *entity.UserWord) (*entity.UserWord, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	params := toUpdateParams(userWord)
-	row, err := r.q.UpdateUserWord(ctx, params)
-	if err != nil {
-		return nil, translatePgError(err)
+
+	mutation := r.client.UserWord.UpdateOneID(int(userWord.ID)).
+		Where(entuserword.UserIDEQ(userWord.UserID)).
+		SetWord(userWord.Word).
+		SetLanguage(entity.NormalizeLanguage(userWord.Language).Code()).
+		SetMasteryListen(int16(userWord.Mastery.Listen)).
+		SetMasteryRead(int16(userWord.Mastery.Read)).
+		SetMasterySpell(int16(userWord.Mastery.Spell)).
+		SetMasteryPronounce(int16(userWord.Mastery.Pronounce)).
+		SetMasteryOverall(userWord.Mastery.Overall).
+		SetReviewIntervalDays(userWord.Review.IntervalDays).
+		SetReviewFailCount(userWord.Review.FailCount).
+		SetQueryCount(userWord.QueryCount).
+		SetSentences(types.UserSentences(userWord.Sentences)).
+		SetRelations(types.UserWordRelations(userWord.Relations)).
+		SetCreatedBy(userWord.CreatedBy).
+		SetUpdatedAt(userWord.UpdatedAt)
+
+	if !userWord.Review.LastReviewAt.IsZero() {
+		mutation.SetReviewLastReviewAt(userWord.Review.LastReviewAt)
+	} else {
+		mutation.ClearReviewLastReviewAt()
 	}
-	return mapDBUserWord(row), nil
+	if !userWord.Review.NextReviewAt.IsZero() {
+		mutation.SetReviewNextReviewAt(userWord.Review.NextReviewAt)
+	} else {
+		mutation.ClearReviewNextReviewAt()
+	}
+
+	if userWord.Notes != "" {
+		mutation.SetNotes(userWord.Notes)
+	} else {
+		mutation.ClearNotes()
+	}
+
+	rec, err := mutation.Save(ctx)
+	if err != nil {
+		if entdb.IsNotFound(err) {
+			return nil, entity.ErrUserWordNotFound
+		}
+		return nil, translateUserWordError(err)
+	}
+
+	return mapEntUserWord(rec), nil
 }
 
 func (r *userWordRepository) GetByID(ctx context.Context, userID, id int64) (*entity.UserWord, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	row, err := r.q.GetUserWord(ctx, db.GetUserWordParams{ID: id, UserID: userID})
+
+	rec, err := r.client.UserWord.Query().
+		Where(
+			entuserword.IDEQ(int(id)),
+			entuserword.UserIDEQ(userID),
+		).
+		First(ctx)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+		if entdb.IsNotFound(err) {
 			return nil, entity.ErrUserWordNotFound
 		}
 		return nil, fmt.Errorf("get user word: %w", err)
 	}
-	return mapDBUserWord(row), nil
+	return mapEntUserWord(rec), nil
 }
 
 func (r *userWordRepository) FindByWord(ctx context.Context, userID int64, word string) (*entity.UserWord, error) {
@@ -71,173 +152,212 @@ func (r *userWordRepository) FindByWord(ctx context.Context, userID int64, word 
 	if word == "" {
 		return nil, nil
 	}
-	row, err := r.q.FindUserWordByWord(ctx, db.FindUserWordByWordParams{UserID: userID, Word: word})
+
+	rec, err := r.client.UserWord.Query().
+		Where(
+			entuserword.UserIDEQ(userID),
+			entuserword.WordEQ(word),
+		).
+		First(ctx)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+		if entdb.IsNotFound(err) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("find user word: %w", err)
 	}
-	return mapDBUserWord(row), nil
+	return mapEntUserWord(rec), nil
 }
 
 func (r *userWordRepository) List(ctx context.Context, query *repository.ListUserWordQuery) ([]entity.UserWord, int64, error) {
-	var p db.ListUserWordsParams
-	if err := filterexpr.Bind(query, &p, listUserWordsSchema); err != nil {
+	if err := ctx.Err(); err != nil {
 		return nil, 0, err
 	}
 
-	p.UserID = query.UserID
-	// Normalize words to lowercase for case-insensitive search
-	p.Words = lo.Map(p.Words, func(s string, _ int) string { return strings.ToLower(s) })
-	p.Offset = query.Offset()
-	p.Limit = query.PageSize
-	rows, err := r.q.ListUserWords(ctx, p)
-	if err != nil {
-		return nil, 0, fmt.Errorf("list user words: %w", err)
+	var params listUserWordsParams
+	if err := filterexpr.Bind(query, &params, listUserWordsSchema); err != nil {
+		return nil, 0, err
 	}
 
-	userWords := make([]entity.UserWord, 0, len(rows))
-	for _, row := range rows {
-		userWord := mapDBUserWord(row)
-		userWords = append(userWords, *userWord)
-	}
+	qbuilder := r.client.UserWord.Query().
+		Where(entuserword.UserIDEQ(query.UserID))
 
-	total, err := r.q.CountUserWords(ctx, db.CountUserWordsParams{
-		UserID:  p.UserID,
-		Keyword: p.Keyword,
-		Words:   p.Words,
-	})
+	applyUserWordFilters(qbuilder, params)
+
+	total, err := qbuilder.Clone().Count(ctx)
 	if err != nil {
 		return nil, 0, fmt.Errorf("count user words: %w", err)
 	}
 
-	return userWords, total, nil
+	applyUserWordOrdering(qbuilder, params)
+
+	offset := query.Offset()
+	if offset > 0 {
+		qbuilder.Offset(int(offset))
+	}
+	if query.PageSize > 0 {
+		qbuilder.Limit(int(query.PageSize))
+	}
+
+	rows, err := qbuilder.All(ctx)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list user words: %w", err)
+	}
+
+	results := make([]entity.UserWord, 0, len(rows))
+	for _, row := range rows {
+		if mapped := mapEntUserWord(row); mapped != nil {
+			results = append(results, *mapped)
+		}
+	}
+
+	return results, int64(total), nil
 }
 
 func (r *userWordRepository) Delete(ctx context.Context, userID, id int64) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	tag, err := r.q.DeleteUserWord(ctx, db.DeleteUserWordParams{ID: id, UserID: userID})
+
+	affected, err := r.client.UserWord.Delete().
+		Where(
+			entuserword.IDEQ(int(id)),
+			entuserword.UserIDEQ(userID),
+		).
+		Exec(ctx)
 	if err != nil {
 		return fmt.Errorf("delete user word: %w", err)
 	}
-	if tag.RowsAffected() == 0 {
+	if affected == 0 {
 		return entity.ErrUserWordNotFound
 	}
 	return nil
 }
 
-func translatePgError(err error) error {
-	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) {
-		switch pgErr.Code {
-		case "23505":
-			return entity.ErrDuplicateUserWord
+func applyUserWordFilters(q *entdb.UserWordQuery, params listUserWordsParams) {
+	if params.Keyword != "" {
+		q.Where(entuserword.WordContainsFold(params.Keyword))
+	}
+	if len(params.Words) > 0 {
+		seen := make(map[string]struct{}, len(params.Words))
+		preds := make([]entpredicate.UserWord, 0, len(params.Words))
+		for _, raw := range params.Words {
+			trimmed := strings.TrimSpace(raw)
+			if trimmed == "" {
+				continue
+			}
+			key := strings.ToLower(trimmed)
+			if _, ok := seen[key]; ok {
+				continue
+			}
+			seen[key] = struct{}{}
+			preds = append(preds, entuserword.WordEqualFold(trimmed))
+		}
+		if len(preds) > 0 {
+			q.Where(entuserword.Or(preds...))
 		}
 	}
-	if errors.Is(err, pgx.ErrNoRows) {
+}
+
+func applyUserWordOrdering(q *entdb.UserWordQuery, params listUserWordsParams) {
+	for _, term := range []struct {
+		key  string
+		desc bool
+	}{
+		{key: params.PrimaryKey, desc: params.PrimaryDesc},
+		{key: params.SecondaryKey, desc: params.SecondaryDesc},
+	} {
+		if term.key == "" {
+			continue
+		}
+		switch term.key {
+		case "created_at":
+			if term.desc {
+				q.Order(entuserword.ByCreatedAt(sql.OrderDesc(), sql.OrderNullsLast()))
+			} else {
+				q.Order(entuserword.ByCreatedAt(sql.OrderAsc(), sql.OrderNullsLast()))
+			}
+		case "updated_at":
+			if term.desc {
+				q.Order(entuserword.ByUpdatedAt(sql.OrderDesc(), sql.OrderNullsLast()))
+			} else {
+				q.Order(entuserword.ByUpdatedAt(sql.OrderAsc(), sql.OrderNullsLast()))
+			}
+		case "word":
+			if term.desc {
+				q.Order(entuserword.ByWord(sql.OrderDesc(), sql.OrderNullsLast()))
+			} else {
+				q.Order(entuserword.ByWord(sql.OrderAsc(), sql.OrderNullsLast()))
+			}
+		case "mastery_overall":
+			if term.desc {
+				q.Order(entuserword.ByMasteryOverall(sql.OrderDesc(), sql.OrderNullsLast()))
+			} else {
+				q.Order(entuserword.ByMasteryOverall(sql.OrderAsc(), sql.OrderNullsLast()))
+			}
+		case "id":
+			if term.desc {
+				q.Order(entuserword.ByID(sql.OrderDesc()))
+			} else {
+				q.Order(entuserword.ByID())
+			}
+		}
+	}
+
+	q.Order(entuserword.ByID())
+}
+
+func mapEntUserWord(rec *entdb.UserWord) *entity.UserWord {
+	if rec == nil {
+		return nil
+	}
+
+	userWord := &entity.UserWord{
+		ID:       int64(rec.ID),
+		UserID:   rec.UserID,
+		Word:     rec.Word,
+		Language: entity.ParseLanguage(rec.Language),
+		Mastery: entity.MasteryBreakdown{
+			Listen:    int32(rec.MasteryListen),
+			Read:      int32(rec.MasteryRead),
+			Spell:     int32(rec.MasterySpell),
+			Pronounce: int32(rec.MasteryPronounce),
+			Overall:   rec.MasteryOverall,
+		},
+		Review: entity.ReviewTiming{
+			IntervalDays: rec.ReviewIntervalDays,
+			FailCount:    rec.ReviewFailCount,
+		},
+		QueryCount: rec.QueryCount,
+		Sentences:  []entity.Sentence(rec.Sentences),
+		Relations:  []entity.UserWordRelation(rec.Relations),
+		CreatedBy:  rec.CreatedBy,
+		CreatedAt:  rec.CreatedAt,
+		UpdatedAt:  rec.UpdatedAt,
+	}
+
+	if rec.ReviewLastReviewAt != nil {
+		userWord.Review.LastReviewAt = *rec.ReviewLastReviewAt
+	}
+	if rec.ReviewNextReviewAt != nil {
+		userWord.Review.NextReviewAt = *rec.ReviewNextReviewAt
+	}
+	if rec.Notes != nil {
+		userWord.Notes = *rec.Notes
+	}
+
+	return userWord
+}
+
+func translateUserWordError(err error) error {
+	if err == nil {
+		return nil
+	}
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		return entity.ErrDuplicateUserWord
+	}
+	if entdb.IsNotFound(err) {
 		return entity.ErrUserWordNotFound
 	}
 	return err
-}
-
-func toCreateParams(uw *entity.UserWord) db.CreateUserWordParams {
-	return db.CreateUserWordParams{
-		UserID:             uw.UserID,
-		Word:               uw.Word,
-		Language:           uw.Language.Code(),
-		MasteryListen:      int16(uw.Mastery.Listen),
-		MasteryRead:        int16(uw.Mastery.Read),
-		MasterySpell:       int16(uw.Mastery.Spell),
-		MasteryPronounce:   int16(uw.Mastery.Pronounce),
-		MasteryOverall:     uw.Mastery.Overall,
-		ReviewLastReviewAt: toPgTimestamp(uw.Review.LastReviewAt),
-		ReviewNextReviewAt: toPgTimestamp(uw.Review.NextReviewAt),
-		ReviewIntervalDays: uw.Review.IntervalDays,
-		ReviewFailCount:    uw.Review.FailCount,
-		QueryCount:         uw.QueryCount,
-		Notes:              toPgText(uw.Notes),
-		Sentences:          uw.Sentences,
-		Relations:          uw.Relations,
-		CreatedBy:          uw.CreatedBy,
-		CreatedAt:          toPgTimestamp(uw.CreatedAt),
-		UpdatedAt:          toPgTimestamp(uw.UpdatedAt),
-	}
-}
-
-func toUpdateParams(uw *entity.UserWord) db.UpdateUserWordParams {
-	return db.UpdateUserWordParams{
-		ID:                 uw.ID,
-		UserID:             uw.UserID,
-		Word:               uw.Word,
-		Language:           uw.Language.Code(),
-		MasteryListen:      int16(uw.Mastery.Listen),
-		MasteryRead:        int16(uw.Mastery.Read),
-		MasterySpell:       int16(uw.Mastery.Spell),
-		MasteryPronounce:   int16(uw.Mastery.Pronounce),
-		MasteryOverall:     uw.Mastery.Overall,
-		ReviewLastReviewAt: toPgTimestamp(uw.Review.LastReviewAt),
-		ReviewNextReviewAt: toPgTimestamp(uw.Review.NextReviewAt),
-		ReviewIntervalDays: uw.Review.IntervalDays,
-		ReviewFailCount:    uw.Review.FailCount,
-		QueryCount:         uw.QueryCount,
-		Notes:              toPgText(uw.Notes),
-		Sentences:          uw.Sentences,
-		Relations:          uw.Relations,
-		CreatedBy:          uw.CreatedBy,
-		UpdatedAt:          toPgTimestamp(uw.UpdatedAt),
-	}
-}
-
-func mapDBUserWord(row db.UserWord) *entity.UserWord {
-	uw := &entity.UserWord{
-		ID:       row.ID,
-		UserID:   row.UserID,
-		Word:     row.Word,
-		Language: entity.ParseLanguage(row.Language),
-		Mastery: entity.MasteryBreakdown{
-			Listen:    int32(row.MasteryListen),
-			Read:      int32(row.MasteryRead),
-			Spell:     int32(row.MasterySpell),
-			Pronounce: int32(row.MasteryPronounce),
-			Overall:   row.MasteryOverall,
-		},
-		Review:     entity.ReviewTiming{IntervalDays: row.ReviewIntervalDays, FailCount: row.ReviewFailCount},
-		QueryCount: row.QueryCount,
-		Sentences:  row.Sentences,
-		Relations:  row.Relations,
-		CreatedBy:  row.CreatedBy,
-	}
-	if row.ReviewLastReviewAt.Valid {
-		uw.Review.LastReviewAt = row.ReviewLastReviewAt.Time
-	}
-	if row.ReviewNextReviewAt.Valid {
-		uw.Review.NextReviewAt = row.ReviewNextReviewAt.Time
-	}
-	if row.Notes.Valid {
-		uw.Notes = row.Notes.String
-	}
-	if row.CreatedAt.Valid {
-		uw.CreatedAt = row.CreatedAt.Time
-	}
-	if row.UpdatedAt.Valid {
-		uw.UpdatedAt = row.UpdatedAt.Time
-	}
-	return uw
-}
-
-func toPgTimestamp(t time.Time) pgtype.Timestamptz {
-	if t.IsZero() {
-		return pgtype.Timestamptz{Valid: false}
-	}
-	return pgtype.Timestamptz{Time: t, Valid: true}
-}
-
-func toPgText(s string) pgtype.Text {
-	if s == "" {
-		return pgtype.Text{Valid: false}
-	}
-	return pgtype.Text{String: s, Valid: true}
 }

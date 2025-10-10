@@ -188,7 +188,7 @@ rpc GetDifficultWords(GetDifficultWordsRequest) returns (GetDifficultWordsRespon
 make buf-deps  # 更新 buf 依赖
 make buf-lint  # 检查 protobuf 代码规范
 make generate  # 使用 buf 生成所有 protobuf 代码
-make sqlc      # 生成类型安全的数据库代码
+make ent-generate  # 生成 ent schema 代码
 make mocks     # 生成测试模拟代码
 ```
 

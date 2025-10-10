@@ -63,7 +63,7 @@
 | Stats (可选) | CountUserWordsByMastery | 返回各 mastery 数量 | 支持仪表盘 |
 
 ### 1.3 技术实现要点
-- 使用 sqlc 生成 CRUD，事务封装 CollectWord（创建词 + user_word）
+- 使用 ent 生成 CRUD，事务封装 CollectWord（创建词 + user_word）
 - `mastery_level` 添加 CHECK 约束（0-5）
 - `relation_type` 使用 ENUM 或代码层枚举校验
 - 请求校验：protoc-gen-validate (PGV)
@@ -184,7 +184,7 @@ priority = f(mastery_level, days_since_last_review, error_streak)
 ---
 ## 与当前架构的对齐 (Architecture Alignment)
 - Clean Architecture：新增 UseCase 层实现调度算法与业务规则
-- 数据访问继续通过 sqlc；新增查询文件：`user_words.sql`, `review_log.sql`, `word_relations.sql`
+- 数据访问继续通过 ent；新增仓储实现支持 `user_words`、`review_log`、`word_relations` 查询
 - Proto 目录：分包 `word.v1`, `review.v1`
 - 枚举定义：`MasteryLevel`, `RelationType`, `CardType`, `ReviewResult`
 - 日志/统计可作为独立 usecase，避免直接耦合在 service 层

@@ -21,7 +21,7 @@
 4. 启动数据库与迁移：
    ```bash
    make db-up
-   make migrate-up
+   make migrate
    ```
 5. 运行：
    ```bash
@@ -51,7 +51,7 @@ feat: add sentence similarity ranking usecase
 
 - 不允许从内层 (entity/usecase) 依赖外层 (adapter/infrastructure)
 - 业务逻辑集中在 usecase；gRPC 层仅做参数验证及调用
-- SQL 查询放在 `sql/queries/` 由 sqlc 生成，不在代码内内嵌长 SQL
+- 数据访问通过 ent Schema 定义在 `internal/infrastructure/database/entschema/`，避免在代码中拼接长 SQL
 - 避免循环依赖，接口放在调用方向的上层
 
 ## 测试要求
@@ -74,12 +74,12 @@ feat: add sentence similarity ranking usecase
 | 变更 | 需要命令 |
 |------|----------|
 | `.proto` | `make generate` |
-| `sql/queries/*.sql` | `make sqlc` |
+| `internal/infrastructure/database/entschema/*.go` | `make ent-generate` |
 | 接口定义 (需 mock) | `make mocks` |
 
 可合并执行：
 ```bash
-make generate sqlc mocks
+make generate mocks
 ```
 
 ## 风格与静态检查
@@ -107,8 +107,8 @@ make generate sqlc mocks
 
 ## 数据库迁移规范
 
-- 每个结构变更创建一个新迁移文件：`sql/schema/00x_description.sql` 或使用迁移工具（后续可引入）
-- 若涉及数据修复，脚本需具备幂等性
+- 数据库结构由 ent schema 维护，运行 `make migrate` （或 `go run . db-init --schema-only`）应用变更
+- 若涉及数据修复，按需要在应用层编写一次性脚本
 - 大批量写操作需评估锁与性能影响
 
 ## 性能与安全

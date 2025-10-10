@@ -72,7 +72,7 @@ type ResourceSchema struct {
 
 var timeType = reflect.TypeOf(time.Time{})
 
-// Bind parses the request filter & order_by and populates the sqlc params struct accordingly.
+// Bind parses the request filter & order_by and populates the query params struct accordingly.
 func Bind[M Msg, P any](msg M, binding *P, schema ResourceSchema) error {
 	if binding == nil {
 		return errors.New("binding must not be nil")

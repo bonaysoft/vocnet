@@ -13,11 +13,9 @@ import (
 	"github.com/eslsoft/vocnet/internal/adapter/repository"
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/db"
 	"github.com/eslsoft/vocnet/internal/infrastructure/server"
 	"github.com/eslsoft/vocnet/internal/usecase"
 	"github.com/google/wire"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // Injectors from wire.go:
@@ -32,21 +30,21 @@ func Initialize() (*Container, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	pool, cleanup, err := database.NewConnection(configConfig)
+	client, cleanup, err := database.NewEntClient(configConfig)
 	if err != nil {
 		return nil, nil, err
 	}
-	queries := db.New(pool)
-	wordRepository := repository.NewWordRepository(queries)
+	wordRepository := repository.NewWordRepository(client)
 	wordUsecase := usecase.NewWordUsecase(wordRepository)
 	wordServiceServer := grpc.NewWordServiceServer(wordUsecase)
-	userWordRepository := repository.NewUserWordRepository(queries)
+	userWordRepository := repository.NewUserWordRepository(client)
 	userWordUsecase := usecase.NewUserWordUsecase(userWordRepository)
 	userWordServiceServer := grpc.NewUserWordServiceServer(userWordUsecase)
 	serverServer := server.NewServer(configConfig, logger, wordServiceServer, userWordServiceServer)
 	container := &Container{
-		Logger: logger,
-		Server: serverServer,
+		Logger:    logger,
+		Server:    serverServer,
+		EntClient: client,
 	}
 	return container, func() {
 		cleanup()
@@ -57,7 +55,7 @@ func Initialize() (*Container, func(), error) {
 
 var configSet = wire.NewSet(config.Load)
 
-var databaseSet = wire.NewSet(database.NewConnection, wire.Bind(new(db.DBTX), new(*pgxpool.Pool)), db.New)
+var databaseSet = wire.NewSet(database.NewEntClient)
 
 var repositorySet = wire.NewSet(repository.NewWordRepository, repository.NewUserWordRepository)
 
