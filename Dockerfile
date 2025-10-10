@@ -3,7 +3,7 @@ FROM golang:1.24-alpine AS builder
 WORKDIR /workspace
 
 # Install certificates required during go build (e.g. for fetching modules)
-RUN apk --no-cache add ca-certificates git
+RUN apk --no-cache add ca-certificates git gcc
 
 COPY go.mod go.sum ./
 RUN go mod download
@@ -12,7 +12,7 @@ COPY . .
 
 # Build linux binary inside the container to ensure compatibility
 ARG TARGETOS TARGETARCH
-RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} go build -o /workspace/bin/vocnet .
+RUN CGO_ENABLED=1 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} go build -o /workspace/bin/vocnet .
 
 FROM alpine:latest
 
