@@ -10,30 +10,16 @@ managed:
       module: buf.build/envoyproxy/protoc-gen-validate
   override:
     - file_option: go_package_prefix
-      value: github.com/eslsoft/vocnet/api/gen
+      value: github.com/eslsoft/vocnet/pkg/api/
 plugins:
   - remote: buf.build/protocolbuffers/go
-    out: api/gen
-    opt: paths=source_relative
-  - remote: buf.build/grpc/go
-    out: api/gen
+    out: ./pkg/api
     opt: paths=source_relative
   - remote: buf.build/connectrpc/go
-    out: api/gen
+    out: ./pkg/api
     opt: paths=source_relative
-  - remote: buf.build/grpc-ecosystem/gateway
-    out: api/gen
-    opt:
-      - paths=source_relative
-      - generate_unbound_methods=true
-  - remote: buf.build/grpc-ecosystem/openapiv2
-    out: api/openapi
-    opt:
-      - logtostderr=true
-      - generate_unbound_methods=true
-      - allow_merge=true
   - remote: buf.build/bufbuild/validate-go
-    out: api/gen
+    out: ./pkg/api
     opt: paths=source_relative
   - remote: buf.build/bufbuild/es
     out: api/vocnet-sdk-ts

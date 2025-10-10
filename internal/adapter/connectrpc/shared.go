@@ -1,8 +1,8 @@
 package grpc
 
 import (
-	commonv1 "github.com/eslsoft/vocnet/api/gen/common/v1"
 	"github.com/eslsoft/vocnet/internal/repository"
+	commonv1 "github.com/eslsoft/vocnet/pkg/api/common/v1"
 )
 
 const _maxPageSize = 10000

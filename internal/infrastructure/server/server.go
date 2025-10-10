@@ -13,9 +13,9 @@ import (
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
 
-	"github.com/eslsoft/vocnet/api/gen/dict/v1/dictv1connect"
-	"github.com/eslsoft/vocnet/api/gen/vocnet/v1/vocnetv1connect"
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
+	"github.com/eslsoft/vocnet/pkg/api/dict/v1/dictv1connect"
+	"github.com/eslsoft/vocnet/pkg/api/vocnet/v1/vocnetv1connect"
 	"github.com/sirupsen/logrus"
 )
 

@@ -5,9 +5,9 @@ import (
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	commonv1 "github.com/eslsoft/vocnet/api/gen/common/v1"
-	dictv1 "github.com/eslsoft/vocnet/api/gen/dict/v1"
 	"github.com/eslsoft/vocnet/internal/entity"
+	commonv1 "github.com/eslsoft/vocnet/pkg/api/common/v1"
+	dictv1 "github.com/eslsoft/vocnet/pkg/api/dict/v1"
 	"github.com/samber/lo"
 )
 

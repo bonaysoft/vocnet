@@ -3,9 +3,9 @@ package mapping
 import (
 	"strings"
 
-	commonv1 "github.com/eslsoft/vocnet/api/gen/common/v1"
-	dictv1 "github.com/eslsoft/vocnet/api/gen/dict/v1"
-	vocnetv1 "github.com/eslsoft/vocnet/api/gen/vocnet/v1"
+	commonv1 "github.com/eslsoft/vocnet/pkg/api/common/v1"
+	dictv1 "github.com/eslsoft/vocnet/pkg/api/dict/v1"
+	vocnetv1 "github.com/eslsoft/vocnet/pkg/api/vocnet/v1"
 	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
