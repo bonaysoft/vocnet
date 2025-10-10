@@ -283,7 +283,7 @@ func TestListUserWordsFiltersByKeyword(t *testing.T) {
 	repo := newFakeUserWordRepo()
 	uc := NewUserWordUsecase(repo)
 	impl := uc.(*userWordUsecase)
-	impl.clock = func() time.Time { return time.Now() }
+	impl.clock = time.Now
 
 	_, _ = uc.CollectWord(context.Background(), 5, &entity.UserWord{Word: "Comet", Notes: "space"})
 	_, _ = uc.CollectWord(context.Background(), 5, &entity.UserWord{Word: "Forest", Notes: "trees"})

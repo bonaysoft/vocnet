@@ -14,7 +14,7 @@ type orderParams struct {
 	SecondaryDesc bool
 }
 
-func parseOrderBy(raw string, schema OrderSchema) (orderParams, error) {
+func parseOrderBy(raw string, schema OrderSchema) (orderParams, error) { //nolint:gocognit,gocyclo // parsing DSL entails validation branches for readability
 	if schema.Fields == nil {
 		schema.Fields = map[string]OrderField{}
 	}
@@ -149,35 +149,14 @@ func setOrderParams(binding any, ord orderParams) error {
 }
 
 func setStringField(target reflect.Value, name string, value string) error {
-	field := target.FieldByName(name)
-	if !field.IsValid() {
-		return fmt.Errorf("params struct %s has no field named %q", target.Type(), name)
-	}
-	if !field.CanSet() {
-		return fmt.Errorf("cannot set field %q on params struct", name)
-	}
-
-	switch field.Kind() {
-	case reflect.String:
-		field.SetString(value)
-	case reflect.Interface:
-		field.Set(reflect.ValueOf(value))
-	case reflect.Ptr:
-		if field.Type().Elem().Kind() != reflect.String {
-			return fmt.Errorf("field %q must be string or *string, got %s", name, field.Type())
-		}
-		if field.IsNil() {
-			field.Set(reflect.New(field.Type().Elem()))
-		}
-		field.Elem().SetString(value)
-	default:
-		return fmt.Errorf("field %q must be string-compatible, got %s", name, field.Kind())
-	}
-
-	return nil
+	return setAssignableField(target, name, reflect.ValueOf(value))
 }
 
 func setBoolField(target reflect.Value, name string, value bool) error {
+	return setAssignableField(target, name, reflect.ValueOf(value))
+}
+
+func setAssignableField(target reflect.Value, name string, value reflect.Value) error {
 	field := target.FieldByName(name)
 	if !field.IsValid() {
 		return fmt.Errorf("params struct %s has no field named %q", target.Type(), name)
@@ -187,21 +166,24 @@ func setBoolField(target reflect.Value, name string, value bool) error {
 	}
 
 	switch field.Kind() {
-	case reflect.Bool:
-		field.SetBool(value)
 	case reflect.Interface:
-		field.Set(reflect.ValueOf(value))
+		field.Set(value)
+		return nil
 	case reflect.Ptr:
-		if field.Type().Elem().Kind() != reflect.Bool {
-			return fmt.Errorf("field %q must be bool or *bool, got %s", name, field.Type())
+		elemType := field.Type().Elem()
+		if !value.Type().ConvertibleTo(elemType) {
+			return fmt.Errorf("field %q must be %s-compatible, got %s", name, elemType, value.Type())
 		}
 		if field.IsNil() {
-			field.Set(reflect.New(field.Type().Elem()))
+			field.Set(reflect.New(elemType))
 		}
-		field.Elem().SetBool(value)
+		field.Elem().Set(value.Convert(elemType))
+		return nil
 	default:
-		return fmt.Errorf("field %q must be bool-compatible, got %s", name, field.Kind())
+		if !value.Type().ConvertibleTo(field.Type()) {
+			return fmt.Errorf("field %q must be %s-compatible, got %s", name, field.Type(), value.Type())
+		}
+		field.Set(value.Convert(field.Type()))
+		return nil
 	}
-
-	return nil
 }

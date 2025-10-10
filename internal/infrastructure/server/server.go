@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"time"
 
 	connectcors "connectrpc.com/cors"
 	"github.com/rs/cors"
@@ -35,8 +36,9 @@ func NewServer(cfg *config.Config, logger *logrus.Logger, wordSvc dictv1connect.
 	return &Server{
 		config: cfg,
 		httpServer: &http.Server{
-			Addr:    fmt.Sprintf(":%d", cfg.Server.HTTPPort),
-			Handler: h2c.NewHandler(withCORS(mux), &http2.Server{}),
+			Addr:              fmt.Sprintf(":%d", cfg.Server.HTTPPort),
+			Handler:           h2c.NewHandler(withCORS(mux), &http2.Server{}),
+			ReadHeaderTimeout: 5 * time.Second,
 		},
 		logger: logger,
 	}

@@ -41,7 +41,7 @@ func (m *mockVocRepo) Delete(ctx context.Context, id int64) error {
 
 func TestLookup_PopulatesFormsForLemma(t *testing.T) {
 	lemmaText := "run"
-	repo := &mockVocRepo{word: &entity.Word{ID: 1, Text: lemmaText, Language: entity.LanguageEnglish, WordType: "lemma"}, forms: []entity.WordFormRef{{Text: "ran", WordType: "past"}, {Text: "running", WordType: "ing"}}}
+	repo := &mockVocRepo{word: &entity.Word{ID: 1, Text: lemmaText, Language: entity.LanguageEnglish, WordType: entity.WordTypeLemma}, forms: []entity.WordFormRef{{Text: "ran", WordType: "past"}, {Text: "running", WordType: "ing"}}}
 	uc := NewWordUsecase(repo)
 
 	v, err := uc.Lookup(context.Background(), lemmaText, entity.LanguageEnglish)

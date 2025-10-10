@@ -94,7 +94,7 @@ func Bind[M Msg, P any](msg M, binding *P, schema ResourceSchema) error {
 	return nil
 }
 
-func bindFilterTo(binding any, filter string, fields map[string]FilterField) error {
+func bindFilterTo(binding any, filter string, fields map[string]FilterField) error { //nolint:gocognit,gocyclo // CEL predicate parsing requires structured validation flows
 	filter = strings.TrimSpace(filter)
 	if filter == "" {
 		return nil
@@ -357,7 +357,7 @@ func parseFieldIdent(expr *exprpb.Expr) (string, error) {
 	return ident.GetName(), nil
 }
 
-func parseLiteral(expr *exprpb.Expr) (any, error) {
+func parseLiteral(expr *exprpb.Expr) (any, error) { //nolint:gocognit,gocyclo // literal decoding must inspect multiple CEL expression shapes
 	if constant := expr.GetConstExpr(); constant != nil {
 		switch constant.ConstantKind.(type) {
 		case *exprpb.Constant_StringValue:

@@ -17,6 +17,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+var _ dictv1connect.WordServiceHandler = (*WordServiceServer)(nil)
+
 type WordServiceServer struct {
 	dictv1connect.UnimplementedWordServiceHandler
 	uc usecase.WordUsecase
@@ -79,12 +81,17 @@ func (s *WordServiceServer) ListWords(ctx context.Context, req *connect.Request[
 		return nil, err
 	}
 
+	total32, err := safeInt32("total words", total)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
 	return connect.NewResponse(&dictv1.ListWordsResponse{
 		Words: lo.Map(items, func(item *entity.Word, _ int) *dictv1.Word {
 			return mapping.ToPbWord(item)
 		}),
 		Pagination: &commonv1.PaginationResponse{
-			Total:  int32(total),
+			Total:  total32,
 			PageNo: query.PageNo,
 		},
 	}), nil

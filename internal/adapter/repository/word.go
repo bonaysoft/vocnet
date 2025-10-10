@@ -225,7 +225,7 @@ func (r *wordRepository) ListFormsByLemma(ctx context.Context, lemma string, lan
 
 	forms := make([]entity.WordFormRef, 0, len(rows))
 	for _, row := range rows {
-		if row.WordType == "lemma" {
+		if row.WordType == entity.WordTypeLemma {
 			continue
 		}
 		forms = append(forms, entity.WordFormRef{
@@ -246,24 +246,12 @@ func applyListFilters(q *entdb.WordQuery, params listWordsParams) {
 	if params.WordType != "" {
 		q.Where(entword.WordTypeEQ(params.WordType))
 	}
-	if len(params.Words) > 0 {
-		seen := make(map[string]struct{}, len(params.Words))
-		preds := make([]entpredicate.Word, 0, len(params.Words))
-		for _, raw := range params.Words {
-			trimmed := strings.TrimSpace(raw)
-			if trimmed == "" {
-				continue
-			}
-			key := strings.ToLower(trimmed)
-			if _, ok := seen[key]; ok {
-				continue
-			}
-			seen[key] = struct{}{}
-			preds = append(preds, entword.TextEqualFold(trimmed))
+	if words := uniqueFolded(params.Words); len(words) > 0 {
+		preds := make([]entpredicate.Word, 0, len(words))
+		for _, word := range words {
+			preds = append(preds, entword.TextEqualFold(word))
 		}
-		if len(preds) > 0 {
-			q.Where(entword.Or(preds...))
-		}
+		q.Where(entword.Or(preds...))
 	}
 }
 
@@ -353,7 +341,7 @@ func normalizeLemma(lemma *string) *string {
 
 func defaultWordType(vt string) string {
 	if vt == "" {
-		return "lemma"
+		return entity.WordTypeLemma
 	}
 	return vt
 }

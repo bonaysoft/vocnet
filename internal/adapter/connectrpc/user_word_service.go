@@ -16,6 +16,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+var _ dictv1connect.WordServiceHandler = (*UserWordServiceServer)(nil)
+
 type UserWordServiceServer struct {
 	dictv1connect.UnimplementedWordServiceHandler
 
@@ -74,9 +76,14 @@ func (s *UserWordServiceServer) ListUserWords(ctx context.Context, req *connect.
 		return nil, err
 	}
 
+	total32, err := safeInt32("total user words", total)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
 	resp := &vocnetv1.ListUserWordsResponse{
 		Pagination: &commonv1.PaginationResponse{
-			Total:  int32(total),
+			Total:  total32,
 			PageNo: query.PageNo,
 		},
 	}

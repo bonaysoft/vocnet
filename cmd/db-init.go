@@ -31,6 +31,7 @@ import (
 	"hash/crc32"
 	"io"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -67,7 +68,17 @@ var dbInitCmd = &cobra.Command{
 	},
 }
 
-const ecDictURL = "https://github.com/skywind3000/ECDICT/releases/download/1.0.28/ecdict-sqlite-28.zip"
+const (
+	ecDictURL             = "https://github.com/skywind3000/ECDICT/releases/download/1.0.28/ecdict-sqlite-28.zip"
+	maxUncompressedSQLite = 300 << 20 // 300 MiB safety guard against decompression bombs
+)
+
+func safeUint64ToInt64(v uint64) (int64, error) {
+	if v > math.MaxInt64 {
+		return 0, fmt.Errorf("value %d exceeds int64 capacity", v)
+	}
+	return int64(v), nil
+}
 
 func init() {
 	rootCmd.AddCommand(dbInitCmd)
@@ -101,7 +112,7 @@ type inflectionRel struct {
 	Type  string
 }
 
-func importECDICT(ctx context.Context, url string, batchSize int, cacheDirFlag string, noCache bool) error {
+func importECDICT(ctx context.Context, url string, batchSize int, cacheDirFlag string, noCache bool) error { //nolint:gocognit,gocyclo // orchestration pulls IO, decompression, and batching into one workflow
 	start := time.Now()
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Printf("开始导入 ECDICT: %s", url)
@@ -184,13 +195,14 @@ func importECDICT(ctx context.Context, url string, batchSize int, cacheDirFlag s
 	// Build inflection map: word(lower) -> (lemma, type)
 	inflectionMap := make(map[string]inflectionRel)
 	for _, r := range records {
-		if strings.TrimSpace(nullStringVal(r.Exchange)) == "" {
+		exchange := strings.TrimSpace(nullStringVal(r.Exchange))
+		if exchange == "" {
 			continue
 		}
-		pairs := parseExchangePairs(nullStringVal(r.Exchange))
+		pairs := parseExchangePairs(exchange)
 		for _, p := range pairs { // p.word is inflected form, p.code is normalized type
 			// 忽略 code=lemma (0:root) 这种“指向原形”的反向信息，避免把真正的原形标成别人的变形
-			if p.code == "lemma" {
+			if p.code == entity.WordTypeLemma {
 				continue
 			}
 			lw := strings.ToLower(p.word)
@@ -200,8 +212,6 @@ func importECDICT(ctx context.Context, url string, batchSize int, cacheDirFlag s
 			// only set if not already set (first lemma wins)
 			if _, exists := inflectionMap[lw]; !exists {
 				inflectionMap[lw] = inflectionRel{Lemma: r.Word, Type: p.code}
-			} else {
-				// TODO: potential conflict (same inflected form claimed by multiple lemmas). We keep first; could log or collect stats.
 			}
 		}
 	}
@@ -265,6 +275,9 @@ func unzipSingle(match func(string) bool, zipPath, dstDir string) (string, error
 			continue
 		}
 		if match(f.Name) {
+			if f.UncompressedSize64 > maxUncompressedSQLite {
+				return "", fmt.Errorf("uncompressed size %d exceeds safety limit", f.UncompressedSize64)
+			}
 			rc, err := f.Open()
 			if err != nil {
 				return "", err
@@ -275,9 +288,19 @@ func unzipSingle(match func(string) bool, zipPath, dstDir string) (string, error
 			if err != nil {
 				return "", err
 			}
-			if _, err := io.Copy(out, rc); err != nil {
+			size, err := safeUint64ToInt64(f.UncompressedSize64)
+			if err != nil {
 				out.Close()
 				return "", err
+			}
+			written, err := io.CopyN(out, rc, size)
+			if err != nil && !errors.Is(err, io.EOF) {
+				out.Close()
+				return "", err
+			}
+			if written != size {
+				out.Close()
+				return "", fmt.Errorf("unexpected truncated copy: wrote %d bytes of %d", written, f.UncompressedSize64)
 			}
 			out.Close()
 			return outPath, nil
@@ -306,7 +329,7 @@ func insertBatchClassified(ctx context.Context, pool *pgxpool.Pool, batch []word
 			continue
 		}
 		// Determine word_type & lemma
-		WordType := "lemma"
+		WordType := entity.WordTypeLemma
 		var lemma any = nil
 		if rel, ok := inflectionMap[strings.ToLower(w.Word)]; ok {
 			// 已被别的 lemma 标记为某种形态 (不可能为 lemma，因为我们已跳过 code=lemma)
@@ -493,8 +516,7 @@ func extractLeadingPOS(line string) (string, string) {
 }
 
 func normalizePOSWithDot(pos string) string {
-	switch pos {
-	case "noun":
+	if pos == "noun" {
 		pos = "n"
 	}
 	return pos + "."
@@ -534,9 +556,9 @@ func parseExchangePairs(s string) []exchangePair {
 		}
 		code := "other"
 		val := part
-		if idx := strings.Index(part, ":"); idx >= 0 {
-			code = part[:idx]
-			val = part[idx+1:]
+		if left, right, ok := strings.Cut(part, ":"); ok {
+			code = left
+			val = right
 		}
 		val = strings.TrimSpace(val)
 		if val == "" {
@@ -586,7 +608,7 @@ func normalizeExchangeCode(c string) string {
 	case "s":
 		return "plural"
 	case "0":
-		return "lemma"
+		return entity.WordTypeLemma
 	case "1":
 		return "variant"
 	default:
@@ -612,13 +634,6 @@ func isAllEmpty(r wordRecord) bool {
 		strings.TrimSpace(nullStringVal(r.Pos)) == "" &&
 		strings.TrimSpace(nullStringVal(r.Translation)) == "" &&
 		strings.TrimSpace(nullStringVal(r.Exchange)) == ""
-}
-
-func nullString(ns sql.NullString) any {
-	if ns.Valid {
-		return ns.String
-	}
-	return nil
 }
 
 func nullStringVal(ns sql.NullString) string {
@@ -656,7 +671,7 @@ func runMigrations() error {
 }
 
 func ensurePostgresJSONTags(ctx context.Context, dsn string) error {
-	if !(strings.HasPrefix(dsn, "postgres://") || strings.HasPrefix(dsn, "postgresql://")) {
+	if !strings.HasPrefix(dsn, "postgres://") && !strings.HasPrefix(dsn, "postgresql://") {
 		return nil
 	}
 

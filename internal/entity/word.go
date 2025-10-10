@@ -45,6 +45,8 @@ type WordFormRef struct {
 	WordType string `json:"word_type"`
 }
 
+const WordTypeLemma = "lemma"
+
 // WordRelation models a connection to another dictionary entry.
 type WordRelation struct {
 	Word         string `json:"word"`

@@ -71,7 +71,7 @@ func (u *wordUsecase) Lookup(ctx context.Context, lemma string, language entity.
 	if err != nil || v == nil {
 		return v, err
 	}
-	if v.WordType == "lemma" {
+	if v.WordType == entity.WordTypeLemma {
 		forms, ferr := u.repo.ListFormsByLemma(ctx, v.Text, v.Language)
 		if ferr == nil {
 			v.Forms = forms
@@ -106,9 +106,9 @@ func normalizeVocForUpsert(in *entity.Word) (*entity.Word, error) {
 	}
 	out.WordType = strings.TrimSpace(out.WordType)
 	if out.WordType == "" {
-		out.WordType = "lemma"
+		out.WordType = entity.WordTypeLemma
 	}
-	if out.WordType != "lemma" {
+	if out.WordType != entity.WordTypeLemma {
 		if out.Lemma == nil || strings.TrimSpace(*out.Lemma) == "" {
 			return nil, errors.New("lemma reference required for non-lemma entries")
 		}

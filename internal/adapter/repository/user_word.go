@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
+	"math"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/eslsoft/vocnet/internal/entity"
@@ -19,6 +19,13 @@ import (
 
 type userWordRepository struct {
 	client *entdb.Client
+}
+
+func int32ToInt16(value int32, field string) (int16, error) {
+	if value > math.MaxInt16 || value < math.MinInt16 {
+		return 0, fmt.Errorf("%s out of int16 range: %d", field, value)
+	}
+	return int16(value), nil
 }
 
 // NewUserWordRepository constructs an ent-backed repository.
@@ -40,14 +47,31 @@ func (r *userWordRepository) Create(ctx context.Context, userWord *entity.UserWo
 		return nil, err
 	}
 
+	listen, err := int32ToInt16(userWord.Mastery.Listen, "mastery.listen")
+	if err != nil {
+		return nil, err
+	}
+	read, err := int32ToInt16(userWord.Mastery.Read, "mastery.read")
+	if err != nil {
+		return nil, err
+	}
+	spell, err := int32ToInt16(userWord.Mastery.Spell, "mastery.spell")
+	if err != nil {
+		return nil, err
+	}
+	pronounce, err := int32ToInt16(userWord.Mastery.Pronounce, "mastery.pronounce")
+	if err != nil {
+		return nil, err
+	}
+
 	builder := r.client.UserWord.Create().
 		SetUserID(userWord.UserID).
 		SetWord(userWord.Word).
 		SetLanguage(entity.NormalizeLanguage(userWord.Language).Code()).
-		SetMasteryListen(int16(userWord.Mastery.Listen)).
-		SetMasteryRead(int16(userWord.Mastery.Read)).
-		SetMasterySpell(int16(userWord.Mastery.Spell)).
-		SetMasteryPronounce(int16(userWord.Mastery.Pronounce)).
+		SetMasteryListen(listen).
+		SetMasteryRead(read).
+		SetMasterySpell(spell).
+		SetMasteryPronounce(pronounce).
 		SetMasteryOverall(userWord.Mastery.Overall).
 		SetReviewIntervalDays(userWord.Review.IntervalDays).
 		SetReviewFailCount(userWord.Review.FailCount).
@@ -80,14 +104,31 @@ func (r *userWordRepository) Update(ctx context.Context, userWord *entity.UserWo
 		return nil, err
 	}
 
+	listen, err := int32ToInt16(userWord.Mastery.Listen, "mastery.listen")
+	if err != nil {
+		return nil, err
+	}
+	read, err := int32ToInt16(userWord.Mastery.Read, "mastery.read")
+	if err != nil {
+		return nil, err
+	}
+	spell, err := int32ToInt16(userWord.Mastery.Spell, "mastery.spell")
+	if err != nil {
+		return nil, err
+	}
+	pronounce, err := int32ToInt16(userWord.Mastery.Pronounce, "mastery.pronounce")
+	if err != nil {
+		return nil, err
+	}
+
 	mutation := r.client.UserWord.UpdateOneID(int(userWord.ID)).
 		Where(entuserword.UserIDEQ(userWord.UserID)).
 		SetWord(userWord.Word).
 		SetLanguage(entity.NormalizeLanguage(userWord.Language).Code()).
-		SetMasteryListen(int16(userWord.Mastery.Listen)).
-		SetMasteryRead(int16(userWord.Mastery.Read)).
-		SetMasterySpell(int16(userWord.Mastery.Spell)).
-		SetMasteryPronounce(int16(userWord.Mastery.Pronounce)).
+		SetMasteryListen(listen).
+		SetMasteryRead(read).
+		SetMasterySpell(spell).
+		SetMasteryPronounce(pronounce).
 		SetMasteryOverall(userWord.Mastery.Overall).
 		SetReviewIntervalDays(userWord.Review.IntervalDays).
 		SetReviewFailCount(userWord.Review.FailCount).
@@ -237,24 +278,12 @@ func applyUserWordFilters(q *entdb.UserWordQuery, params listUserWordsParams) {
 	if params.Keyword != "" {
 		q.Where(entuserword.WordContainsFold(params.Keyword))
 	}
-	if len(params.Words) > 0 {
-		seen := make(map[string]struct{}, len(params.Words))
-		preds := make([]entpredicate.UserWord, 0, len(params.Words))
-		for _, raw := range params.Words {
-			trimmed := strings.TrimSpace(raw)
-			if trimmed == "" {
-				continue
-			}
-			key := strings.ToLower(trimmed)
-			if _, ok := seen[key]; ok {
-				continue
-			}
-			seen[key] = struct{}{}
-			preds = append(preds, entuserword.WordEqualFold(trimmed))
+	if words := uniqueFolded(params.Words); len(words) > 0 {
+		preds := make([]entpredicate.UserWord, 0, len(words))
+		for _, word := range words {
+			preds = append(preds, entuserword.WordEqualFold(word))
 		}
-		if len(preds) > 0 {
-			q.Where(entuserword.Or(preds...))
-		}
+		q.Where(entuserword.Or(preds...))
 	}
 }
 
