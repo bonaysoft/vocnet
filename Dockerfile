@@ -2,8 +2,8 @@ FROM golang:1.24-alpine AS builder
 
 WORKDIR /workspace
 
-# Install certificates required during go build (e.g. for fetching modules)
-RUN apk --no-cache add ca-certificates git gcc
+# Install build tooling and certificates required during go build (e.g. for fetching modules)
+RUN apk --no-cache add ca-certificates git build-base
 
 COPY go.mod go.sum ./
 RUN go mod download
