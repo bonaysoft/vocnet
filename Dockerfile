@@ -1,3 +1,19 @@
+FROM golang:1.22-alpine AS builder
+
+WORKDIR /workspace
+
+# Install certificates required during go build (e.g. for fetching modules)
+RUN apk --no-cache add ca-certificates git
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+# Build linux binary inside the container to ensure compatibility
+ARG TARGETOS TARGETARCH
+RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} go build -o /workspace/bin/vocnet .
+
 FROM alpine:latest
 
 # Install ca-certificates for HTTPS
@@ -10,7 +26,7 @@ RUN addgroup -g 1001 -S appuser && \
 WORKDIR /app
 
 # Copy binary from builder stage
-COPY bin/vocnet .
+COPY --from=builder /workspace/bin/vocnet ./vocnet
 
 # Change ownership to non-root user
 RUN chown appuser:appuser /app/vocnet
