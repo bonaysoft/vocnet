@@ -27,6 +27,8 @@ install-tools: ## Install development tools
 	go install github.com/bufbuild/buf/cmd/buf@latest
 	# Install schema/codegen tools
 	go install github.com/golang/mock/mockgen@v$(MOCKGEN_VERSION)
+	# Install CLI utilities
+	go install github.com/mikefarah/yq/v4@latest
 	@echo "Tools installed successfully"
 
 .PHONY: deps
