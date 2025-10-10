@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/userword"
@@ -19,6 +20,7 @@ type UserWordCreate struct {
 	config
 	mutation *UserWordMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetUserID sets the "user_id" field.
@@ -450,6 +452,7 @@ func (uwc *UserWordCreate) createSpec() (*UserWord, *sqlgraph.CreateSpec) {
 		_node = &UserWord{config: uwc.config}
 		_spec = sqlgraph.NewCreateSpec(userword.Table, sqlgraph.NewFieldSpec(userword.FieldID, field.TypeInt))
 	)
+	_spec.OnConflict = uwc.conflict
 	if value, ok := uwc.mutation.UserID(); ok {
 		_spec.SetField(userword.FieldUserID, field.TypeInt64, value)
 		_node.UserID = value
@@ -533,11 +536,802 @@ func (uwc *UserWordCreate) createSpec() (*UserWord, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.UserWord.Create().
+//		SetUserID(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.UserWordUpsert) {
+//			SetUserID(v+v).
+//		}).
+//		Exec(ctx)
+func (uwc *UserWordCreate) OnConflict(opts ...sql.ConflictOption) *UserWordUpsertOne {
+	uwc.conflict = opts
+	return &UserWordUpsertOne{
+		create: uwc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.UserWord.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (uwc *UserWordCreate) OnConflictColumns(columns ...string) *UserWordUpsertOne {
+	uwc.conflict = append(uwc.conflict, sql.ConflictColumns(columns...))
+	return &UserWordUpsertOne{
+		create: uwc,
+	}
+}
+
+type (
+	// UserWordUpsertOne is the builder for "upsert"-ing
+	//  one UserWord node.
+	UserWordUpsertOne struct {
+		create *UserWordCreate
+	}
+
+	// UserWordUpsert is the "OnConflict" setter.
+	UserWordUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUserID sets the "user_id" field.
+func (u *UserWordUpsert) SetUserID(v int64) *UserWordUpsert {
+	u.Set(userword.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateUserID() *UserWordUpsert {
+	u.SetExcluded(userword.FieldUserID)
+	return u
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *UserWordUpsert) AddUserID(v int64) *UserWordUpsert {
+	u.Add(userword.FieldUserID, v)
+	return u
+}
+
+// SetWord sets the "word" field.
+func (u *UserWordUpsert) SetWord(v string) *UserWordUpsert {
+	u.Set(userword.FieldWord, v)
+	return u
+}
+
+// UpdateWord sets the "word" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateWord() *UserWordUpsert {
+	u.SetExcluded(userword.FieldWord)
+	return u
+}
+
+// SetLanguage sets the "language" field.
+func (u *UserWordUpsert) SetLanguage(v string) *UserWordUpsert {
+	u.Set(userword.FieldLanguage, v)
+	return u
+}
+
+// UpdateLanguage sets the "language" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateLanguage() *UserWordUpsert {
+	u.SetExcluded(userword.FieldLanguage)
+	return u
+}
+
+// SetMasteryListen sets the "mastery_listen" field.
+func (u *UserWordUpsert) SetMasteryListen(v int16) *UserWordUpsert {
+	u.Set(userword.FieldMasteryListen, v)
+	return u
+}
+
+// UpdateMasteryListen sets the "mastery_listen" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateMasteryListen() *UserWordUpsert {
+	u.SetExcluded(userword.FieldMasteryListen)
+	return u
+}
+
+// AddMasteryListen adds v to the "mastery_listen" field.
+func (u *UserWordUpsert) AddMasteryListen(v int16) *UserWordUpsert {
+	u.Add(userword.FieldMasteryListen, v)
+	return u
+}
+
+// SetMasteryRead sets the "mastery_read" field.
+func (u *UserWordUpsert) SetMasteryRead(v int16) *UserWordUpsert {
+	u.Set(userword.FieldMasteryRead, v)
+	return u
+}
+
+// UpdateMasteryRead sets the "mastery_read" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateMasteryRead() *UserWordUpsert {
+	u.SetExcluded(userword.FieldMasteryRead)
+	return u
+}
+
+// AddMasteryRead adds v to the "mastery_read" field.
+func (u *UserWordUpsert) AddMasteryRead(v int16) *UserWordUpsert {
+	u.Add(userword.FieldMasteryRead, v)
+	return u
+}
+
+// SetMasterySpell sets the "mastery_spell" field.
+func (u *UserWordUpsert) SetMasterySpell(v int16) *UserWordUpsert {
+	u.Set(userword.FieldMasterySpell, v)
+	return u
+}
+
+// UpdateMasterySpell sets the "mastery_spell" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateMasterySpell() *UserWordUpsert {
+	u.SetExcluded(userword.FieldMasterySpell)
+	return u
+}
+
+// AddMasterySpell adds v to the "mastery_spell" field.
+func (u *UserWordUpsert) AddMasterySpell(v int16) *UserWordUpsert {
+	u.Add(userword.FieldMasterySpell, v)
+	return u
+}
+
+// SetMasteryPronounce sets the "mastery_pronounce" field.
+func (u *UserWordUpsert) SetMasteryPronounce(v int16) *UserWordUpsert {
+	u.Set(userword.FieldMasteryPronounce, v)
+	return u
+}
+
+// UpdateMasteryPronounce sets the "mastery_pronounce" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateMasteryPronounce() *UserWordUpsert {
+	u.SetExcluded(userword.FieldMasteryPronounce)
+	return u
+}
+
+// AddMasteryPronounce adds v to the "mastery_pronounce" field.
+func (u *UserWordUpsert) AddMasteryPronounce(v int16) *UserWordUpsert {
+	u.Add(userword.FieldMasteryPronounce, v)
+	return u
+}
+
+// SetMasteryUse sets the "mastery_use" field.
+func (u *UserWordUpsert) SetMasteryUse(v int16) *UserWordUpsert {
+	u.Set(userword.FieldMasteryUse, v)
+	return u
+}
+
+// UpdateMasteryUse sets the "mastery_use" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateMasteryUse() *UserWordUpsert {
+	u.SetExcluded(userword.FieldMasteryUse)
+	return u
+}
+
+// AddMasteryUse adds v to the "mastery_use" field.
+func (u *UserWordUpsert) AddMasteryUse(v int16) *UserWordUpsert {
+	u.Add(userword.FieldMasteryUse, v)
+	return u
+}
+
+// SetMasteryOverall sets the "mastery_overall" field.
+func (u *UserWordUpsert) SetMasteryOverall(v int32) *UserWordUpsert {
+	u.Set(userword.FieldMasteryOverall, v)
+	return u
+}
+
+// UpdateMasteryOverall sets the "mastery_overall" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateMasteryOverall() *UserWordUpsert {
+	u.SetExcluded(userword.FieldMasteryOverall)
+	return u
+}
+
+// AddMasteryOverall adds v to the "mastery_overall" field.
+func (u *UserWordUpsert) AddMasteryOverall(v int32) *UserWordUpsert {
+	u.Add(userword.FieldMasteryOverall, v)
+	return u
+}
+
+// SetReviewLastReviewAt sets the "review_last_review_at" field.
+func (u *UserWordUpsert) SetReviewLastReviewAt(v time.Time) *UserWordUpsert {
+	u.Set(userword.FieldReviewLastReviewAt, v)
+	return u
+}
+
+// UpdateReviewLastReviewAt sets the "review_last_review_at" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateReviewLastReviewAt() *UserWordUpsert {
+	u.SetExcluded(userword.FieldReviewLastReviewAt)
+	return u
+}
+
+// ClearReviewLastReviewAt clears the value of the "review_last_review_at" field.
+func (u *UserWordUpsert) ClearReviewLastReviewAt() *UserWordUpsert {
+	u.SetNull(userword.FieldReviewLastReviewAt)
+	return u
+}
+
+// SetReviewNextReviewAt sets the "review_next_review_at" field.
+func (u *UserWordUpsert) SetReviewNextReviewAt(v time.Time) *UserWordUpsert {
+	u.Set(userword.FieldReviewNextReviewAt, v)
+	return u
+}
+
+// UpdateReviewNextReviewAt sets the "review_next_review_at" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateReviewNextReviewAt() *UserWordUpsert {
+	u.SetExcluded(userword.FieldReviewNextReviewAt)
+	return u
+}
+
+// ClearReviewNextReviewAt clears the value of the "review_next_review_at" field.
+func (u *UserWordUpsert) ClearReviewNextReviewAt() *UserWordUpsert {
+	u.SetNull(userword.FieldReviewNextReviewAt)
+	return u
+}
+
+// SetReviewIntervalDays sets the "review_interval_days" field.
+func (u *UserWordUpsert) SetReviewIntervalDays(v int32) *UserWordUpsert {
+	u.Set(userword.FieldReviewIntervalDays, v)
+	return u
+}
+
+// UpdateReviewIntervalDays sets the "review_interval_days" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateReviewIntervalDays() *UserWordUpsert {
+	u.SetExcluded(userword.FieldReviewIntervalDays)
+	return u
+}
+
+// AddReviewIntervalDays adds v to the "review_interval_days" field.
+func (u *UserWordUpsert) AddReviewIntervalDays(v int32) *UserWordUpsert {
+	u.Add(userword.FieldReviewIntervalDays, v)
+	return u
+}
+
+// SetReviewFailCount sets the "review_fail_count" field.
+func (u *UserWordUpsert) SetReviewFailCount(v int32) *UserWordUpsert {
+	u.Set(userword.FieldReviewFailCount, v)
+	return u
+}
+
+// UpdateReviewFailCount sets the "review_fail_count" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateReviewFailCount() *UserWordUpsert {
+	u.SetExcluded(userword.FieldReviewFailCount)
+	return u
+}
+
+// AddReviewFailCount adds v to the "review_fail_count" field.
+func (u *UserWordUpsert) AddReviewFailCount(v int32) *UserWordUpsert {
+	u.Add(userword.FieldReviewFailCount, v)
+	return u
+}
+
+// SetQueryCount sets the "query_count" field.
+func (u *UserWordUpsert) SetQueryCount(v int64) *UserWordUpsert {
+	u.Set(userword.FieldQueryCount, v)
+	return u
+}
+
+// UpdateQueryCount sets the "query_count" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateQueryCount() *UserWordUpsert {
+	u.SetExcluded(userword.FieldQueryCount)
+	return u
+}
+
+// AddQueryCount adds v to the "query_count" field.
+func (u *UserWordUpsert) AddQueryCount(v int64) *UserWordUpsert {
+	u.Add(userword.FieldQueryCount, v)
+	return u
+}
+
+// SetNotes sets the "notes" field.
+func (u *UserWordUpsert) SetNotes(v string) *UserWordUpsert {
+	u.Set(userword.FieldNotes, v)
+	return u
+}
+
+// UpdateNotes sets the "notes" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateNotes() *UserWordUpsert {
+	u.SetExcluded(userword.FieldNotes)
+	return u
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (u *UserWordUpsert) ClearNotes() *UserWordUpsert {
+	u.SetNull(userword.FieldNotes)
+	return u
+}
+
+// SetSentences sets the "sentences" field.
+func (u *UserWordUpsert) SetSentences(v types.UserSentences) *UserWordUpsert {
+	u.Set(userword.FieldSentences, v)
+	return u
+}
+
+// UpdateSentences sets the "sentences" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateSentences() *UserWordUpsert {
+	u.SetExcluded(userword.FieldSentences)
+	return u
+}
+
+// SetRelations sets the "relations" field.
+func (u *UserWordUpsert) SetRelations(v types.UserWordRelations) *UserWordUpsert {
+	u.Set(userword.FieldRelations, v)
+	return u
+}
+
+// UpdateRelations sets the "relations" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateRelations() *UserWordUpsert {
+	u.SetExcluded(userword.FieldRelations)
+	return u
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (u *UserWordUpsert) SetCreatedBy(v string) *UserWordUpsert {
+	u.Set(userword.FieldCreatedBy, v)
+	return u
+}
+
+// UpdateCreatedBy sets the "created_by" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateCreatedBy() *UserWordUpsert {
+	u.SetExcluded(userword.FieldCreatedBy)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *UserWordUpsert) SetUpdatedAt(v time.Time) *UserWordUpsert {
+	u.Set(userword.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateUpdatedAt() *UserWordUpsert {
+	u.SetExcluded(userword.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.UserWord.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *UserWordUpsertOne) UpdateNewValues() *UserWordUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(userword.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.UserWord.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *UserWordUpsertOne) Ignore() *UserWordUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *UserWordUpsertOne) DoNothing() *UserWordUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the UserWordCreate.OnConflict
+// documentation for more info.
+func (u *UserWordUpsertOne) Update(set func(*UserWordUpsert)) *UserWordUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&UserWordUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *UserWordUpsertOne) SetUserID(v int64) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *UserWordUpsertOne) AddUserID(v int64) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateUserID() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetWord sets the "word" field.
+func (u *UserWordUpsertOne) SetWord(v string) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetWord(v)
+	})
+}
+
+// UpdateWord sets the "word" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateWord() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateWord()
+	})
+}
+
+// SetLanguage sets the "language" field.
+func (u *UserWordUpsertOne) SetLanguage(v string) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetLanguage(v)
+	})
+}
+
+// UpdateLanguage sets the "language" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateLanguage() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateLanguage()
+	})
+}
+
+// SetMasteryListen sets the "mastery_listen" field.
+func (u *UserWordUpsertOne) SetMasteryListen(v int16) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetMasteryListen(v)
+	})
+}
+
+// AddMasteryListen adds v to the "mastery_listen" field.
+func (u *UserWordUpsertOne) AddMasteryListen(v int16) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddMasteryListen(v)
+	})
+}
+
+// UpdateMasteryListen sets the "mastery_listen" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateMasteryListen() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateMasteryListen()
+	})
+}
+
+// SetMasteryRead sets the "mastery_read" field.
+func (u *UserWordUpsertOne) SetMasteryRead(v int16) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetMasteryRead(v)
+	})
+}
+
+// AddMasteryRead adds v to the "mastery_read" field.
+func (u *UserWordUpsertOne) AddMasteryRead(v int16) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddMasteryRead(v)
+	})
+}
+
+// UpdateMasteryRead sets the "mastery_read" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateMasteryRead() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateMasteryRead()
+	})
+}
+
+// SetMasterySpell sets the "mastery_spell" field.
+func (u *UserWordUpsertOne) SetMasterySpell(v int16) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetMasterySpell(v)
+	})
+}
+
+// AddMasterySpell adds v to the "mastery_spell" field.
+func (u *UserWordUpsertOne) AddMasterySpell(v int16) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddMasterySpell(v)
+	})
+}
+
+// UpdateMasterySpell sets the "mastery_spell" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateMasterySpell() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateMasterySpell()
+	})
+}
+
+// SetMasteryPronounce sets the "mastery_pronounce" field.
+func (u *UserWordUpsertOne) SetMasteryPronounce(v int16) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetMasteryPronounce(v)
+	})
+}
+
+// AddMasteryPronounce adds v to the "mastery_pronounce" field.
+func (u *UserWordUpsertOne) AddMasteryPronounce(v int16) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddMasteryPronounce(v)
+	})
+}
+
+// UpdateMasteryPronounce sets the "mastery_pronounce" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateMasteryPronounce() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateMasteryPronounce()
+	})
+}
+
+// SetMasteryUse sets the "mastery_use" field.
+func (u *UserWordUpsertOne) SetMasteryUse(v int16) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetMasteryUse(v)
+	})
+}
+
+// AddMasteryUse adds v to the "mastery_use" field.
+func (u *UserWordUpsertOne) AddMasteryUse(v int16) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddMasteryUse(v)
+	})
+}
+
+// UpdateMasteryUse sets the "mastery_use" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateMasteryUse() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateMasteryUse()
+	})
+}
+
+// SetMasteryOverall sets the "mastery_overall" field.
+func (u *UserWordUpsertOne) SetMasteryOverall(v int32) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetMasteryOverall(v)
+	})
+}
+
+// AddMasteryOverall adds v to the "mastery_overall" field.
+func (u *UserWordUpsertOne) AddMasteryOverall(v int32) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddMasteryOverall(v)
+	})
+}
+
+// UpdateMasteryOverall sets the "mastery_overall" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateMasteryOverall() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateMasteryOverall()
+	})
+}
+
+// SetReviewLastReviewAt sets the "review_last_review_at" field.
+func (u *UserWordUpsertOne) SetReviewLastReviewAt(v time.Time) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetReviewLastReviewAt(v)
+	})
+}
+
+// UpdateReviewLastReviewAt sets the "review_last_review_at" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateReviewLastReviewAt() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateReviewLastReviewAt()
+	})
+}
+
+// ClearReviewLastReviewAt clears the value of the "review_last_review_at" field.
+func (u *UserWordUpsertOne) ClearReviewLastReviewAt() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.ClearReviewLastReviewAt()
+	})
+}
+
+// SetReviewNextReviewAt sets the "review_next_review_at" field.
+func (u *UserWordUpsertOne) SetReviewNextReviewAt(v time.Time) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetReviewNextReviewAt(v)
+	})
+}
+
+// UpdateReviewNextReviewAt sets the "review_next_review_at" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateReviewNextReviewAt() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateReviewNextReviewAt()
+	})
+}
+
+// ClearReviewNextReviewAt clears the value of the "review_next_review_at" field.
+func (u *UserWordUpsertOne) ClearReviewNextReviewAt() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.ClearReviewNextReviewAt()
+	})
+}
+
+// SetReviewIntervalDays sets the "review_interval_days" field.
+func (u *UserWordUpsertOne) SetReviewIntervalDays(v int32) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetReviewIntervalDays(v)
+	})
+}
+
+// AddReviewIntervalDays adds v to the "review_interval_days" field.
+func (u *UserWordUpsertOne) AddReviewIntervalDays(v int32) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddReviewIntervalDays(v)
+	})
+}
+
+// UpdateReviewIntervalDays sets the "review_interval_days" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateReviewIntervalDays() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateReviewIntervalDays()
+	})
+}
+
+// SetReviewFailCount sets the "review_fail_count" field.
+func (u *UserWordUpsertOne) SetReviewFailCount(v int32) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetReviewFailCount(v)
+	})
+}
+
+// AddReviewFailCount adds v to the "review_fail_count" field.
+func (u *UserWordUpsertOne) AddReviewFailCount(v int32) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddReviewFailCount(v)
+	})
+}
+
+// UpdateReviewFailCount sets the "review_fail_count" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateReviewFailCount() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateReviewFailCount()
+	})
+}
+
+// SetQueryCount sets the "query_count" field.
+func (u *UserWordUpsertOne) SetQueryCount(v int64) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetQueryCount(v)
+	})
+}
+
+// AddQueryCount adds v to the "query_count" field.
+func (u *UserWordUpsertOne) AddQueryCount(v int64) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddQueryCount(v)
+	})
+}
+
+// UpdateQueryCount sets the "query_count" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateQueryCount() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateQueryCount()
+	})
+}
+
+// SetNotes sets the "notes" field.
+func (u *UserWordUpsertOne) SetNotes(v string) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetNotes(v)
+	})
+}
+
+// UpdateNotes sets the "notes" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateNotes() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateNotes()
+	})
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (u *UserWordUpsertOne) ClearNotes() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.ClearNotes()
+	})
+}
+
+// SetSentences sets the "sentences" field.
+func (u *UserWordUpsertOne) SetSentences(v types.UserSentences) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetSentences(v)
+	})
+}
+
+// UpdateSentences sets the "sentences" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateSentences() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateSentences()
+	})
+}
+
+// SetRelations sets the "relations" field.
+func (u *UserWordUpsertOne) SetRelations(v types.UserWordRelations) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetRelations(v)
+	})
+}
+
+// UpdateRelations sets the "relations" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateRelations() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateRelations()
+	})
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (u *UserWordUpsertOne) SetCreatedBy(v string) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetCreatedBy(v)
+	})
+}
+
+// UpdateCreatedBy sets the "created_by" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateCreatedBy() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateCreatedBy()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *UserWordUpsertOne) SetUpdatedAt(v time.Time) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateUpdatedAt() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *UserWordUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for UserWordCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *UserWordUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *UserWordUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *UserWordUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // UserWordCreateBulk is the builder for creating many UserWord entities in bulk.
 type UserWordCreateBulk struct {
 	config
 	err      error
 	builders []*UserWordCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the UserWord entities in the database.
@@ -567,6 +1361,7 @@ func (uwcb *UserWordCreateBulk) Save(ctx context.Context) ([]*UserWord, error) {
 					_, err = mutators[i+1].Mutate(root, uwcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = uwcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, uwcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -617,6 +1412,474 @@ func (uwcb *UserWordCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (uwcb *UserWordCreateBulk) ExecX(ctx context.Context) {
 	if err := uwcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.UserWord.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.UserWordUpsert) {
+//			SetUserID(v+v).
+//		}).
+//		Exec(ctx)
+func (uwcb *UserWordCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserWordUpsertBulk {
+	uwcb.conflict = opts
+	return &UserWordUpsertBulk{
+		create: uwcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.UserWord.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (uwcb *UserWordCreateBulk) OnConflictColumns(columns ...string) *UserWordUpsertBulk {
+	uwcb.conflict = append(uwcb.conflict, sql.ConflictColumns(columns...))
+	return &UserWordUpsertBulk{
+		create: uwcb,
+	}
+}
+
+// UserWordUpsertBulk is the builder for "upsert"-ing
+// a bulk of UserWord nodes.
+type UserWordUpsertBulk struct {
+	create *UserWordCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.UserWord.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *UserWordUpsertBulk) UpdateNewValues() *UserWordUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(userword.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.UserWord.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *UserWordUpsertBulk) Ignore() *UserWordUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *UserWordUpsertBulk) DoNothing() *UserWordUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the UserWordCreateBulk.OnConflict
+// documentation for more info.
+func (u *UserWordUpsertBulk) Update(set func(*UserWordUpsert)) *UserWordUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&UserWordUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *UserWordUpsertBulk) SetUserID(v int64) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *UserWordUpsertBulk) AddUserID(v int64) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateUserID() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetWord sets the "word" field.
+func (u *UserWordUpsertBulk) SetWord(v string) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetWord(v)
+	})
+}
+
+// UpdateWord sets the "word" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateWord() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateWord()
+	})
+}
+
+// SetLanguage sets the "language" field.
+func (u *UserWordUpsertBulk) SetLanguage(v string) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetLanguage(v)
+	})
+}
+
+// UpdateLanguage sets the "language" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateLanguage() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateLanguage()
+	})
+}
+
+// SetMasteryListen sets the "mastery_listen" field.
+func (u *UserWordUpsertBulk) SetMasteryListen(v int16) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetMasteryListen(v)
+	})
+}
+
+// AddMasteryListen adds v to the "mastery_listen" field.
+func (u *UserWordUpsertBulk) AddMasteryListen(v int16) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddMasteryListen(v)
+	})
+}
+
+// UpdateMasteryListen sets the "mastery_listen" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateMasteryListen() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateMasteryListen()
+	})
+}
+
+// SetMasteryRead sets the "mastery_read" field.
+func (u *UserWordUpsertBulk) SetMasteryRead(v int16) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetMasteryRead(v)
+	})
+}
+
+// AddMasteryRead adds v to the "mastery_read" field.
+func (u *UserWordUpsertBulk) AddMasteryRead(v int16) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddMasteryRead(v)
+	})
+}
+
+// UpdateMasteryRead sets the "mastery_read" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateMasteryRead() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateMasteryRead()
+	})
+}
+
+// SetMasterySpell sets the "mastery_spell" field.
+func (u *UserWordUpsertBulk) SetMasterySpell(v int16) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetMasterySpell(v)
+	})
+}
+
+// AddMasterySpell adds v to the "mastery_spell" field.
+func (u *UserWordUpsertBulk) AddMasterySpell(v int16) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddMasterySpell(v)
+	})
+}
+
+// UpdateMasterySpell sets the "mastery_spell" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateMasterySpell() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateMasterySpell()
+	})
+}
+
+// SetMasteryPronounce sets the "mastery_pronounce" field.
+func (u *UserWordUpsertBulk) SetMasteryPronounce(v int16) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetMasteryPronounce(v)
+	})
+}
+
+// AddMasteryPronounce adds v to the "mastery_pronounce" field.
+func (u *UserWordUpsertBulk) AddMasteryPronounce(v int16) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddMasteryPronounce(v)
+	})
+}
+
+// UpdateMasteryPronounce sets the "mastery_pronounce" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateMasteryPronounce() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateMasteryPronounce()
+	})
+}
+
+// SetMasteryUse sets the "mastery_use" field.
+func (u *UserWordUpsertBulk) SetMasteryUse(v int16) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetMasteryUse(v)
+	})
+}
+
+// AddMasteryUse adds v to the "mastery_use" field.
+func (u *UserWordUpsertBulk) AddMasteryUse(v int16) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddMasteryUse(v)
+	})
+}
+
+// UpdateMasteryUse sets the "mastery_use" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateMasteryUse() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateMasteryUse()
+	})
+}
+
+// SetMasteryOverall sets the "mastery_overall" field.
+func (u *UserWordUpsertBulk) SetMasteryOverall(v int32) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetMasteryOverall(v)
+	})
+}
+
+// AddMasteryOverall adds v to the "mastery_overall" field.
+func (u *UserWordUpsertBulk) AddMasteryOverall(v int32) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddMasteryOverall(v)
+	})
+}
+
+// UpdateMasteryOverall sets the "mastery_overall" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateMasteryOverall() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateMasteryOverall()
+	})
+}
+
+// SetReviewLastReviewAt sets the "review_last_review_at" field.
+func (u *UserWordUpsertBulk) SetReviewLastReviewAt(v time.Time) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetReviewLastReviewAt(v)
+	})
+}
+
+// UpdateReviewLastReviewAt sets the "review_last_review_at" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateReviewLastReviewAt() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateReviewLastReviewAt()
+	})
+}
+
+// ClearReviewLastReviewAt clears the value of the "review_last_review_at" field.
+func (u *UserWordUpsertBulk) ClearReviewLastReviewAt() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.ClearReviewLastReviewAt()
+	})
+}
+
+// SetReviewNextReviewAt sets the "review_next_review_at" field.
+func (u *UserWordUpsertBulk) SetReviewNextReviewAt(v time.Time) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetReviewNextReviewAt(v)
+	})
+}
+
+// UpdateReviewNextReviewAt sets the "review_next_review_at" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateReviewNextReviewAt() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateReviewNextReviewAt()
+	})
+}
+
+// ClearReviewNextReviewAt clears the value of the "review_next_review_at" field.
+func (u *UserWordUpsertBulk) ClearReviewNextReviewAt() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.ClearReviewNextReviewAt()
+	})
+}
+
+// SetReviewIntervalDays sets the "review_interval_days" field.
+func (u *UserWordUpsertBulk) SetReviewIntervalDays(v int32) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetReviewIntervalDays(v)
+	})
+}
+
+// AddReviewIntervalDays adds v to the "review_interval_days" field.
+func (u *UserWordUpsertBulk) AddReviewIntervalDays(v int32) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddReviewIntervalDays(v)
+	})
+}
+
+// UpdateReviewIntervalDays sets the "review_interval_days" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateReviewIntervalDays() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateReviewIntervalDays()
+	})
+}
+
+// SetReviewFailCount sets the "review_fail_count" field.
+func (u *UserWordUpsertBulk) SetReviewFailCount(v int32) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetReviewFailCount(v)
+	})
+}
+
+// AddReviewFailCount adds v to the "review_fail_count" field.
+func (u *UserWordUpsertBulk) AddReviewFailCount(v int32) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddReviewFailCount(v)
+	})
+}
+
+// UpdateReviewFailCount sets the "review_fail_count" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateReviewFailCount() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateReviewFailCount()
+	})
+}
+
+// SetQueryCount sets the "query_count" field.
+func (u *UserWordUpsertBulk) SetQueryCount(v int64) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetQueryCount(v)
+	})
+}
+
+// AddQueryCount adds v to the "query_count" field.
+func (u *UserWordUpsertBulk) AddQueryCount(v int64) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.AddQueryCount(v)
+	})
+}
+
+// UpdateQueryCount sets the "query_count" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateQueryCount() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateQueryCount()
+	})
+}
+
+// SetNotes sets the "notes" field.
+func (u *UserWordUpsertBulk) SetNotes(v string) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetNotes(v)
+	})
+}
+
+// UpdateNotes sets the "notes" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateNotes() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateNotes()
+	})
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (u *UserWordUpsertBulk) ClearNotes() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.ClearNotes()
+	})
+}
+
+// SetSentences sets the "sentences" field.
+func (u *UserWordUpsertBulk) SetSentences(v types.UserSentences) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetSentences(v)
+	})
+}
+
+// UpdateSentences sets the "sentences" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateSentences() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateSentences()
+	})
+}
+
+// SetRelations sets the "relations" field.
+func (u *UserWordUpsertBulk) SetRelations(v types.UserWordRelations) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetRelations(v)
+	})
+}
+
+// UpdateRelations sets the "relations" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateRelations() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateRelations()
+	})
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (u *UserWordUpsertBulk) SetCreatedBy(v string) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetCreatedBy(v)
+	})
+}
+
+// UpdateCreatedBy sets the "created_by" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateCreatedBy() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateCreatedBy()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *UserWordUpsertBulk) SetUpdatedAt(v time.Time) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateUpdatedAt() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *UserWordUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the UserWordCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for UserWordCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *UserWordUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

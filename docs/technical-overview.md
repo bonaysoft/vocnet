@@ -43,7 +43,7 @@
 |------|------|------|
 | 语言 | Go (>=1.23) | 现代化并发、静态类型 |
 | API | gRPC + grpc-gateway | gRPC 为主，自动映射 HTTP/JSON |
-| 数据库 | PostgreSQL + ent | 图式 schema & ORM 代码生成 |
+| 数据库 | SQLite (默认) / PostgreSQL + ent | 图式 schema & ORM 代码生成 |
 | 配置 | Viper | 支持多源配置与热加载 |
 | 日志 | logrus | 结构化日志 |
 | 测试 | go test + gomock + testify | 单元与集成测试 |
@@ -57,12 +57,17 @@
 SERVER_HOST=localhost
 GRPC_PORT=9090
 HTTP_PORT=8080
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=vocnet
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_SSLMODE=disable
+DB_DRIVER=sqlite3
+DB_PATH=./vocnet.db
+# DB_DSN=
+# 示例：使用 PostgreSQL
+# DB_DRIVER=postgres
+# DB_HOST=localhost
+# DB_PORT=5432
+# DB_NAME=vocnet
+# DB_USER=postgres
+# DB_PASSWORD=postgres
+# DB_SSLMODE=disable
 LOG_LEVEL=info
 LOG_FORMAT=json
 ```
@@ -106,7 +111,7 @@ make mocks      # 生成 gomock 接口实现
 |----------|------|------|
 | 单元测试 | UseCase / Entity 逻辑 | Mock Repository |
 | 适配层测试 | gRPC Service 行为 | Mock UseCase |
-| 集成测试 | 数据库 + Repository | 本地 Postgres 或容器 |
+| 集成测试 | 数据库 + Repository | 本地 SQLite（默认）或 PostgreSQL 容器 |
 | 端到端 (可选) | API 全路径 | 真实服务 + 临时数据库 |
 
 建议：

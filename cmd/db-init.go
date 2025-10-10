@@ -25,7 +25,6 @@ import (
 	"archive/zip"
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"hash/crc32"
@@ -41,8 +40,9 @@ import (
 	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	entdb "github.com/eslsoft/vocnet/internal/infrastructure/database/ent"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 )
@@ -70,7 +70,7 @@ var dbInitCmd = &cobra.Command{
 
 const (
 	ecDictURL             = "https://github.com/skywind3000/ECDICT/releases/download/1.0.28/ecdict-sqlite-28.zip"
-	maxUncompressedSQLite = 300 << 20 // 300 MiB safety guard against decompression bombs
+	maxUncompressedSQLite = 1000 << 20 // 1000 MiB safety guard against decompression bombs
 )
 
 func safeUint64ToInt64(v uint64) (int64, error) {
@@ -97,13 +97,6 @@ type wordRecord struct {
 	Translation sql.NullString
 	Exchange    sql.NullString
 	Tags        sql.NullString // retained but currently unused for words import
-}
-
-// JSON marshal helpers for meanings & forms (aligned with entity.WordDefinition / VocForm but minimal).
-type jsonMeaning struct {
-	Pos      string `json:"pos"`
-	Text     string `json:"text"`
-	Language string `json:"language"`
 }
 
 // inflection relation extracted from exchange field
@@ -156,17 +149,6 @@ func importECDICT(ctx context.Context, url string, batchSize int, cacheDirFlag s
 	}
 	defer sqldb.Close()
 
-	pgpool, err := pgxpool.New(ctx, cfg.DatabaseURL())
-	if err != nil {
-		return err
-	}
-	defer pgpool.Close()
-
-	// Ensure new words table exists (migration must have created it)
-	if _, err := pgpool.Exec(ctx, "SELECT 1 FROM words LIMIT 1"); err != nil {
-		return fmt.Errorf("words 表不存在或无法访问，请先执行迁移: %w", err)
-	}
-
 	// NOTE: ECDICT schema sample (stardict): word, phonetic, definition, translation, pos, collins, oxford, tag, bnc, frq, exchange, detail, audio
 	// We pull translation, tag, exchange if present; tolerate missing columns via COALESCE where possible.
 	rows, err := sqldb.QueryContext(ctx, `SELECT word, phonetic, definition, pos, translation, exchange, tag FROM stardict`)
@@ -216,6 +198,17 @@ func importECDICT(ctx context.Context, url string, batchSize int, cacheDirFlag s
 		}
 	}
 
+	entClient, cleanup, err := database.NewEntClient(cfg)
+	if err != nil {
+		return fmt.Errorf("连接目标数据库失败: %w", err)
+	}
+	defer cleanup()
+
+	// quick sanity check to ensure table exists (gives clearer error than bulk insert)
+	if _, err := entClient.Word.Query().Limit(1).All(ctx); err != nil {
+		return fmt.Errorf("验证 words 表失败: %w", err)
+	}
+
 	// Batch insert with word_type & lemma resolution. Rules:
 	// - If word itself appears as an inflection of some other lemma: word_type = that type, lemma = that lemma
 	// - Else if it provides exchange forms (i.e., it acts as base), word_type='lemma', lemma=NULL
@@ -228,7 +221,7 @@ func importECDICT(ctx context.Context, url string, batchSize int, cacheDirFlag s
 		if end > len(records) {
 			end = len(records)
 		}
-		if err := insertBatchClassified(ctx, pgpool, records[batchStart:end], inflectionMap); err != nil {
+		if err := insertBatchEnt(ctx, entClient, records[batchStart:end], inflectionMap); err != nil {
 			return err
 		}
 		total += (end - batchStart)
@@ -313,52 +306,54 @@ func unzipSingle(match func(string) bool, zipPath, dstDir string) (string, error
 
 // (legacy single-pass insert function removed)
 
-// insertBatchClassified inserts records with lemma/word_type based on inflection map.
-func insertBatchClassified(ctx context.Context, pool *pgxpool.Pool, batch []wordRecord, inflectionMap map[string]inflectionRel) error {
+func insertBatchEnt(ctx context.Context, client *entdb.Client, batch []wordRecord, inflectionMap map[string]inflectionRel) error {
 	if len(batch) == 0 {
 		return nil
 	}
-	b := &pgx.Batch{}
+	builders := make([]*entdb.WordCreate, 0, len(batch))
 	for _, w := range batch {
-		meaningsJSON, err := buildMeanings(w)
+		meanings, err := buildMeanings(w)
 		if err != nil {
-			return fmt.Errorf("build meanings for %s: %w", w.Word, err)
+			return fmt.Errorf("构建 %s 的释义失败: %w", w.Word, err)
 		}
-		phoneticsJSON := buildPhoneticsJSON(w.Phonetic)
-		if meaningsJSON == nil && len(phoneticsJSON) == 0 {
+		phonetics := buildPhonetics(w.Phonetic)
+		if len(meanings) == 0 && len(phonetics) == 0 {
 			continue
 		}
-		// Determine word_type & lemma
-		WordType := entity.WordTypeLemma
-		var lemma any = nil
+		wordType := entity.WordTypeLemma
+		var lemmaPtr *string
 		if rel, ok := inflectionMap[strings.ToLower(w.Word)]; ok {
-			// 已被别的 lemma 标记为某种形态 (不可能为 lemma，因为我们已跳过 code=lemma)
 			if !strings.EqualFold(rel.Lemma, w.Word) {
-				WordType = rel.Type
-				lemma = rel.Lemma
+				wordType = rel.Type
+				lemmaPtr = &rel.Lemma
 			}
 		}
-		b.Queue(`INSERT INTO words (text, language, word_type, lemma, phonetics, meanings, tags)
-				VALUES ($1,'en',$2,$3,COALESCE($4,'[]'::jsonb),COALESCE($5,'[]'::jsonb),$6)
-				ON CONFLICT (language, text, word_type) DO UPDATE SET phonetics=EXCLUDED.phonetics, meanings=EXCLUDED.meanings, tags=EXCLUDED.tags`,
-			w.Word, WordType, lemma, phoneticsJSON, meaningsJSON, buildTagsArray(w.Tags))
-	}
-	br := pool.SendBatch(ctx, b)
-	for i := 0; i < b.Len(); i++ {
-		if _, err := br.Exec(); err != nil {
-			br.Close()
-			return err
+		builder := client.Word.Create().
+			SetText(w.Word).
+			SetLanguage("en").
+			SetWordType(wordType).
+			SetNillableLemma(lemmaPtr)
+		if len(phonetics) > 0 {
+			builder.SetPhonetics(phonetics)
 		}
+		if len(meanings) > 0 {
+			builder.SetMeanings(meanings)
+		}
+		if tags := buildTags(w.Tags); len(tags) > 0 {
+			builder.SetTags(tags)
+		}
+		builders = append(builders, builder)
 	}
-	return br.Close()
+	if len(builders) == 0 {
+		return nil
+	}
+	return client.Word.CreateBulk(builders...).
+		OnConflictColumns(word.FieldLanguage, word.FieldText, word.FieldWordType).
+		UpdateNewValues().
+		Exec(ctx)
 }
 
-func buildTagsArray(ns sql.NullString) any {
-	// ECDICT 的 tag 字段是以空格分隔（有时还混有逗号），例如："cet4 cet6 ky toefl ielts gre"。
-	// 之前实现只按逗号切分，导致整串被当成一个标签。这里改为：
-	// 1. 将逗号统一替换为空格
-	// 2. 按任意空白分词 (strings.Fields)
-	// 3. 去重（保持首次出现顺序）
+func buildTags(ns sql.NullString) []string {
 	if !ns.Valid {
 		return nil
 	}
@@ -390,7 +385,7 @@ func buildTagsArray(ns sql.NullString) any {
 	return ordered
 }
 
-func buildPhoneticsJSON(ns sql.NullString) []byte {
+func buildPhonetics(ns sql.NullString) types.WordPhonetics {
 	if !ns.Valid {
 		return nil
 	}
@@ -398,15 +393,13 @@ func buildPhoneticsJSON(ns sql.NullString) []byte {
 	if ipa == "" {
 		return nil
 	}
-	payload, err := json.Marshal([]entity.WordPhonetic{{IPA: ipa, Dialect: "en-US"}})
-	if err != nil {
-		return nil
+	return types.WordPhonetics{
+		entity.WordPhonetic{IPA: ipa, Dialect: "en-US"},
 	}
-	return payload
 }
 
-// buildMeanings converts record fields to a JSONB value for meanings
-func buildMeanings(w wordRecord) (meanings any, err error) {
+// buildMeanings converts record fields into structured meanings for ent.
+func buildMeanings(w wordRecord) (types.WordMeanings, error) {
 	defLines := splitLines(nullStringVal(w.Definition))
 	transLines := splitLines(nullStringVal(w.Translation))
 	if len(defLines) == 0 && len(transLines) == 0 {
@@ -459,27 +452,23 @@ func buildMeanings(w wordRecord) (meanings any, err error) {
 	}
 
 	// 构建 meanings: 逐行转换，无权重。
-	meaningsSlice := make([]jsonMeaning, 0, len(lm))
+	meaningsSlice := make(types.WordMeanings, 0, len(lm))
 	for _, it := range lm {
 		text := strings.TrimSpace(it.text)
 		if text == "" {
 			continue
 		}
 		lang := entity.NormalizeLanguage(it.lang)
-		meaningsSlice = append(meaningsSlice, jsonMeaning{
+		meaningsSlice = append(meaningsSlice, entity.WordDefinition{
 			Pos:      strings.TrimSpace(it.pos),
 			Text:     text,
-			Language: lang.Code(),
+			Language: lang,
 		})
 	}
 	if len(meaningsSlice) == 0 {
 		return nil, nil
 	}
-	b, e := json.Marshal(meaningsSlice)
-	if e != nil {
-		return nil, e
-	}
-	return b, nil
+	return meaningsSlice, nil
 }
 
 // extractLeadingPOS 尝试解析行首词性标记，返回 (pos, 剩余文本)。若没有匹配返回 pos=""。

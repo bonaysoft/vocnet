@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"database/sql"
-	"encoding/json"
 	"testing"
 
 	"github.com/eslsoft/vocnet/internal/entity"
@@ -17,35 +16,31 @@ func Test_buildMeanings_alignment(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if m == nil {
+	if len(m) == 0 {
 		t.Fatal("expected meanings")
 	}
-	var arr []jsonMeaning
-	if err := json.Unmarshal(m.([]byte), &arr); err != nil {
-		t.Fatal(err)
-	}
-	if len(arr) != 6 {
-		t.Fatalf("expected 6 meanings got %d", len(arr))
+	if len(m) != 6 {
+		t.Fatalf("expected 6 meanings got %d", len(m))
 	}
 	// Definitions first
-	if arr[0].Pos != "n." || arr[0].Text == "" || arr[0].Language != entity.LanguageEnglish.Code() {
-		t.Fatalf("bad first: %+v", arr[0])
+	if m[0].Pos != "n." || m[0].Text == "" || m[0].Language != entity.LanguageEnglish {
+		t.Fatalf("bad first: %+v", m[0])
 	}
-	if arr[1].Pos != "vt." || arr[1].Text == "" || arr[1].Language != entity.LanguageEnglish.Code() {
-		t.Fatalf("bad second: %+v", arr[1])
+	if m[1].Pos != "vt." || m[1].Text == "" || m[1].Language != entity.LanguageEnglish {
+		t.Fatalf("bad second: %+v", m[1])
 	}
-	if arr[2].Pos != "vi." || arr[2].Text == "" || arr[2].Language != entity.LanguageEnglish.Code() {
-		t.Fatalf("bad third: %+v", arr[2])
+	if m[2].Pos != "vi." || m[2].Text == "" || m[2].Language != entity.LanguageEnglish {
+		t.Fatalf("bad third: %+v", m[2])
 	}
 	// Translations follow
-	if arr[3].Pos != "n." || arr[3].Text == "" || arr[3].Language != entity.LanguageChinese.Code() {
-		t.Fatalf("bad fourth: %+v", arr[3])
+	if m[3].Pos != "n." || m[3].Text == "" || m[3].Language != entity.LanguageChinese {
+		t.Fatalf("bad fourth: %+v", m[3])
 	}
-	if arr[4].Pos != "vt." || arr[4].Text == "" || arr[4].Language != entity.LanguageChinese.Code() {
-		t.Fatalf("bad fifth: %+v", arr[4])
+	if m[4].Pos != "vt." || m[4].Text == "" || m[4].Language != entity.LanguageChinese {
+		t.Fatalf("bad fifth: %+v", m[4])
 	}
-	if arr[5].Pos != "vi." || arr[5].Text == "" || arr[5].Language != entity.LanguageChinese.Code() {
-		t.Fatalf("bad sixth: %+v", arr[5])
+	if m[5].Pos != "vi." || m[5].Text == "" || m[5].Language != entity.LanguageChinese {
+		t.Fatalf("bad sixth: %+v", m[5])
 	}
 }
 

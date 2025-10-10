@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
@@ -19,6 +20,7 @@ type WordCreate struct {
 	config
 	mutation *WordMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetText sets the "text" field.
@@ -276,6 +278,7 @@ func (wc *WordCreate) createSpec() (*Word, *sqlgraph.CreateSpec) {
 		_node = &Word{config: wc.config}
 		_spec = sqlgraph.NewCreateSpec(word.Table, sqlgraph.NewFieldSpec(word.FieldID, field.TypeInt))
 	)
+	_spec.OnConflict = wc.conflict
 	if value, ok := wc.mutation.Text(); ok {
 		_spec.SetField(word.FieldText, field.TypeString, value)
 		_node.Text = value
@@ -327,11 +330,438 @@ func (wc *WordCreate) createSpec() (*Word, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Word.Create().
+//		SetText(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.WordUpsert) {
+//			SetText(v+v).
+//		}).
+//		Exec(ctx)
+func (wc *WordCreate) OnConflict(opts ...sql.ConflictOption) *WordUpsertOne {
+	wc.conflict = opts
+	return &WordUpsertOne{
+		create: wc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Word.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (wc *WordCreate) OnConflictColumns(columns ...string) *WordUpsertOne {
+	wc.conflict = append(wc.conflict, sql.ConflictColumns(columns...))
+	return &WordUpsertOne{
+		create: wc,
+	}
+}
+
+type (
+	// WordUpsertOne is the builder for "upsert"-ing
+	//  one Word node.
+	WordUpsertOne struct {
+		create *WordCreate
+	}
+
+	// WordUpsert is the "OnConflict" setter.
+	WordUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetText sets the "text" field.
+func (u *WordUpsert) SetText(v string) *WordUpsert {
+	u.Set(word.FieldText, v)
+	return u
+}
+
+// UpdateText sets the "text" field to the value that was provided on create.
+func (u *WordUpsert) UpdateText() *WordUpsert {
+	u.SetExcluded(word.FieldText)
+	return u
+}
+
+// SetLanguage sets the "language" field.
+func (u *WordUpsert) SetLanguage(v string) *WordUpsert {
+	u.Set(word.FieldLanguage, v)
+	return u
+}
+
+// UpdateLanguage sets the "language" field to the value that was provided on create.
+func (u *WordUpsert) UpdateLanguage() *WordUpsert {
+	u.SetExcluded(word.FieldLanguage)
+	return u
+}
+
+// SetWordType sets the "word_type" field.
+func (u *WordUpsert) SetWordType(v string) *WordUpsert {
+	u.Set(word.FieldWordType, v)
+	return u
+}
+
+// UpdateWordType sets the "word_type" field to the value that was provided on create.
+func (u *WordUpsert) UpdateWordType() *WordUpsert {
+	u.SetExcluded(word.FieldWordType)
+	return u
+}
+
+// SetLemma sets the "lemma" field.
+func (u *WordUpsert) SetLemma(v string) *WordUpsert {
+	u.Set(word.FieldLemma, v)
+	return u
+}
+
+// UpdateLemma sets the "lemma" field to the value that was provided on create.
+func (u *WordUpsert) UpdateLemma() *WordUpsert {
+	u.SetExcluded(word.FieldLemma)
+	return u
+}
+
+// ClearLemma clears the value of the "lemma" field.
+func (u *WordUpsert) ClearLemma() *WordUpsert {
+	u.SetNull(word.FieldLemma)
+	return u
+}
+
+// SetPhonetics sets the "phonetics" field.
+func (u *WordUpsert) SetPhonetics(v types.WordPhonetics) *WordUpsert {
+	u.Set(word.FieldPhonetics, v)
+	return u
+}
+
+// UpdatePhonetics sets the "phonetics" field to the value that was provided on create.
+func (u *WordUpsert) UpdatePhonetics() *WordUpsert {
+	u.SetExcluded(word.FieldPhonetics)
+	return u
+}
+
+// SetMeanings sets the "meanings" field.
+func (u *WordUpsert) SetMeanings(v types.WordMeanings) *WordUpsert {
+	u.Set(word.FieldMeanings, v)
+	return u
+}
+
+// UpdateMeanings sets the "meanings" field to the value that was provided on create.
+func (u *WordUpsert) UpdateMeanings() *WordUpsert {
+	u.SetExcluded(word.FieldMeanings)
+	return u
+}
+
+// SetTags sets the "tags" field.
+func (u *WordUpsert) SetTags(v []string) *WordUpsert {
+	u.Set(word.FieldTags, v)
+	return u
+}
+
+// UpdateTags sets the "tags" field to the value that was provided on create.
+func (u *WordUpsert) UpdateTags() *WordUpsert {
+	u.SetExcluded(word.FieldTags)
+	return u
+}
+
+// SetPhrases sets the "phrases" field.
+func (u *WordUpsert) SetPhrases(v types.Phrases) *WordUpsert {
+	u.Set(word.FieldPhrases, v)
+	return u
+}
+
+// UpdatePhrases sets the "phrases" field to the value that was provided on create.
+func (u *WordUpsert) UpdatePhrases() *WordUpsert {
+	u.SetExcluded(word.FieldPhrases)
+	return u
+}
+
+// SetSentences sets the "sentences" field.
+func (u *WordUpsert) SetSentences(v types.Sentences) *WordUpsert {
+	u.Set(word.FieldSentences, v)
+	return u
+}
+
+// UpdateSentences sets the "sentences" field to the value that was provided on create.
+func (u *WordUpsert) UpdateSentences() *WordUpsert {
+	u.SetExcluded(word.FieldSentences)
+	return u
+}
+
+// SetRelations sets the "relations" field.
+func (u *WordUpsert) SetRelations(v types.WordRelations) *WordUpsert {
+	u.Set(word.FieldRelations, v)
+	return u
+}
+
+// UpdateRelations sets the "relations" field to the value that was provided on create.
+func (u *WordUpsert) UpdateRelations() *WordUpsert {
+	u.SetExcluded(word.FieldRelations)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *WordUpsert) SetUpdatedAt(v time.Time) *WordUpsert {
+	u.Set(word.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *WordUpsert) UpdateUpdatedAt() *WordUpsert {
+	u.SetExcluded(word.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.Word.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *WordUpsertOne) UpdateNewValues() *WordUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(word.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Word.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *WordUpsertOne) Ignore() *WordUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *WordUpsertOne) DoNothing() *WordUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the WordCreate.OnConflict
+// documentation for more info.
+func (u *WordUpsertOne) Update(set func(*WordUpsert)) *WordUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&WordUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetText sets the "text" field.
+func (u *WordUpsertOne) SetText(v string) *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.SetText(v)
+	})
+}
+
+// UpdateText sets the "text" field to the value that was provided on create.
+func (u *WordUpsertOne) UpdateText() *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateText()
+	})
+}
+
+// SetLanguage sets the "language" field.
+func (u *WordUpsertOne) SetLanguage(v string) *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.SetLanguage(v)
+	})
+}
+
+// UpdateLanguage sets the "language" field to the value that was provided on create.
+func (u *WordUpsertOne) UpdateLanguage() *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateLanguage()
+	})
+}
+
+// SetWordType sets the "word_type" field.
+func (u *WordUpsertOne) SetWordType(v string) *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.SetWordType(v)
+	})
+}
+
+// UpdateWordType sets the "word_type" field to the value that was provided on create.
+func (u *WordUpsertOne) UpdateWordType() *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateWordType()
+	})
+}
+
+// SetLemma sets the "lemma" field.
+func (u *WordUpsertOne) SetLemma(v string) *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.SetLemma(v)
+	})
+}
+
+// UpdateLemma sets the "lemma" field to the value that was provided on create.
+func (u *WordUpsertOne) UpdateLemma() *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateLemma()
+	})
+}
+
+// ClearLemma clears the value of the "lemma" field.
+func (u *WordUpsertOne) ClearLemma() *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.ClearLemma()
+	})
+}
+
+// SetPhonetics sets the "phonetics" field.
+func (u *WordUpsertOne) SetPhonetics(v types.WordPhonetics) *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.SetPhonetics(v)
+	})
+}
+
+// UpdatePhonetics sets the "phonetics" field to the value that was provided on create.
+func (u *WordUpsertOne) UpdatePhonetics() *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdatePhonetics()
+	})
+}
+
+// SetMeanings sets the "meanings" field.
+func (u *WordUpsertOne) SetMeanings(v types.WordMeanings) *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.SetMeanings(v)
+	})
+}
+
+// UpdateMeanings sets the "meanings" field to the value that was provided on create.
+func (u *WordUpsertOne) UpdateMeanings() *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateMeanings()
+	})
+}
+
+// SetTags sets the "tags" field.
+func (u *WordUpsertOne) SetTags(v []string) *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.SetTags(v)
+	})
+}
+
+// UpdateTags sets the "tags" field to the value that was provided on create.
+func (u *WordUpsertOne) UpdateTags() *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateTags()
+	})
+}
+
+// SetPhrases sets the "phrases" field.
+func (u *WordUpsertOne) SetPhrases(v types.Phrases) *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.SetPhrases(v)
+	})
+}
+
+// UpdatePhrases sets the "phrases" field to the value that was provided on create.
+func (u *WordUpsertOne) UpdatePhrases() *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdatePhrases()
+	})
+}
+
+// SetSentences sets the "sentences" field.
+func (u *WordUpsertOne) SetSentences(v types.Sentences) *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.SetSentences(v)
+	})
+}
+
+// UpdateSentences sets the "sentences" field to the value that was provided on create.
+func (u *WordUpsertOne) UpdateSentences() *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateSentences()
+	})
+}
+
+// SetRelations sets the "relations" field.
+func (u *WordUpsertOne) SetRelations(v types.WordRelations) *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.SetRelations(v)
+	})
+}
+
+// UpdateRelations sets the "relations" field to the value that was provided on create.
+func (u *WordUpsertOne) UpdateRelations() *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateRelations()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *WordUpsertOne) SetUpdatedAt(v time.Time) *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *WordUpsertOne) UpdateUpdatedAt() *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *WordUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for WordCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *WordUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *WordUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *WordUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // WordCreateBulk is the builder for creating many Word entities in bulk.
 type WordCreateBulk struct {
 	config
 	err      error
 	builders []*WordCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Word entities in the database.
@@ -361,6 +791,7 @@ func (wcb *WordCreateBulk) Save(ctx context.Context) ([]*Word, error) {
 					_, err = mutators[i+1].Mutate(root, wcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = wcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, wcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -411,6 +842,278 @@ func (wcb *WordCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (wcb *WordCreateBulk) ExecX(ctx context.Context) {
 	if err := wcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Word.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.WordUpsert) {
+//			SetText(v+v).
+//		}).
+//		Exec(ctx)
+func (wcb *WordCreateBulk) OnConflict(opts ...sql.ConflictOption) *WordUpsertBulk {
+	wcb.conflict = opts
+	return &WordUpsertBulk{
+		create: wcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Word.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (wcb *WordCreateBulk) OnConflictColumns(columns ...string) *WordUpsertBulk {
+	wcb.conflict = append(wcb.conflict, sql.ConflictColumns(columns...))
+	return &WordUpsertBulk{
+		create: wcb,
+	}
+}
+
+// WordUpsertBulk is the builder for "upsert"-ing
+// a bulk of Word nodes.
+type WordUpsertBulk struct {
+	create *WordCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Word.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *WordUpsertBulk) UpdateNewValues() *WordUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(word.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Word.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *WordUpsertBulk) Ignore() *WordUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *WordUpsertBulk) DoNothing() *WordUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the WordCreateBulk.OnConflict
+// documentation for more info.
+func (u *WordUpsertBulk) Update(set func(*WordUpsert)) *WordUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&WordUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetText sets the "text" field.
+func (u *WordUpsertBulk) SetText(v string) *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.SetText(v)
+	})
+}
+
+// UpdateText sets the "text" field to the value that was provided on create.
+func (u *WordUpsertBulk) UpdateText() *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateText()
+	})
+}
+
+// SetLanguage sets the "language" field.
+func (u *WordUpsertBulk) SetLanguage(v string) *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.SetLanguage(v)
+	})
+}
+
+// UpdateLanguage sets the "language" field to the value that was provided on create.
+func (u *WordUpsertBulk) UpdateLanguage() *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateLanguage()
+	})
+}
+
+// SetWordType sets the "word_type" field.
+func (u *WordUpsertBulk) SetWordType(v string) *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.SetWordType(v)
+	})
+}
+
+// UpdateWordType sets the "word_type" field to the value that was provided on create.
+func (u *WordUpsertBulk) UpdateWordType() *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateWordType()
+	})
+}
+
+// SetLemma sets the "lemma" field.
+func (u *WordUpsertBulk) SetLemma(v string) *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.SetLemma(v)
+	})
+}
+
+// UpdateLemma sets the "lemma" field to the value that was provided on create.
+func (u *WordUpsertBulk) UpdateLemma() *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateLemma()
+	})
+}
+
+// ClearLemma clears the value of the "lemma" field.
+func (u *WordUpsertBulk) ClearLemma() *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.ClearLemma()
+	})
+}
+
+// SetPhonetics sets the "phonetics" field.
+func (u *WordUpsertBulk) SetPhonetics(v types.WordPhonetics) *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.SetPhonetics(v)
+	})
+}
+
+// UpdatePhonetics sets the "phonetics" field to the value that was provided on create.
+func (u *WordUpsertBulk) UpdatePhonetics() *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdatePhonetics()
+	})
+}
+
+// SetMeanings sets the "meanings" field.
+func (u *WordUpsertBulk) SetMeanings(v types.WordMeanings) *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.SetMeanings(v)
+	})
+}
+
+// UpdateMeanings sets the "meanings" field to the value that was provided on create.
+func (u *WordUpsertBulk) UpdateMeanings() *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateMeanings()
+	})
+}
+
+// SetTags sets the "tags" field.
+func (u *WordUpsertBulk) SetTags(v []string) *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.SetTags(v)
+	})
+}
+
+// UpdateTags sets the "tags" field to the value that was provided on create.
+func (u *WordUpsertBulk) UpdateTags() *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateTags()
+	})
+}
+
+// SetPhrases sets the "phrases" field.
+func (u *WordUpsertBulk) SetPhrases(v types.Phrases) *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.SetPhrases(v)
+	})
+}
+
+// UpdatePhrases sets the "phrases" field to the value that was provided on create.
+func (u *WordUpsertBulk) UpdatePhrases() *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdatePhrases()
+	})
+}
+
+// SetSentences sets the "sentences" field.
+func (u *WordUpsertBulk) SetSentences(v types.Sentences) *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.SetSentences(v)
+	})
+}
+
+// UpdateSentences sets the "sentences" field to the value that was provided on create.
+func (u *WordUpsertBulk) UpdateSentences() *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateSentences()
+	})
+}
+
+// SetRelations sets the "relations" field.
+func (u *WordUpsertBulk) SetRelations(v types.WordRelations) *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.SetRelations(v)
+	})
+}
+
+// UpdateRelations sets the "relations" field to the value that was provided on create.
+func (u *WordUpsertBulk) UpdateRelations() *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateRelations()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *WordUpsertBulk) SetUpdatedAt(v time.Time) *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *WordUpsertBulk) UpdateUpdatedAt() *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *WordUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the WordCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for WordCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *WordUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

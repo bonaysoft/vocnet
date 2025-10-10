@@ -54,6 +54,7 @@ internal/infrastructure/database/db/
 # Build artifacts
 bin/
 dist/
+data/
 coverage.out
 coverage.html
 

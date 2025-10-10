@@ -6,7 +6,7 @@
 
 <p>
 <em>Focus on data & state, not on UX or content delivery.</em><br/>
-<sub>gRPC + HTTP/JSON · PostgreSQL · Clean Architecture</sub>
+<sub>gRPC + HTTP/JSON · SQLite (默认) / PostgreSQL · Clean Architecture</sub>
 </p>
 
 <p>
@@ -119,7 +119,8 @@ vocnet = “词汇图谱 + 掌握进度 + 例句关联 + 关系网络 + 复习�
 ### 前置要求
 
 - Go 1.23+
-- PostgreSQL 13+
+- SQLite 3（默认使用，常见平台随 go-sqlite3 一同提供）
+- 可选：PostgreSQL 13+（如需外部数据库或兼容既有部署）
 - protoc (Protocol Buffers 编译器)
 - 可选：Docker / Docker Compose
 
@@ -130,14 +131,19 @@ cd vocnet
 make setup
 ```
 
-### 2. 启动数据库并迁移
-本地快速试用（Docker 推荐）：
+### 2. 初始化数据库
+默认使用本地 SQLite（自动生成 `vocnet.db`）：
 ```bash
-make db-up     # 启动 PostgreSQL (docker)
 make migrate   # 使用 ent 应用最新 schema
 ```
 
-亦可使用自建 PostgreSQL，确保配置环境变量后直接执行 `make migrate`。
+如需 PostgreSQL，可启动容器并显式指定驱动：
+```bash
+make db-up
+DB_DRIVER=postgres make migrate
+```
+
+亦可连接自建 PostgreSQL，按需设置 `DB_HOST/DB_USER/...` 环境变量后执行 `make migrate`。
 
 ### 3. 生成代码（如需要）
 ```bash
@@ -173,11 +179,17 @@ curl http://localhost:8080/api/v1/users/1
 SERVER_HOST=localhost
 GRPC_PORT=9090
 HTTP_PORT=8080
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=vocnet
-DB_USER=postgres
-DB_PASSWORD=postgres
+DB_DRIVER=sqlite3
+DB_PATH=./vocnet.db
+# DB_DSN=
+# 示例：改用 PostgreSQL
+# DB_DRIVER=postgres
+# DB_HOST=localhost
+# DB_PORT=5432
+# DB_NAME=vocnet
+# DB_USER=postgres
+# DB_PASSWORD=postgres
+# DB_SSLMODE=disable
 LOG_LEVEL=info
 ```
 
