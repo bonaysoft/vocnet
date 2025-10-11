@@ -85,7 +85,7 @@ var exportCmd = &cobra.Command{
 		}
 
 		var (
-			writer   io.Writer = cmd.OutOrStdout()
+			writer   = cmd.OutOrStdout()
 			closeFns []func() error
 		)
 

@@ -24,7 +24,6 @@ package cmd
 import (
 	"compress/gzip"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -95,7 +94,7 @@ var importCmd = &cobra.Command{
 		}
 
 		var (
-			reader  io.Reader = cmd.InOrStdin()
+			reader  = cmd.InOrStdin()
 			closers []func() error
 		)
 

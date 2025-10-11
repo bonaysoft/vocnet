@@ -126,6 +126,14 @@ type importConfig struct {
 	tables []string
 }
 
+func newImportConfig(opts ...ImportOption) importConfig {
+	cfg := importConfig{}
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+	return cfg
+}
+
 // WithImportTables restricts import to the provided table names.
 func WithImportTables(tables []string) ImportOption {
 	return func(cfg *importConfig) {
@@ -220,17 +228,10 @@ func (s *Service) Export(ctx context.Context, w io.Writer, opts ...ExportOption)
 }
 
 func (s *Service) Import(ctx context.Context, r io.Reader, opts ...ImportOption) error {
-	cfg := importConfig{}
-	for _, opt := range opts {
-		opt(&cfg)
-	}
-	tables, err := s.selectTables(cfg.tables)
+	cfg := newImportConfig(opts...)
+	_, tableFilter, err := s.resolveImportTables(cfg.tables)
 	if err != nil {
 		return err
-	}
-	tableFilter := make(map[string]*schema.Table, len(tables))
-	for _, tbl := range tables {
-		tableFilter[tbl.Name] = tbl
 	}
 
 	db, err := s.openDB(ctx)
@@ -244,59 +245,16 @@ func (s *Service) Import(ctx context.Context, r io.Reader, opts ...ImportOption)
 		return fmt.Errorf("begin transaction: %w", err)
 	}
 	commit := false
-	defer func() {
-		if !commit {
-			_ = tx.Rollback()
-		}
-	}()
+	defer rollbackUnlessCommitted(tx, &commit)
 
 	br := bufio.NewReader(r)
-	var (
-		metaSeen bool
-		meta     rawRecord
-		stats    = make(sequenceStats)
-	)
-
-	for {
-		line, err := br.ReadBytes('\n')
-		if err != nil && !errors.Is(err, io.EOF) {
-			return fmt.Errorf("read backup: %w", err)
-		}
-		line = bytes.TrimSpace(line)
-		if len(line) > 0 {
-			var rec rawRecord
-			if err := json.Unmarshal(line, &rec); err != nil {
-				return fmt.Errorf("decode record: %w", err)
-			}
-
-			switch rec.Type {
-			case "meta":
-				metaSeen = true
-				meta = rec
-			default:
-				tbl, ok := tableFilter[rec.Type]
-				if !ok {
-					// Skip records for tables not requested.
-					break
-				}
-				if len(rec.Payload) == 0 {
-					return fmt.Errorf("backup: missing payload for table %s", rec.Type)
-				}
-				if err := s.importRow(ctx, tx, tbl, rec.Payload, stats); err != nil {
-					return err
-				}
-			}
-		}
-		if errors.Is(err, io.EOF) {
-			break
-		}
+	stats := make(sequenceStats)
+	meta, err := s.consumeImportRecords(ctx, br, tx, tableFilter, stats)
+	if err != nil {
+		return err
 	}
-
-	if !metaSeen {
-		return errors.New("backup: missing meta record")
-	}
-	if meta.Version != formatVersion {
-		return fmt.Errorf("backup: unsupported format version %d", meta.Version)
+	if err := validateImportMeta(meta); err != nil {
+		return err
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -306,6 +264,78 @@ func (s *Service) Import(ctx context.Context, r io.Reader, opts ...ImportOption)
 
 	if err := s.syncSequences(ctx, db, stats); err != nil {
 		return err
+	}
+	return nil
+}
+
+func (s *Service) resolveImportTables(names []string) ([]*schema.Table, map[string]*schema.Table, error) {
+	tables, err := s.selectTables(names)
+	if err != nil {
+		return nil, nil, err
+	}
+	tableFilter := make(map[string]*schema.Table, len(tables))
+	for _, tbl := range tables {
+		tableFilter[tbl.Name] = tbl
+	}
+	return tables, tableFilter, nil
+}
+
+func rollbackUnlessCommitted(tx *sql.Tx, committed *bool) {
+	if !*committed {
+		_ = tx.Rollback()
+	}
+}
+
+func (s *Service) consumeImportRecords(ctx context.Context, br *bufio.Reader, tx *sql.Tx, tableFilter map[string]*schema.Table, stats sequenceStats) (rawRecord, error) {
+	var (
+		meta     rawRecord
+		metaSeen bool
+	)
+
+	for {
+		line, err := br.ReadBytes('\n')
+		if err != nil && !errors.Is(err, io.EOF) {
+			return rawRecord{}, fmt.Errorf("read backup: %w", err)
+		}
+		line = bytes.TrimSpace(line)
+		if len(line) > 0 {
+			var rec rawRecord
+			if err := json.Unmarshal(line, &rec); err != nil {
+				return rawRecord{}, fmt.Errorf("decode record: %w", err)
+			}
+			if rec.Type == "meta" {
+				metaSeen = true
+				meta = rec
+			} else if err := s.importDataRecord(ctx, tx, tableFilter, rec, stats); err != nil {
+				return rawRecord{}, err
+			}
+		}
+		if errors.Is(err, io.EOF) {
+			break
+		}
+	}
+
+	if !metaSeen {
+		return rawRecord{}, errors.New("backup: missing meta record")
+	}
+	return meta, nil
+}
+
+func (s *Service) importDataRecord(ctx context.Context, tx *sql.Tx, tableFilter map[string]*schema.Table, rec rawRecord, stats sequenceStats) error {
+	tbl, ok := tableFilter[rec.Type]
+	if !ok {
+		// Skip records for tables not requested.
+		return nil
+	}
+	if len(rec.Payload) == 0 {
+		return fmt.Errorf("backup: missing payload for table %s", rec.Type)
+	}
+	return s.importRow(ctx, tx, tbl, rec.Payload, stats)
+}
+
+func validateImportMeta(meta rawRecord) error {
+	if meta.Version != formatVersion {
+		return fmt.Errorf("backup: unsupported format version %d", meta.Version)
 	}
 	return nil
 }
@@ -322,6 +352,7 @@ func (s *Service) exportTable(ctx context.Context, db *sql.DB, table *schema.Tab
 	}
 
 	for offset := 0; ; offset += batch {
+		// #nosec G201 -- table names come from ent schema definitions, not user input.
 		query := fmt.Sprintf("SELECT %s FROM %s%s LIMIT %d OFFSET %d",
 			strings.Join(columns, ", "),
 			table.Name,
@@ -491,6 +522,7 @@ func (s *Service) openDB(ctx context.Context) (*sql.DB, error) {
 }
 
 func (s *Service) countTableRows(ctx context.Context, db *sql.DB, table string) (int, error) {
+	// #nosec G201 -- table names come from ent schema definitions, not user input.
 	query := fmt.Sprintf("SELECT COUNT(*) FROM %s", table)
 	var count int
 	if err := db.QueryRowContext(ctx, query).Scan(&count); err != nil {
@@ -786,7 +818,7 @@ func computeSchemaHash(tables []*schema.Table) string {
 		copy(sortedCols, tbl.Columns)
 		sort.Slice(sortedCols, func(i, j int) bool { return sortedCols[i].Name < sortedCols[j].Name })
 		for _, col := range sortedCols {
-			builder.WriteString(fmt.Sprintf("%s:%d:%t:%t:%t;", col.Name, col.Type, col.Nullable, col.Unique, col.Increment))
+			fmt.Fprintf(builder, "%s:%d:%t:%t:%t;", col.Name, col.Type, col.Nullable, col.Unique, col.Increment)
 		}
 		builder.WriteString("|pk:")
 		for _, pk := range tbl.PrimaryKey {
@@ -839,6 +871,8 @@ func (s *Service) syncSequences(ctx context.Context, db *sql.DB, stats sequenceS
 		if maxVal <= 0 {
 			continue
 		}
+
+		// #nosec G201 -- table names come from ent schema definitions, not user input.
 		query := fmt.Sprintf(
 			"SELECT setval(pg_get_serial_sequence('%s', '%s'), GREATEST(%d, (SELECT COALESCE(MAX(%s), 0) FROM %s)))",
 			key.Table,
@@ -895,10 +929,11 @@ func tryToInt64(val any) (int64, bool) {
 	case uint32:
 		return int64(v), true
 	case uint:
-		if uint64(v) > math.MaxInt64 {
+		u := uint64(v)
+		if u > math.MaxInt64 {
 			return math.MaxInt64, true
 		}
-		return int64(v), true
+		return int64(u), true
 	case string:
 		if i, err := strconv.ParseInt(v, 10, 64); err == nil {
 			return i, true
