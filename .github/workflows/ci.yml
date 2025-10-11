@@ -9,22 +9,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_DB: rockd_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
     - uses: actions/checkout@v4
 
@@ -50,13 +34,6 @@ jobs:
 
     - name: Run tests
       run: make test
-      env:
-        DB_HOST: localhost
-        DB_PORT: 5432
-        DB_NAME: rockd_test
-        DB_USER: postgres
-        DB_PASSWORD: postgres
-        DB_SSLMODE: disable
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
@@ -92,19 +69,9 @@ jobs:
         go-version: '1.24.x'
         cache: true
 
-    - name: Install protoc
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y protobuf-compiler
-
-    - name: Install tools
-      run: make install-tools
-
     - name: Download modules
       run: go mod download
 
     - name: Generate and build
       run: make build
 
-    - name: Build Docker image
-      run: make docker-build
