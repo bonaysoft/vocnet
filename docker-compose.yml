@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: rockd-postgres
+    container_name: vocnet-postgres
     environment:
-      POSTGRES_DB: rockd
+      POSTGRES_DB: vocnet
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -18,20 +16,13 @@ services:
       timeout: 5s
       retries: 5
 
-  rockd:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: rockd-server
+  vocnet:
+    image: ghcr.io/eslsoft/vocnet:latest
+    container_name: vocnet-server
     environment:
-      DB_DSN: postgres://postgres:postgres@postgres:5432/rockd?sslmode=disable
-      SERVER_HOST: 0.0.0.0
-      GRPC_PORT: 9090
-      HTTP_PORT: 8080
-      LOG_LEVEL: info
+      DB_DSN: postgres://postgres:postgres@postgres:5432/vocnet?sslmode=disable
     ports:
       - "8080:8080"
-      - "9090:9090"
     depends_on:
       postgres:
         condition: service_healthy
