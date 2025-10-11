@@ -27,9 +27,10 @@ WORKDIR /app
 
 # Copy binary from builder stage
 COPY --from=builder /workspace/bin/vocnet ./vocnet
+RUN mkdir -p /app/data
 
 # Change ownership to non-root user
-RUN chown appuser:appuser /app/vocnet
+RUN chown -R appuser:appuser /app
 
 # Switch to non-root user
 USER appuser

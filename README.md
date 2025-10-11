@@ -140,10 +140,10 @@ make migrate   # 使用 ent 应用最新 schema
 如需 PostgreSQL，可启动容器并显式指定驱动：
 ```bash
 make db-up
-DB_DRIVER=postgres make migrate
+DB_DSN="postgres://postgres:postgres@localhost:5432/rockd?sslmode=disable" make migrate
 ```
 
-亦可连接自建 PostgreSQL，按需设置 `DB_HOST/DB_USER/...` 环境变量后执行 `make migrate`。
+亦可连接自建 PostgreSQL，仅需提供完整 `DB_DSN` 后执行 `make migrate`。
 
 ### 3. 生成代码（如需要）
 ```bash
@@ -179,17 +179,9 @@ curl http://localhost:8080/api/v1/users/1
 SERVER_HOST=localhost
 GRPC_PORT=9090
 HTTP_PORT=8080
-DB_DRIVER=sqlite3
-DB_PATH=./vocnet.db
-# DB_DSN=
+DB_DSN=file:./data/vocnet.db
 # 示例：改用 PostgreSQL
-# DB_DRIVER=postgres
-# DB_HOST=localhost
-# DB_PORT=5432
-# DB_NAME=vocnet
-# DB_USER=postgres
-# DB_PASSWORD=postgres
-# DB_SSLMODE=disable
+# DB_DSN=postgres://postgres:postgres@localhost:5432/vocnet?sslmode=disable
 LOG_LEVEL=info
 ```
 

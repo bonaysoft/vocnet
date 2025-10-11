@@ -1,0 +1,314 @@
+package backup
+
+import (
+	"bytes"
+	"context"
+	"database/sql"
+	"path/filepath"
+	"reflect"
+	"testing"
+	"time"
+
+	entdb "github.com/eslsoft/vocnet/internal/infrastructure/database/ent"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/enttest"
+	entuserword "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/userword"
+	entword "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
+
+	"entgo.io/ent/dialect"
+)
+
+func TestServiceExportImportRoundTrip(t *testing.T) {
+	requireSQLite(t)
+
+	ctx := context.Background()
+
+	srcDir := t.TempDir()
+	srcDSN := "file:" + filepath.Join(srcDir, "src.db") + "?_fk=1&cache=shared"
+	srcClient := enttest.Open(t, dialect.SQLite, srcDSN)
+	t.Cleanup(func() { srcClient.Close() })
+
+	srcWords, srcUserWords := seedData(t, ctx, srcClient)
+
+	exporter, err := NewService("sqlite3", srcDSN)
+	if err != nil {
+		t.Fatalf("new exporter: %v", err)
+	}
+
+	var buf bytes.Buffer
+	if err := exporter.Export(ctx, &buf); err != nil {
+		t.Fatalf("export failed: %v", err)
+	}
+
+	dstDir := t.TempDir()
+	dstDSN := "file:" + filepath.Join(dstDir, "dst.db") + "?_fk=1&cache=shared"
+	dstClient := enttest.Open(t, dialect.SQLite, dstDSN)
+	t.Cleanup(func() { dstClient.Close() })
+
+	importer, err := NewService("sqlite3", dstDSN)
+	if err != nil {
+		t.Fatalf("new importer: %v", err)
+	}
+	if err := importer.Import(ctx, bytes.NewReader(buf.Bytes())); err != nil {
+		t.Fatalf("import failed: %v", err)
+	}
+
+	snapSrcWords := snapshotWords(t, ctx, srcClient)
+	if !reflect.DeepEqual(snapSrcWords, srcWords) {
+		t.Fatalf("source words snapshot mutated: want %#v got %#v", srcWords, snapSrcWords)
+	}
+
+	snapDstWords := snapshotWords(t, ctx, dstClient)
+	if !reflect.DeepEqual(srcWords, snapDstWords) {
+		t.Fatalf("words mismatch after import:\nwant %#v\ngot  %#v", srcWords, snapDstWords)
+	}
+
+	snapSrcUserWords := snapshotUserWords(t, ctx, srcClient)
+	if !reflect.DeepEqual(snapSrcUserWords, srcUserWords) {
+		t.Fatalf("source user words snapshot mutated: want %#v got %#v", srcUserWords, snapSrcUserWords)
+	}
+
+	snapDstUserWords := snapshotUserWords(t, ctx, dstClient)
+	if !reflect.DeepEqual(srcUserWords, snapDstUserWords) {
+		t.Fatalf("user words mismatch after import:\nwant %#v\ngot  %#v", srcUserWords, snapDstUserWords)
+	}
+}
+
+func TestServiceExportTablesFilter(t *testing.T) {
+	requireSQLite(t)
+
+	ctx := context.Background()
+
+	srcDir := t.TempDir()
+	srcDSN := "file:" + filepath.Join(srcDir, "src.db") + "?_fk=1&cache=shared"
+	srcClient := enttest.Open(t, dialect.SQLite, srcDSN)
+	t.Cleanup(func() { srcClient.Close() })
+
+	srcWords, _ := seedData(t, ctx, srcClient)
+
+	exporter, err := NewService("sqlite3", srcDSN)
+	if err != nil {
+		t.Fatalf("new exporter: %v", err)
+	}
+
+	var buf bytes.Buffer
+	if err := exporter.Export(ctx, &buf, WithTables([]string{"words"})); err != nil {
+		t.Fatalf("filtered export failed: %v", err)
+	}
+
+	dstDir := t.TempDir()
+	dstDSN := "file:" + filepath.Join(dstDir, "dst.db") + "?_fk=1&cache=shared"
+	dstClient := enttest.Open(t, dialect.SQLite, dstDSN)
+	t.Cleanup(func() { dstClient.Close() })
+
+	importer, err := NewService("sqlite3", dstDSN)
+	if err != nil {
+		t.Fatalf("new importer: %v", err)
+	}
+	if err := importer.Import(ctx, bytes.NewReader(buf.Bytes())); err != nil {
+		t.Fatalf("filtered import failed: %v", err)
+	}
+
+	snapDstWords := snapshotWords(t, ctx, dstClient)
+	if !reflect.DeepEqual(srcWords, snapDstWords) {
+		t.Fatalf("words mismatch after filtered import")
+	}
+
+	dstUserWords := snapshotUserWords(t, ctx, dstClient)
+	if len(dstUserWords) != 0 {
+		t.Fatalf("expected no user words, got %#v", dstUserWords)
+	}
+}
+
+func seedData(t *testing.T, ctx context.Context, client *entdb.Client) ([]wordSnapshot, []userWordSnapshot) {
+	t.Helper()
+	createdAt := time.Date(2025, 1, 1, 8, 0, 0, 0, time.UTC)
+	updatedAt := createdAt.Add(90 * time.Minute)
+	nextReview := updatedAt.Add(48 * time.Hour)
+
+	word1, err := client.Word.Create().
+		SetText("apple").
+		SetLanguage("en").
+		SetWordType("lemma").
+		SetPhonetics(types.WordPhonetics{{IPA: "ˈæpəl", Dialect: "us"}}).
+		SetMeanings(types.WordMeanings{{Pos: "noun", Text: "fruit", Language: "en"}}).
+		SetTags([]string{"fruit"}).
+		SetRelations(types.WordRelations{{Word: "pear", RelationType: 1}}).
+		SetCreatedAt(createdAt).
+		SetUpdatedAt(updatedAt).
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("create word1: %v", err)
+	}
+
+	_, err = client.Word.Create().
+		SetText("apples").
+		SetLanguage("en").
+		SetWordType("plural").
+		SetLemma(word1.Text).
+		SetCreatedAt(createdAt.Add(time.Minute)).
+		SetUpdatedAt(updatedAt.Add(time.Minute)).
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("create word2: %v", err)
+	}
+
+	_, err = client.UserWord.Create().
+		SetUserID(42).
+		SetWord(word1.Text).
+		SetLanguage("en").
+		SetMasteryListen(3).
+		SetMasteryRead(4).
+		SetMasterySpell(2).
+		SetMasteryPronounce(1).
+		SetMasteryUse(0).
+		SetMasteryOverall(2).
+		SetReviewLastReviewAt(updatedAt).
+		SetReviewNextReviewAt(nextReview).
+		SetReviewIntervalDays(3).
+		SetReviewFailCount(1).
+		SetQueryCount(5).
+		SetNotes("daily review").
+		SetSentences(types.UserSentences{{Text: "An apple a day...", Source: 1}}).
+		SetRelations(types.UserWordRelations{{Word: "apple", RelationType: 2, CreatedBy: "tester", CreatedAt: createdAt.Add(24 * time.Hour), UpdatedAt: createdAt.Add(36 * time.Hour)}}).
+		SetCreatedBy("tester").
+		SetCreatedAt(createdAt.Add(24 * time.Hour)).
+		SetUpdatedAt(createdAt.Add(48 * time.Hour)).
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("create user word: %v", err)
+	}
+
+	return snapshotWords(t, ctx, client), snapshotUserWords(t, ctx, client)
+}
+
+type wordSnapshot struct {
+	ID        int
+	Text      string
+	Language  string
+	WordType  string
+	Lemma     *string
+	Phonetics types.WordPhonetics
+	Meanings  types.WordMeanings
+	Tags      []string
+	Phrases   types.Phrases
+	Sentences types.Sentences
+	Relations types.WordRelations
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+type userWordSnapshot struct {
+	ID                 int
+	UserID             int64
+	Word               string
+	Language           string
+	MasteryListen      int16
+	MasteryRead        int16
+	MasterySpell       int16
+	MasteryPronounce   int16
+	MasteryUse         int16
+	MasteryOverall     int32
+	ReviewLastReviewAt *time.Time
+	ReviewNextReviewAt *time.Time
+	ReviewIntervalDays int32
+	ReviewFailCount    int32
+	QueryCount         int64
+	Notes              *string
+	Sentences          types.UserSentences
+	Relations          types.UserWordRelations
+	CreatedBy          string
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
+}
+
+func snapshotWords(t *testing.T, ctx context.Context, client *entdb.Client) []wordSnapshot {
+	t.Helper()
+	rows, err := client.Word.Query().Order(entword.ByID()).All(ctx)
+	if err != nil {
+		t.Fatalf("list words: %v", err)
+	}
+	result := make([]wordSnapshot, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, wordSnapshot{
+			ID:        row.ID,
+			Text:      row.Text,
+			Language:  row.Language,
+			WordType:  row.WordType,
+			Lemma:     row.Lemma,
+			Phonetics: append(types.WordPhonetics{}, row.Phonetics...),
+			Meanings:  append(types.WordMeanings{}, row.Meanings...),
+			Tags:      append([]string{}, row.Tags...),
+			Phrases:   append(types.Phrases{}, row.Phrases...),
+			Sentences: append(types.Sentences{}, row.Sentences...),
+			Relations: append(types.WordRelations{}, row.Relations...),
+			CreatedAt: row.CreatedAt.UTC(),
+			UpdatedAt: row.UpdatedAt.UTC(),
+		})
+	}
+	return result
+}
+
+func snapshotUserWords(t *testing.T, ctx context.Context, client *entdb.Client) []userWordSnapshot {
+	t.Helper()
+	rows, err := client.UserWord.Query().Order(entuserword.ByID()).All(ctx)
+	if err != nil {
+		t.Fatalf("list user words: %v", err)
+	}
+	result := make([]userWordSnapshot, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, userWordSnapshot{
+			ID:                 row.ID,
+			UserID:             row.UserID,
+			Word:               row.Word,
+			Language:           row.Language,
+			MasteryListen:      row.MasteryListen,
+			MasteryRead:        row.MasteryRead,
+			MasterySpell:       row.MasterySpell,
+			MasteryPronounce:   row.MasteryPronounce,
+			MasteryUse:         row.MasteryUse,
+			MasteryOverall:     row.MasteryOverall,
+			ReviewLastReviewAt: copyTimePointer(row.ReviewLastReviewAt),
+			ReviewNextReviewAt: copyTimePointer(row.ReviewNextReviewAt),
+			ReviewIntervalDays: row.ReviewIntervalDays,
+			ReviewFailCount:    row.ReviewFailCount,
+			QueryCount:         row.QueryCount,
+			Notes:              copyStringPointer(row.Notes),
+			Sentences:          append(types.UserSentences{}, row.Sentences...),
+			Relations:          append(types.UserWordRelations{}, row.Relations...),
+			CreatedBy:          row.CreatedBy,
+			CreatedAt:          row.CreatedAt.UTC(),
+			UpdatedAt:          row.UpdatedAt.UTC(),
+		})
+	}
+	return result
+}
+
+func copyTimePointer(src *time.Time) *time.Time {
+	if src == nil {
+		return nil
+	}
+	t := src.UTC()
+	return &t
+}
+
+func copyStringPointer(src *string) *string {
+	if src == nil {
+		return nil
+	}
+	s := *src
+	return &s
+}
+
+func requireSQLite(t *testing.T) {
+	t.Helper()
+	db, err := sql.Open("sqlite3", "file::memory:?cache=shared")
+	if err != nil {
+		t.Skipf("sqlite driver not available: %v", err)
+		return
+	}
+	defer db.Close()
+	if err := db.Ping(); err != nil {
+		t.Skipf("skipping sqlite-dependent tests: %v", err)
+	}
+}

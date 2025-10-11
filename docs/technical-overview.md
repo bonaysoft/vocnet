@@ -57,17 +57,9 @@
 SERVER_HOST=localhost
 GRPC_PORT=9090
 HTTP_PORT=8080
-DB_DRIVER=sqlite3
-DB_PATH=./vocnet.db
-# DB_DSN=
+DB_DSN=file:./data/vocnet.db
 # 示例：使用 PostgreSQL
-# DB_DRIVER=postgres
-# DB_HOST=localhost
-# DB_PORT=5432
-# DB_NAME=vocnet
-# DB_USER=postgres
-# DB_PASSWORD=postgres
-# DB_SSLMODE=disable
+# DB_DSN=postgres://postgres:postgres@localhost:5432/vocnet?sslmode=disable
 LOG_LEVEL=info
 LOG_FORMAT=json
 ```

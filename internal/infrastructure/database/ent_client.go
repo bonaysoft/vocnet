@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
@@ -18,21 +17,23 @@ import (
 
 // NewEntClient constructs an ent.Client configured for the application's database.
 func NewEntClient(cfg *config.Config) (*entdb.Client, func(), error) {
-	dsn := cfg.DatabaseURL()
-	switch driver := cfg.DatabaseDriver(); driver {
+	driver, err := cfg.DatabaseDriver()
+	if err != nil {
+		return nil, nil, fmt.Errorf("determine database driver: %w", err)
+	}
+
+	dsn, err := cfg.DatabaseURL()
+	if err != nil {
+		return nil, nil, fmt.Errorf("determine database dsn: %w", err)
+	}
+
+	switch driver {
 	case "postgres":
 		return newPostgresEntClient(cfg, dsn)
 	case "sqlite3":
 		return newSQLiteEntClient(cfg, dsn)
 	default:
-		switch {
-		case strings.HasPrefix(dsn, "postgres://"), strings.HasPrefix(dsn, "postgresql://"):
-			return newPostgresEntClient(cfg, dsn)
-		case strings.HasPrefix(dsn, "file:"):
-			return newSQLiteEntClient(cfg, dsn)
-		default:
-			return nil, nil, fmt.Errorf("unsupported database driver %q", driver)
-		}
+		return nil, nil, fmt.Errorf("unsupported database driver %q", driver)
 	}
 }
 

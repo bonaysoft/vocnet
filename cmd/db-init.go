@@ -71,6 +71,7 @@ var dbInitCmd = &cobra.Command{
 const (
 	ecDictURL             = "https://github.com/skywind3000/ECDICT/releases/download/1.0.28/ecdict-sqlite-28.zip"
 	maxUncompressedSQLite = 1000 << 20 // 1000 MiB safety guard against decompression bombs
+	defaultBatchSize      = 1000
 )
 
 func safeUint64ToInt64(v uint64) (int64, error) {
@@ -83,7 +84,7 @@ func safeUint64ToInt64(v uint64) (int64, error) {
 func init() {
 	rootCmd.AddCommand(dbInitCmd)
 	dbInitCmd.Flags().String("url", ecDictURL, "ECDICT 下载地址")
-	dbInitCmd.Flags().Int("batch", 1000, "批量插入大小")
+	dbInitCmd.Flags().Int("batch", defaultBatchSize, "批量插入大小")
 	dbInitCmd.Flags().Bool("schema-only", false, "仅执行数据库迁移，不导入词库")
 	dbInitCmd.Flags().String("cache-dir", "", "ECDICT 缓存目录 (默认: 用户缓存目录/vocnet)")
 	dbInitCmd.Flags().Bool("no-cache", false, "忽略本地缓存, 强制重新下载")
@@ -651,7 +652,12 @@ func runMigrations() error {
 		return fmt.Errorf("执行 ent 迁移失败: %w", err)
 	}
 
-	if err := ensurePostgresJSONTags(ctx, cfg.DatabaseURL()); err != nil {
+	dsn, err := cfg.DatabaseURL()
+	if err != nil {
+		return fmt.Errorf("解析数据库 DSN 失败: %w", err)
+	}
+
+	if err := ensurePostgresJSONTags(ctx, dsn); err != nil {
 		return fmt.Errorf("升级 tags 列到 jsonb 失败: %w", err)
 	}
 

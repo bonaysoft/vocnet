@@ -13,11 +13,20 @@ import (
 
 // NewConnection creates a new pgx connection pool
 func NewConnection(cfg *config.Config) (*pgxpool.Pool, func(), error) {
-	if cfg.DatabaseDriver() != "postgres" {
-		return nil, nil, fmt.Errorf("连接池仅支持 PostgreSQL，当前驱动: %s", cfg.DatabaseDriver())
+	driver, err := cfg.DatabaseDriver()
+	if err != nil {
+		return nil, nil, fmt.Errorf("解析数据库驱动失败: %w", err)
+	}
+	if driver != "postgres" {
+		return nil, nil, fmt.Errorf("连接池仅支持 PostgreSQL，当前驱动: %s", driver)
 	}
 
-	poolCfg, err := pgxpool.ParseConfig(cfg.DatabaseURL())
+	dsn, err := cfg.DatabaseURL()
+	if err != nil {
+		return nil, nil, fmt.Errorf("解析数据库 DSN 失败: %w", err)
+	}
+
+	poolCfg, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		return nil, nil, fmt.Errorf("parse pool config: %w", err)
 	}

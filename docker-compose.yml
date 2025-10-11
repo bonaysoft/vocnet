@@ -24,12 +24,7 @@ services:
       dockerfile: Dockerfile
     container_name: rockd-server
     environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: rockd
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      DB_SSLMODE: disable
+      DB_DSN: postgres://postgres:postgres@postgres:5432/rockd?sslmode=disable
       SERVER_HOST: 0.0.0.0
       GRPC_PORT: 9090
       HTTP_PORT: 8080

@@ -23,16 +23,11 @@ type ServerConfig struct {
 
 // DatabaseConfig holds database configuration
 type DatabaseConfig struct {
-	Driver   string `mapstructure:"driver"`
-	DSN      string `mapstructure:"dsn"`
-	Path     string `mapstructure:"path"`
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	Name     string `mapstructure:"name"`
-	User     string `mapstructure:"user"`
-	Password string `mapstructure:"password"`
-	SSLMode  string `mapstructure:"sslmode"`
-	LogSQL   bool   `mapstructure:"log_sql"`
+	DSN    string `mapstructure:"dsn"`
+	LogSQL bool   `mapstructure:"log_sql"`
+
+	driver      string
+	initialized bool
 }
 
 // LogConfig holds logging configuration
@@ -71,6 +66,10 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("error unmarshaling config: %w", err)
 	}
 
+	if err := config.Database.ensureInitialized(); err != nil {
+		return nil, fmt.Errorf("validate database config: %w", err)
+	}
+
 	return &config, nil
 }
 
@@ -82,16 +81,8 @@ func setDefaults() {
 	viper.SetDefault("server.http_port", 8080)
 
 	// Database defaults
-	viper.SetDefault("database.driver", "sqlite3")
-	viper.SetDefault("database.dsn", "")
-	viper.SetDefault("database.path", "./data/vocnet.db")
-	viper.SetDefault("database.host", "localhost")
-	viper.SetDefault("database.port", 5432)
-	viper.SetDefault("database.name", "rockd")
-	viper.SetDefault("database.user", "postgres")
-	viper.SetDefault("database.password", "postgres")
-	viper.SetDefault("database.sslmode", "disable")
-	viper.SetDefault("database.log_sql", true)
+	viper.SetDefault("database.dsn", "file:./data/vocnet.db")
+	viper.SetDefault("database.log_sql", false)
 
 	// Log defaults
 	viper.SetDefault("log.level", "info")
@@ -100,16 +91,8 @@ func setDefaults() {
 
 func bindEnvAliases() error {
 	bindings := map[string][]string{
-		"database.driver":   {"DB_DRIVER"},
-		"database.dsn":      {"DB_DSN", "DB_URL"},
-		"database.path":     {"DB_PATH"},
-		"database.host":     {"DB_HOST"},
-		"database.port":     {"DB_PORT"},
-		"database.name":     {"DB_NAME"},
-		"database.user":     {"DB_USER"},
-		"database.password": {"DB_PASSWORD"},
-		"database.sslmode":  {"DB_SSLMODE"},
-		"database.log_sql":  {"DB_LOG_SQL"},
+		"database.dsn":     {"DB_DSN", "DB_URL"},
+		"database.log_sql": {"DB_LOG_SQL"},
 	}
 
 	for key, envs := range bindings {
@@ -127,55 +110,40 @@ func bindEnvAliases() error {
 }
 
 // DatabaseURL returns the configured database DSN.
-func (c *Config) DatabaseURL() string {
-	switch c.Database.normalizedDriver() {
-	case "postgres":
-		return c.Database.postgresDSN()
-	default:
-		return c.Database.sqliteDSN()
-	}
+func (c *Config) DatabaseURL() (string, error) {
+	return c.Database.databaseURL()
 }
 
 // DatabaseDriver returns the normalized database driver identifier.
-func (c *Config) DatabaseDriver() string {
+func (c *Config) DatabaseDriver() (string, error) {
 	return c.Database.normalizedDriver()
 }
 
-func (db DatabaseConfig) normalizedDriver() string {
-	switch strings.ToLower(strings.TrimSpace(db.Driver)) {
-	case "", "sqlite", "sqlite3":
-		return "sqlite3"
-	case "postgresql", "postgres":
-		return "postgres"
-	default:
-		return strings.ToLower(strings.TrimSpace(db.Driver))
+func (db *DatabaseConfig) normalizedDriver() (string, error) {
+	if err := db.ensureInitialized(); err != nil {
+		return "", err
 	}
+	return db.driver, nil
 }
 
-func (db DatabaseConfig) sqliteDSN() string {
-	if dsn := strings.TrimSpace(db.DSN); dsn != "" {
+func (db *DatabaseConfig) databaseURL() (string, error) {
+	if err := db.ensureInitialized(); err != nil {
+		return "", err
+	}
+	return db.DSN, nil
+}
+
+func (db *DatabaseConfig) sqliteDSN(dsn string) string {
+	if dsn == "" {
+		dsn = "file:./data/vocnet.db"
+	}
+	if strings.HasPrefix(dsn, "file:") {
 		return ensureSQLiteDSNParams(dsn)
 	}
-
-	path := strings.TrimSpace(db.Path)
-	if strings.HasPrefix(path, "file:") {
-		return ensureSQLiteDSNParams(path)
+	if strings.Contains(dsn, "://") {
+		return ensureSQLiteDSNParams(dsn)
 	}
-	return ensureSQLiteDSNParams("file:" + path)
-}
-
-func (db DatabaseConfig) postgresDSN() string {
-	if dsn := strings.TrimSpace(db.DSN); dsn != "" {
-		return dsn
-	}
-	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
-		db.User,
-		db.Password,
-		db.Host,
-		db.Port,
-		db.Name,
-		db.SSLMode,
-	)
+	return ensureSQLiteDSNParams("file:" + dsn)
 }
 
 func ensureSQLiteDSNParams(base string) string {
@@ -205,4 +173,70 @@ func ensureSQLiteDSNParams(base string) string {
 	}
 	builder.WriteString(strings.Join(params, "&"))
 	return builder.String()
+}
+
+func (db *DatabaseConfig) ensureInitialized() error {
+	if db.initialized {
+		return nil
+	}
+
+	dsn := strings.TrimSpace(db.DSN)
+	if dsn == "" {
+		return fmt.Errorf("database dsn is required")
+	}
+	driver, err := driverFromDSN(dsn)
+	if err != nil {
+		return err
+	}
+	switch driver {
+	case "sqlite3":
+		dsn = db.sqliteDSN(dsn)
+	case "postgres":
+		// keep DSN as-is for postgres
+	default:
+		return fmt.Errorf("unsupported database driver %q", driver)
+	}
+
+	db.DSN = dsn
+	db.driver = driver
+	db.initialized = true
+	return nil
+}
+
+func driverFromDSN(dsn string) (string, error) {
+	dsn = strings.TrimSpace(strings.ToLower(dsn))
+	switch {
+	case dsn == "":
+		return "", fmt.Errorf("database dsn is empty")
+	case strings.HasPrefix(dsn, "postgres://"),
+		strings.HasPrefix(dsn, "postgresql://"),
+		strings.HasPrefix(dsn, "postgresql+unix://"):
+		return "postgres", nil
+	case strings.HasPrefix(dsn, "file:"),
+		strings.HasPrefix(dsn, "sqlite://"),
+		strings.HasPrefix(dsn, "sqlite3://"):
+		return "sqlite3", nil
+	}
+
+	if strings.Contains(dsn, "=") {
+		switch {
+		case strings.Contains(dsn, "host="),
+			strings.Contains(dsn, "dbname="),
+			strings.Contains(dsn, "user="):
+			return "postgres", nil
+		}
+	}
+
+	if !strings.Contains(dsn, "://") {
+		switch {
+		case strings.HasSuffix(dsn, ".db"),
+			strings.HasSuffix(dsn, ".sqlite"),
+			strings.HasSuffix(dsn, ".sqlite3"),
+			strings.HasPrefix(dsn, "./"),
+			strings.HasPrefix(dsn, "/"):
+			return "sqlite3", nil
+		}
+	}
+
+	return "", fmt.Errorf("unable to determine database driver from DSN %q", dsn)
 }
