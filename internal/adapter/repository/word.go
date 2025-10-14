@@ -237,9 +237,10 @@ func (r *wordRepository) ListFormsByLemma(ctx context.Context, lemma string, lan
 }
 
 func applyListFilters(q *entdb.WordQuery, params listWordsParams) {
-	if params.Language != "" {
-		q.Where(entword.LanguageEQ(params.Language))
+	if params.Language == "" {
+		params.Language = entity.LanguageEnglish.CodeOrDefault()
 	}
+	q.Where(entword.LanguageEQ(params.Language))
 	if params.Keyword != "" {
 		q.Where(entword.TextContainsFold(params.Keyword))
 	}

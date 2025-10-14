@@ -1,7 +1,7 @@
 version: v2
 modules:
   - path: api/proto
-    name: buf.build/bonaysoft/vocnet
+    name: buf.build/eslsoft/vocnet
 deps:
   - buf.build/envoyproxy/protoc-gen-validate
   - buf.build/googleapis/googleapis
