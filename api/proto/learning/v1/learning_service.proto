@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package learning.v1;
+
+import "common/v1/types.proto";
+import "google/protobuf/empty.proto";
+import "learning/v1/learning.proto";
+import "validate/validate.proto";
+
+// User word management service for personal vocabulary learning
+service LearningService {
+  // Collect/add a word to user's vocabulary (creates global word if needed)
+  rpc CollectWord(CollectWordRequest) returns (LearnedWord) {}
+
+  // UncollectWord removes a word from user's vocabulary
+  rpc UncollectWord(common.v1.IDRequest) returns (google.protobuf.Empty) {}
+
+  // List user's words with filtering and sorting
+  rpc ListLearnedWords(ListLearnedWordsRequest) returns (ListLearnedWordsResponse) {}
+
+  // Update mastery level and learning status
+  rpc UpdateMastery(UpdateMasteryRequest) returns (LearnedWord) {}
+}
+
+// CollectWord request - main API for adding words to user vocabulary
+message CollectWordRequest {
+  LearnedWord word = 1;
+}
+
+// UpdateLearnedWordMasteryRequest request
+message UpdateMasteryRequest {
+  int64 word_id = 1 [(validate.rules).int64.gt = 0];
+  learning.v1.MasteryBreakdown mastery = 2;
+  string notes = 3;
+}
+
+// ListLearnedWordsRequest request with comprehensive filtering
+message ListLearnedWordsRequest {
+  // pagination parameters
+  common.v1.PaginationRequest pagination = 1;
+  // filtering options using CEL expressions
+  string filter = 2;
+  // ordering options. e.g. "word asc", "mastery.overall desc"
+  string order_by = 3;
+}
+
+message ListLearnedWordsResponse {
+  common.v1.PaginationResponse pagination = 1;
+  repeated LearnedWord words = 2;
+}

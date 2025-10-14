@@ -100,7 +100,7 @@ func requestAttributes(req connect.AnyRequest, code connect.Code, duration time.
 }
 
 func responseAttributes(resp connect.AnyResponse) []slog.Attr {
-	if resp == nil {
+	if r, ok := resp.(*connect.Response[any]); !ok || r == nil {
 		return nil
 	}
 

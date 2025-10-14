@@ -14,7 +14,7 @@ import (
 	"github.com/eslsoft/vocnet/internal/usecase"
 
 	"github.com/eslsoft/vocnet/pkg/api/dict/v1/dictv1connect"
-	"github.com/eslsoft/vocnet/pkg/api/vocnet/v1/vocnetv1connect"
+	"github.com/eslsoft/vocnet/pkg/api/learning/v1/learningv1connect"
 )
 
 var configSet = wire.NewSet(
@@ -38,7 +38,7 @@ var usecaseSet = wire.NewSet(
 var serviceSet = wire.NewSet(
 	adaptergrpc.NewWordServiceServer,
 	adaptergrpc.NewUserWordServiceServer,
-	wire.Bind(new(vocnetv1connect.UserWordServiceHandler), new(*adaptergrpc.UserWordServiceServer)),
+	wire.Bind(new(learningv1connect.LearningServiceHandler), new(*adaptergrpc.LearningServiceServer)),
 	wire.Bind(new(dictv1connect.WordServiceHandler), new(*adaptergrpc.WordServiceServer)),
 )
 

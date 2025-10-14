@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package vocnet.v1;
+package learning.v1;
 
 import "common/v1/types.proto";
-import "google/protobuf/timestamp.proto";
 import "dict/v1/word.proto";
+import "google/protobuf/timestamp.proto";
 
 // User's personal word record with learning context
-message UserWord {
+message LearnedWord {
   int64 id = 1;
   UserWordSpec spec = 2;
   UserWordStatus status = 3;

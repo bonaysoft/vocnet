@@ -16,7 +16,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
 	"github.com/eslsoft/vocnet/pkg/api/dict/v1/dictv1connect"
-	"github.com/eslsoft/vocnet/pkg/api/vocnet/v1/vocnetv1connect"
+	"github.com/eslsoft/vocnet/pkg/api/learning/v1/learningv1connect"
 	"github.com/sirupsen/logrus"
 )
 
@@ -29,12 +29,12 @@ type Server struct {
 }
 
 // NewServer creates a new server instance from pre-wired dependencies.
-func NewServer(cfg *config.Config, logger *logrus.Logger, wordSvc dictv1connect.WordServiceHandler, userWordSvc vocnetv1connect.UserWordServiceHandler) *Server {
+func NewServer(cfg *config.Config, logger *logrus.Logger, wordSvc dictv1connect.WordServiceHandler, userWordSvc learningv1connect.LearningServiceHandler) *Server {
 	interceptors := connect.WithInterceptors(Logger())
 
 	mux := http.NewServeMux()
 	mux.Handle(dictv1connect.NewWordServiceHandler(wordSvc, interceptors))
-	mux.Handle(vocnetv1connect.NewUserWordServiceHandler(userWordSvc, interceptors))
+	mux.Handle(learningv1connect.NewLearningServiceHandler(userWordSvc, interceptors))
 
 	return &Server{
 		config: cfg,

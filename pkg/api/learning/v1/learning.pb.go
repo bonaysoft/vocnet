@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.36.10
 // 	protoc        (unknown)
-// source: vocnet/v1/vocnet.proto
+// source: learning/v1/learning.proto
 
-package vocnetv1
+package learningv1
 
 import (
 	v1 "github.com/eslsoft/vocnet/pkg/api/common/v1"
@@ -25,7 +25,7 @@ const (
 )
 
 // User's personal word record with learning context
-type UserWord struct {
+type LearnedWord struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Spec          *UserWordSpec          `protobuf:"bytes,2,opt,name=spec,proto3" json:"spec,omitempty"`
@@ -34,21 +34,21 @@ type UserWord struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *UserWord) Reset() {
-	*x = UserWord{}
-	mi := &file_vocnet_v1_vocnet_proto_msgTypes[0]
+func (x *LearnedWord) Reset() {
+	*x = LearnedWord{}
+	mi := &file_learning_v1_learning_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UserWord) String() string {
+func (x *LearnedWord) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UserWord) ProtoMessage() {}
+func (*LearnedWord) ProtoMessage() {}
 
-func (x *UserWord) ProtoReflect() protoreflect.Message {
-	mi := &file_vocnet_v1_vocnet_proto_msgTypes[0]
+func (x *LearnedWord) ProtoReflect() protoreflect.Message {
+	mi := &file_learning_v1_learning_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,26 +59,26 @@ func (x *UserWord) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UserWord.ProtoReflect.Descriptor instead.
-func (*UserWord) Descriptor() ([]byte, []int) {
-	return file_vocnet_v1_vocnet_proto_rawDescGZIP(), []int{0}
+// Deprecated: Use LearnedWord.ProtoReflect.Descriptor instead.
+func (*LearnedWord) Descriptor() ([]byte, []int) {
+	return file_learning_v1_learning_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *UserWord) GetId() int64 {
+func (x *LearnedWord) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
 	return 0
 }
 
-func (x *UserWord) GetSpec() *UserWordSpec {
+func (x *LearnedWord) GetSpec() *UserWordSpec {
 	if x != nil {
 		return x.Spec
 	}
 	return nil
 }
 
-func (x *UserWord) GetStatus() *UserWordStatus {
+func (x *LearnedWord) GetStatus() *UserWordStatus {
 	if x != nil {
 		return x.Status
 	}
@@ -101,7 +101,7 @@ type UserWordSpec struct {
 
 func (x *UserWordSpec) Reset() {
 	*x = UserWordSpec{}
-	mi := &file_vocnet_v1_vocnet_proto_msgTypes[1]
+	mi := &file_learning_v1_learning_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -113,7 +113,7 @@ func (x *UserWordSpec) String() string {
 func (*UserWordSpec) ProtoMessage() {}
 
 func (x *UserWordSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_vocnet_v1_vocnet_proto_msgTypes[1]
+	mi := &file_learning_v1_learning_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -126,7 +126,7 @@ func (x *UserWordSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserWordSpec.ProtoReflect.Descriptor instead.
 func (*UserWordSpec) Descriptor() ([]byte, []int) {
-	return file_vocnet_v1_vocnet_proto_rawDescGZIP(), []int{1}
+	return file_learning_v1_learning_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *UserWordSpec) GetWord() string {
@@ -193,7 +193,7 @@ type UserWordStatus struct {
 
 func (x *UserWordStatus) Reset() {
 	*x = UserWordStatus{}
-	mi := &file_vocnet_v1_vocnet_proto_msgTypes[2]
+	mi := &file_learning_v1_learning_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -205,7 +205,7 @@ func (x *UserWordStatus) String() string {
 func (*UserWordStatus) ProtoMessage() {}
 
 func (x *UserWordStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_vocnet_v1_vocnet_proto_msgTypes[2]
+	mi := &file_learning_v1_learning_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -218,7 +218,7 @@ func (x *UserWordStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserWordStatus.ProtoReflect.Descriptor instead.
 func (*UserWordStatus) Descriptor() ([]byte, []int) {
-	return file_vocnet_v1_vocnet_proto_rawDescGZIP(), []int{2}
+	return file_learning_v1_learning_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *UserWordStatus) GetMastery() *MasteryBreakdown {
@@ -277,7 +277,7 @@ type MasteryBreakdown struct {
 
 func (x *MasteryBreakdown) Reset() {
 	*x = MasteryBreakdown{}
-	mi := &file_vocnet_v1_vocnet_proto_msgTypes[3]
+	mi := &file_learning_v1_learning_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -289,7 +289,7 @@ func (x *MasteryBreakdown) String() string {
 func (*MasteryBreakdown) ProtoMessage() {}
 
 func (x *MasteryBreakdown) ProtoReflect() protoreflect.Message {
-	mi := &file_vocnet_v1_vocnet_proto_msgTypes[3]
+	mi := &file_learning_v1_learning_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -302,7 +302,7 @@ func (x *MasteryBreakdown) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MasteryBreakdown.ProtoReflect.Descriptor instead.
 func (*MasteryBreakdown) Descriptor() ([]byte, []int) {
-	return file_vocnet_v1_vocnet_proto_rawDescGZIP(), []int{3}
+	return file_learning_v1_learning_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *MasteryBreakdown) GetListen() int32 {
@@ -353,7 +353,7 @@ type ReviewTiming struct {
 
 func (x *ReviewTiming) Reset() {
 	*x = ReviewTiming{}
-	mi := &file_vocnet_v1_vocnet_proto_msgTypes[4]
+	mi := &file_learning_v1_learning_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -365,7 +365,7 @@ func (x *ReviewTiming) String() string {
 func (*ReviewTiming) ProtoMessage() {}
 
 func (x *ReviewTiming) ProtoReflect() protoreflect.Message {
-	mi := &file_vocnet_v1_vocnet_proto_msgTypes[4]
+	mi := &file_learning_v1_learning_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -378,7 +378,7 @@ func (x *ReviewTiming) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReviewTiming.ProtoReflect.Descriptor instead.
 func (*ReviewTiming) Descriptor() ([]byte, []int) {
-	return file_vocnet_v1_vocnet_proto_rawDescGZIP(), []int{4}
+	return file_learning_v1_learning_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ReviewTiming) GetLastReviewAt() *timestamppb.Timestamp {
@@ -423,7 +423,7 @@ type UserWordRelation struct {
 
 func (x *UserWordRelation) Reset() {
 	*x = UserWordRelation{}
-	mi := &file_vocnet_v1_vocnet_proto_msgTypes[5]
+	mi := &file_learning_v1_learning_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -435,7 +435,7 @@ func (x *UserWordRelation) String() string {
 func (*UserWordRelation) ProtoMessage() {}
 
 func (x *UserWordRelation) ProtoReflect() protoreflect.Message {
-	mi := &file_vocnet_v1_vocnet_proto_msgTypes[5]
+	mi := &file_learning_v1_learning_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -448,7 +448,7 @@ func (x *UserWordRelation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserWordRelation.ProtoReflect.Descriptor instead.
 func (*UserWordRelation) Descriptor() ([]byte, []int) {
-	return file_vocnet_v1_vocnet_proto_rawDescGZIP(), []int{5}
+	return file_learning_v1_learning_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *UserWordRelation) GetWord() string {
@@ -486,26 +486,26 @@ func (x *UserWordRelation) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-var File_vocnet_v1_vocnet_proto protoreflect.FileDescriptor
+var File_learning_v1_learning_proto protoreflect.FileDescriptor
 
-const file_vocnet_v1_vocnet_proto_rawDesc = "" +
+const file_learning_v1_learning_proto_rawDesc = "" +
 	"\n" +
-	"\x16vocnet/v1/vocnet.proto\x12\tvocnet.v1\x1a\x15common/v1/types.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x12dict/v1/word.proto\"z\n" +
-	"\bUserWord\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12+\n" +
-	"\x04spec\x18\x02 \x01(\v2\x17.vocnet.v1.UserWordSpecR\x04spec\x121\n" +
-	"\x06status\x18\x03 \x01(\v2\x19.vocnet.v1.UserWordStatusR\x06status\"\x8e\x02\n" +
+	"\x1alearning/v1/learning.proto\x12\vlearning.v1\x1a\x15common/v1/types.proto\x1a\x12dict/v1/word.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x81\x01\n" +
+	"\vLearnedWord\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12-\n" +
+	"\x04spec\x18\x02 \x01(\v2\x19.learning.v1.UserWordSpecR\x04spec\x123\n" +
+	"\x06status\x18\x03 \x01(\v2\x1b.learning.v1.UserWordStatusR\x06status\"\x90\x02\n" +
 	"\fUserWordSpec\x12\x12\n" +
 	"\x04word\x18\x01 \x01(\tR\x04word\x12/\n" +
 	"\blanguage\x18\x02 \x01(\x0e2\x13.common.v1.LanguageR\blanguage\x12#\n" +
-	"\rmastery_level\x18\x03 \x01(\x05R\fmasteryLevel\x129\n" +
-	"\trelations\x18\x05 \x03(\v2\x1b.vocnet.v1.UserWordRelationR\trelations\x12/\n" +
+	"\rmastery_level\x18\x03 \x01(\x05R\fmasteryLevel\x12;\n" +
+	"\trelations\x18\x05 \x03(\v2\x1d.learning.v1.UserWordRelationR\trelations\x12/\n" +
 	"\tsentences\x18\x06 \x03(\v2\x11.dict.v1.SentenceR\tsentences\x12\x12\n" +
 	"\x04tags\x18\a \x03(\tR\x04tags\x12\x14\n" +
-	"\x05notes\x18\b \x03(\tR\x05notes\"\xbb\x02\n" +
-	"\x0eUserWordStatus\x125\n" +
-	"\amastery\x18\x03 \x01(\v2\x1b.vocnet.v1.MasteryBreakdownR\amastery\x12<\n" +
-	"\rreview_timing\x18\x04 \x01(\v2\x17.vocnet.v1.ReviewTimingR\freviewTiming\x12\x1f\n" +
+	"\x05notes\x18\b \x03(\tR\x05notes\"\xbf\x02\n" +
+	"\x0eUserWordStatus\x127\n" +
+	"\amastery\x18\x03 \x01(\v2\x1d.learning.v1.MasteryBreakdownR\amastery\x12>\n" +
+	"\rreview_timing\x18\x04 \x01(\v2\x19.learning.v1.ReviewTimingR\freviewTiming\x12\x1f\n" +
 	"\vquery_count\x18\x05 \x01(\x03R\n" +
 	"queryCount\x12\x1d\n" +
 	"\n" +
@@ -533,50 +533,49 @@ const file_vocnet_v1_vocnet_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x15 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x16 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtB\x97\x01\n" +
-	"\rcom.vocnet.v1B\vVocnetProtoP\x01Z4github.com/eslsoft/vocnet/pkg/api/vocnet/v1;vocnetv1\xa2\x02\x03VXX\xaa\x02\tVocnet.V1\xca\x02\tVocnet\\V1\xe2\x02\x15Vocnet\\V1\\GPBMetadata\xea\x02\n" +
-	"Vocnet::V1b\x06proto3"
+	"updated_at\x18\x16 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtB\xa7\x01\n" +
+	"\x0fcom.learning.v1B\rLearningProtoP\x01Z8github.com/eslsoft/vocnet/pkg/api/learning/v1;learningv1\xa2\x02\x03LXX\xaa\x02\vLearning.V1\xca\x02\vLearning\\V1\xe2\x02\x17Learning\\V1\\GPBMetadata\xea\x02\fLearning::V1b\x06proto3"
 
 var (
-	file_vocnet_v1_vocnet_proto_rawDescOnce sync.Once
-	file_vocnet_v1_vocnet_proto_rawDescData []byte
+	file_learning_v1_learning_proto_rawDescOnce sync.Once
+	file_learning_v1_learning_proto_rawDescData []byte
 )
 
-func file_vocnet_v1_vocnet_proto_rawDescGZIP() []byte {
-	file_vocnet_v1_vocnet_proto_rawDescOnce.Do(func() {
-		file_vocnet_v1_vocnet_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_vocnet_v1_vocnet_proto_rawDesc), len(file_vocnet_v1_vocnet_proto_rawDesc)))
+func file_learning_v1_learning_proto_rawDescGZIP() []byte {
+	file_learning_v1_learning_proto_rawDescOnce.Do(func() {
+		file_learning_v1_learning_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_learning_v1_learning_proto_rawDesc), len(file_learning_v1_learning_proto_rawDesc)))
 	})
-	return file_vocnet_v1_vocnet_proto_rawDescData
+	return file_learning_v1_learning_proto_rawDescData
 }
 
-var file_vocnet_v1_vocnet_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
-var file_vocnet_v1_vocnet_proto_goTypes = []any{
-	(*UserWord)(nil),              // 0: vocnet.v1.UserWord
-	(*UserWordSpec)(nil),          // 1: vocnet.v1.UserWordSpec
-	(*UserWordStatus)(nil),        // 2: vocnet.v1.UserWordStatus
-	(*MasteryBreakdown)(nil),      // 3: vocnet.v1.MasteryBreakdown
-	(*ReviewTiming)(nil),          // 4: vocnet.v1.ReviewTiming
-	(*UserWordRelation)(nil),      // 5: vocnet.v1.UserWordRelation
+var file_learning_v1_learning_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_learning_v1_learning_proto_goTypes = []any{
+	(*LearnedWord)(nil),           // 0: learning.v1.LearnedWord
+	(*UserWordSpec)(nil),          // 1: learning.v1.UserWordSpec
+	(*UserWordStatus)(nil),        // 2: learning.v1.UserWordStatus
+	(*MasteryBreakdown)(nil),      // 3: learning.v1.MasteryBreakdown
+	(*ReviewTiming)(nil),          // 4: learning.v1.ReviewTiming
+	(*UserWordRelation)(nil),      // 5: learning.v1.UserWordRelation
 	(v1.Language)(0),              // 6: common.v1.Language
 	(*v11.Sentence)(nil),          // 7: dict.v1.Sentence
 	(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
 	(v1.RelationType)(0),          // 9: common.v1.RelationType
 }
-var file_vocnet_v1_vocnet_proto_depIdxs = []int32{
-	1,  // 0: vocnet.v1.UserWord.spec:type_name -> vocnet.v1.UserWordSpec
-	2,  // 1: vocnet.v1.UserWord.status:type_name -> vocnet.v1.UserWordStatus
-	6,  // 2: vocnet.v1.UserWordSpec.language:type_name -> common.v1.Language
-	5,  // 3: vocnet.v1.UserWordSpec.relations:type_name -> vocnet.v1.UserWordRelation
-	7,  // 4: vocnet.v1.UserWordSpec.sentences:type_name -> dict.v1.Sentence
-	3,  // 5: vocnet.v1.UserWordStatus.mastery:type_name -> vocnet.v1.MasteryBreakdown
-	4,  // 6: vocnet.v1.UserWordStatus.review_timing:type_name -> vocnet.v1.ReviewTiming
-	8,  // 7: vocnet.v1.UserWordStatus.created_at:type_name -> google.protobuf.Timestamp
-	8,  // 8: vocnet.v1.UserWordStatus.updated_at:type_name -> google.protobuf.Timestamp
-	8,  // 9: vocnet.v1.ReviewTiming.last_review_at:type_name -> google.protobuf.Timestamp
-	8,  // 10: vocnet.v1.ReviewTiming.next_review_at:type_name -> google.protobuf.Timestamp
-	9,  // 11: vocnet.v1.UserWordRelation.relation_type:type_name -> common.v1.RelationType
-	8,  // 12: vocnet.v1.UserWordRelation.created_at:type_name -> google.protobuf.Timestamp
-	8,  // 13: vocnet.v1.UserWordRelation.updated_at:type_name -> google.protobuf.Timestamp
+var file_learning_v1_learning_proto_depIdxs = []int32{
+	1,  // 0: learning.v1.LearnedWord.spec:type_name -> learning.v1.UserWordSpec
+	2,  // 1: learning.v1.LearnedWord.status:type_name -> learning.v1.UserWordStatus
+	6,  // 2: learning.v1.UserWordSpec.language:type_name -> common.v1.Language
+	5,  // 3: learning.v1.UserWordSpec.relations:type_name -> learning.v1.UserWordRelation
+	7,  // 4: learning.v1.UserWordSpec.sentences:type_name -> dict.v1.Sentence
+	3,  // 5: learning.v1.UserWordStatus.mastery:type_name -> learning.v1.MasteryBreakdown
+	4,  // 6: learning.v1.UserWordStatus.review_timing:type_name -> learning.v1.ReviewTiming
+	8,  // 7: learning.v1.UserWordStatus.created_at:type_name -> google.protobuf.Timestamp
+	8,  // 8: learning.v1.UserWordStatus.updated_at:type_name -> google.protobuf.Timestamp
+	8,  // 9: learning.v1.ReviewTiming.last_review_at:type_name -> google.protobuf.Timestamp
+	8,  // 10: learning.v1.ReviewTiming.next_review_at:type_name -> google.protobuf.Timestamp
+	9,  // 11: learning.v1.UserWordRelation.relation_type:type_name -> common.v1.RelationType
+	8,  // 12: learning.v1.UserWordRelation.created_at:type_name -> google.protobuf.Timestamp
+	8,  // 13: learning.v1.UserWordRelation.updated_at:type_name -> google.protobuf.Timestamp
 	14, // [14:14] is the sub-list for method output_type
 	14, // [14:14] is the sub-list for method input_type
 	14, // [14:14] is the sub-list for extension type_name
@@ -584,26 +583,26 @@ var file_vocnet_v1_vocnet_proto_depIdxs = []int32{
 	0,  // [0:14] is the sub-list for field type_name
 }
 
-func init() { file_vocnet_v1_vocnet_proto_init() }
-func file_vocnet_v1_vocnet_proto_init() {
-	if File_vocnet_v1_vocnet_proto != nil {
+func init() { file_learning_v1_learning_proto_init() }
+func file_learning_v1_learning_proto_init() {
+	if File_learning_v1_learning_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vocnet_v1_vocnet_proto_rawDesc), len(file_vocnet_v1_vocnet_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_learning_v1_learning_proto_rawDesc), len(file_learning_v1_learning_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_vocnet_v1_vocnet_proto_goTypes,
-		DependencyIndexes: file_vocnet_v1_vocnet_proto_depIdxs,
-		MessageInfos:      file_vocnet_v1_vocnet_proto_msgTypes,
+		GoTypes:           file_learning_v1_learning_proto_goTypes,
+		DependencyIndexes: file_learning_v1_learning_proto_depIdxs,
+		MessageInfos:      file_learning_v1_learning_proto_msgTypes,
 	}.Build()
-	File_vocnet_v1_vocnet_proto = out.File
-	file_vocnet_v1_vocnet_proto_goTypes = nil
-	file_vocnet_v1_vocnet_proto_depIdxs = nil
+	File_learning_v1_learning_proto = out.File
+	file_learning_v1_learning_proto_goTypes = nil
+	file_learning_v1_learning_proto_depIdxs = nil
 }

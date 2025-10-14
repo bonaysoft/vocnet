@@ -5,14 +5,14 @@ import (
 
 	commonv1 "github.com/eslsoft/vocnet/pkg/api/common/v1"
 	dictv1 "github.com/eslsoft/vocnet/pkg/api/dict/v1"
-	vocnetv1 "github.com/eslsoft/vocnet/pkg/api/vocnet/v1"
+	learningv1 "github.com/eslsoft/vocnet/pkg/api/learning/v1"
 	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/eslsoft/vocnet/internal/entity"
 )
 
-func FromPbUserWord(in *vocnetv1.UserWord) *entity.UserWord {
+func FromPbUserWord(in *learningv1.LearnedWord) *entity.UserWord {
 	return &entity.UserWord{
 		ID:       in.GetId(),
 		Word:     strings.TrimSpace(in.Spec.GetWord()),
@@ -28,7 +28,7 @@ func FromPbUserWord(in *vocnetv1.UserWord) *entity.UserWord {
 				SourceRef: strings.TrimSpace(s.GetSourceRef()),
 			}
 		}),
-		Relations: lo.Map(in.Spec.GetRelations(), func(rel *vocnetv1.UserWordRelation, _ int) entity.UserWordRelation {
+		Relations: lo.Map(in.Spec.GetRelations(), func(rel *learningv1.UserWordRelation, _ int) entity.UserWordRelation {
 			return entity.UserWordRelation{
 				Word:         rel.GetWord(),
 				RelationType: int32(rel.GetRelationType()),
@@ -38,10 +38,10 @@ func FromPbUserWord(in *vocnetv1.UserWord) *entity.UserWord {
 	}
 }
 
-func ToPbUserWord(in *entity.UserWord) *vocnetv1.UserWord {
-	out := &vocnetv1.UserWord{
+func ToPbUserWord(in *entity.UserWord) *learningv1.LearnedWord {
+	out := &learningv1.LearnedWord{
 		Id: in.ID,
-		Spec: &vocnetv1.UserWordSpec{
+		Spec: &learningv1.UserWordSpec{
 			Word:     in.Word,
 			Language: ToPbLanguage(in.Language),
 			Sentences: lo.Map(in.Sentences, func(s entity.Sentence, _ int) *dictv1.Sentence {
@@ -51,8 +51,8 @@ func ToPbUserWord(in *entity.UserWord) *vocnetv1.UserWord {
 					SourceRef: s.SourceRef,
 				}
 			}),
-			Relations: lo.Map(in.Relations, func(rel entity.UserWordRelation, _ int) *vocnetv1.UserWordRelation {
-				return &vocnetv1.UserWordRelation{
+			Relations: lo.Map(in.Relations, func(rel entity.UserWordRelation, _ int) *learningv1.UserWordRelation {
+				return &learningv1.UserWordRelation{
 					Word:         rel.Word,
 					RelationType: commonv1.RelationType(rel.RelationType),
 					Note:         rel.Note,
@@ -62,7 +62,7 @@ func ToPbUserWord(in *entity.UserWord) *vocnetv1.UserWord {
 			}),
 			// Notes: in.Notes,
 		},
-		Status: &vocnetv1.UserWordStatus{
+		Status: &learningv1.UserWordStatus{
 			Mastery:      ToPbMastery(in.Mastery),
 			ReviewTiming: ToPbReview(in.Review),
 			QueryCount:   in.QueryCount,
@@ -75,7 +75,7 @@ func ToPbUserWord(in *entity.UserWord) *vocnetv1.UserWord {
 	return out
 }
 
-func FromPbMastery(in *vocnetv1.MasteryBreakdown) entity.MasteryBreakdown {
+func FromPbMastery(in *learningv1.MasteryBreakdown) entity.MasteryBreakdown {
 	return entity.MasteryBreakdown{
 		Listen:    in.GetListen(),
 		Read:      in.GetRead(),
@@ -85,8 +85,8 @@ func FromPbMastery(in *vocnetv1.MasteryBreakdown) entity.MasteryBreakdown {
 	}
 }
 
-func ToPbMastery(in entity.MasteryBreakdown) *vocnetv1.MasteryBreakdown {
-	return &vocnetv1.MasteryBreakdown{
+func ToPbMastery(in entity.MasteryBreakdown) *learningv1.MasteryBreakdown {
+	return &learningv1.MasteryBreakdown{
 		Listen:    in.Listen,
 		Read:      in.Read,
 		Spell:     in.Spell,
@@ -95,8 +95,8 @@ func ToPbMastery(in entity.MasteryBreakdown) *vocnetv1.MasteryBreakdown {
 	}
 }
 
-func ToPbReview(in entity.ReviewTiming) *vocnetv1.ReviewTiming {
-	return &vocnetv1.ReviewTiming{
+func ToPbReview(in entity.ReviewTiming) *learningv1.ReviewTiming {
+	return &learningv1.ReviewTiming{
 		LastReviewAt: timestamppb.New(in.LastReviewAt),
 		NextReviewAt: timestamppb.New(in.NextReviewAt),
 		IntervalDays: in.IntervalDays,

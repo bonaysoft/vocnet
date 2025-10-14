@@ -14,7 +14,7 @@ import (
 	"github.com/eslsoft/vocnet/internal/infrastructure/server"
 	"github.com/eslsoft/vocnet/internal/usecase"
 	"github.com/eslsoft/vocnet/pkg/api/dict/v1/dictv1connect"
-	"github.com/eslsoft/vocnet/pkg/api/vocnet/v1/vocnetv1connect"
+	"github.com/eslsoft/vocnet/pkg/api/learning/v1/learningv1connect"
 	"github.com/google/wire"
 )
 
@@ -39,8 +39,8 @@ func Initialize() (*Container, func(), error) {
 	wordServiceServer := grpc.NewWordServiceServer(wordUsecase)
 	userWordRepository := repository.NewUserWordRepository(client)
 	userWordUsecase := usecase.NewUserWordUsecase(userWordRepository)
-	userWordServiceServer := grpc.NewUserWordServiceServer(userWordUsecase)
-	serverServer := server.NewServer(configConfig, logger, wordServiceServer, userWordServiceServer)
+	learningServiceServer := grpc.NewUserWordServiceServer(userWordUsecase)
+	serverServer := server.NewServer(configConfig, logger, wordServiceServer, learningServiceServer)
 	container := &Container{
 		Logger:    logger,
 		Server:    serverServer,
@@ -61,6 +61,6 @@ var repositorySet = wire.NewSet(repository.NewWordRepository, repository.NewUser
 
 var usecaseSet = wire.NewSet(usecase.NewWordUsecase, usecase.NewUserWordUsecase)
 
-var serviceSet = wire.NewSet(grpc.NewWordServiceServer, grpc.NewUserWordServiceServer, wire.Bind(new(vocnetv1connect.UserWordServiceHandler), new(*grpc.UserWordServiceServer)), wire.Bind(new(dictv1connect.WordServiceHandler), new(*grpc.WordServiceServer)))
+var serviceSet = wire.NewSet(grpc.NewWordServiceServer, grpc.NewUserWordServiceServer, wire.Bind(new(learningv1connect.LearningServiceHandler), new(*grpc.LearningServiceServer)), wire.Bind(new(dictv1connect.WordServiceHandler), new(*grpc.WordServiceServer)))
 
 var serverSet = wire.NewSet(server.NewLogger, server.NewServer)
