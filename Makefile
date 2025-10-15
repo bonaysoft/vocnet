@@ -58,20 +58,8 @@ generate: buf-deps ## Generate code from protobuf files using buf
 	@mkdir -p $(GEN_DIR) $(OPENAPI_DIR)
 	buf generate
 	@echo "Protobuf generation completed"
-	@echo "Generating OpenAPI v3 specification..."
-	curl -X POST -H "Content-Type: application/json" -T api/openapi/apidocs.swagger.json https://converter.swagger.io/api/convert | yq -P -oy '.' > api/openapi/apidocs.openapi.yaml
-	@echo "OpenAPI v3 specification generated at $(OPENAPI_DIR)/apidocs.openapi.yaml"
-	$(MAKE) ent-generate
-
-.PHONY: ent-generate
-ent-generate: ## Generate ent ORM code
-	@echo "Generating ent schema code..."
-	go generate ./internal/infrastructure/database/entschema
-
-.PHONY: mocks
-mocks: ## Generate mock files
-	@echo "Generating mocks..."
 	go generate ./...
+	@echo "Go code generation completed"
 
 .PHONY: build
 build: generate ## Build the unified CLI binary
@@ -85,7 +73,7 @@ run: ## Run the server via unified CLI
 	go run . serve
 
 .PHONY: test
-test: mocks ## Run tests
+test:  ## Run tests
 	@echo "Running tests..."
 	go test -v -race -coverprofile=coverage.out ./...
 
@@ -139,7 +127,7 @@ docker-run: ## Run Docker container
 db-up: ## Start PostgreSQL database using Docker
 	@echo "Starting PostgreSQL database..."
 	docker run --name $(PROJECT_NAME)-postgres \
-		-e POSTGRES_DB=rockd \
+		-e POSTGRES_DB=vocnet \
 		-e POSTGRES_USER=postgres \
 		-e POSTGRES_PASSWORD=postgres \
 		-p 5432:5432 \
@@ -151,22 +139,12 @@ db-down: ## Stop PostgreSQL database
 	docker stop $(PROJECT_NAME)-postgres || true
 	docker rm $(PROJECT_NAME)-postgres || true
 
-.PHONY: migrate
-migrate: ## Apply ent schema migrations
-	@echo "Applying ent migrations..."
-	go run . db-init --schema-only
-
 .PHONY: setup
 setup: install-tools deps generate ## Setup development environment
 	@echo "Development environment setup complete!"
 
 .PHONY: dev
-dev: db-up migrate run ## Start development environment
+dev: db-up run ## Start development environment
 
 .PHONY: all
 all: clean setup build test ## Clean, setup, build, and test
-
-.PHONY: init-words
-init-words: ## Initialize database schema and import words (downloads ~30MB)
-	@echo "Initializing database & importing words (ECDICT)..."
-	CGO_ENABLED=1 go run . db-init
