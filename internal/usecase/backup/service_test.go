@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/eslsoft/vocnet/internal/entity"
 	entdb "github.com/eslsoft/vocnet/internal/infrastructure/database/ent"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/enttest"
 	entuserword "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/userword"
 	entword "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
 
 	"entgo.io/ent/dialect"
 )
@@ -130,10 +130,10 @@ func seedData(t *testing.T, ctx context.Context, client *entdb.Client) ([]wordSn
 		SetText("apple").
 		SetLanguage("en").
 		SetWordType("lemma").
-		SetPhonetics(types.WordPhonetics{{IPA: "ˈæpəl", Dialect: "us"}}).
-		SetMeanings(types.WordMeanings{{Pos: "noun", Text: "fruit", Language: "en"}}).
+		SetPhonetics([]entity.WordPhonetic{{IPA: "ˈæpəl", Dialect: "us"}}).
+		SetMeanings([]entity.WordDefinition{{Pos: "noun", Text: "fruit", Language: "en"}}).
 		SetTags([]string{"fruit"}).
-		SetRelations(types.WordRelations{{Word: "pear", RelationType: 1}}).
+		SetRelations([]entity.WordRelation{{Word: "pear", RelationType: 1}}).
 		SetCreatedAt(createdAt).
 		SetUpdatedAt(updatedAt).
 		Save(ctx)
@@ -169,8 +169,8 @@ func seedData(t *testing.T, ctx context.Context, client *entdb.Client) ([]wordSn
 		SetReviewFailCount(1).
 		SetQueryCount(5).
 		SetNotes("daily review").
-		SetSentences(types.UserSentences{{Text: "An apple a day...", Source: 1}}).
-		SetRelations(types.UserWordRelations{{Word: "apple", RelationType: 2, CreatedBy: "tester", CreatedAt: createdAt.Add(24 * time.Hour), UpdatedAt: createdAt.Add(36 * time.Hour)}}).
+		SetSentences([]entity.Sentence{{Text: "An apple a day...", Source: 1}}).
+		SetRelations([]entity.UserWordRelation{{Word: "apple", RelationType: 2, CreatedBy: "tester", CreatedAt: createdAt.Add(24 * time.Hour), UpdatedAt: createdAt.Add(36 * time.Hour)}}).
 		SetCreatedBy("tester").
 		SetCreatedAt(createdAt.Add(24 * time.Hour)).
 		SetUpdatedAt(createdAt.Add(48 * time.Hour)).
@@ -188,12 +188,12 @@ type wordSnapshot struct {
 	Language  string
 	WordType  string
 	Lemma     *string
-	Phonetics types.WordPhonetics
-	Meanings  types.WordMeanings
+	Phonetics []entity.WordPhonetic
+	Meanings  []entity.WordDefinition
 	Tags      []string
-	Phrases   types.Phrases
-	Sentences types.Sentences
-	Relations types.WordRelations
+	Phrases   []entity.Phrase
+	Sentences []entity.Sentence
+	Relations []entity.WordRelation
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -215,8 +215,8 @@ type userWordSnapshot struct {
 	ReviewFailCount    int32
 	QueryCount         int64
 	Notes              *string
-	Sentences          types.UserSentences
-	Relations          types.UserWordRelations
+	Sentences          []entity.Sentence
+	Relations          []entity.UserWordRelation
 	CreatedBy          string
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
@@ -236,12 +236,12 @@ func snapshotWords(t *testing.T, ctx context.Context, client *entdb.Client) []wo
 			Language:  row.Language,
 			WordType:  row.WordType,
 			Lemma:     row.Lemma,
-			Phonetics: append(types.WordPhonetics{}, row.Phonetics...),
-			Meanings:  append(types.WordMeanings{}, row.Meanings...),
+			Phonetics: append([]entity.WordPhonetic{}, row.Phonetics...),
+			Meanings:  append([]entity.WordDefinition{}, row.Meanings...),
 			Tags:      append([]string{}, row.Tags...),
-			Phrases:   append(types.Phrases{}, row.Phrases...),
-			Sentences: append(types.Sentences{}, row.Sentences...),
-			Relations: append(types.WordRelations{}, row.Relations...),
+			Phrases:   append([]entity.Phrase{}, row.Phrases...),
+			Sentences: append([]entity.Sentence{}, row.Sentences...),
+			Relations: append([]entity.WordRelation{}, row.Relations...),
 			CreatedAt: row.CreatedAt.UTC(),
 			UpdatedAt: row.UpdatedAt.UTC(),
 		})
@@ -274,8 +274,8 @@ func snapshotUserWords(t *testing.T, ctx context.Context, client *entdb.Client) 
 			ReviewFailCount:    row.ReviewFailCount,
 			QueryCount:         row.QueryCount,
 			Notes:              copyStringPointer(row.Notes),
-			Sentences:          append(types.UserSentences{}, row.Sentences...),
-			Relations:          append(types.UserWordRelations{}, row.Relations...),
+			Sentences:          append([]entity.Sentence{}, row.Sentences...),
+			Relations:          append([]entity.UserWordRelation{}, row.Relations...),
 			CreatedBy:          row.CreatedBy,
 			CreatedAt:          row.CreatedAt.UTC(),
 			UpdatedAt:          row.UpdatedAt.UTC(),

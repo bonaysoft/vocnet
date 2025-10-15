@@ -12,9 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
+	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/predicate"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/userword"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
 )
 
 // UserWordUpdate is the builder for updating UserWord entities.
@@ -61,6 +61,20 @@ func (uwu *UserWordUpdate) SetWord(s string) *UserWordUpdate {
 func (uwu *UserWordUpdate) SetNillableWord(s *string) *UserWordUpdate {
 	if s != nil {
 		uwu.SetWord(*s)
+	}
+	return uwu
+}
+
+// SetNormalized sets the "normalized" field.
+func (uwu *UserWordUpdate) SetNormalized(s string) *UserWordUpdate {
+	uwu.mutation.SetNormalized(s)
+	return uwu
+}
+
+// SetNillableNormalized sets the "normalized" field if the given value is not nil.
+func (uwu *UserWordUpdate) SetNillableNormalized(s *string) *UserWordUpdate {
+	if s != nil {
+		uwu.SetNormalized(*s)
 	}
 	return uwu
 }
@@ -329,26 +343,26 @@ func (uwu *UserWordUpdate) ClearNotes() *UserWordUpdate {
 }
 
 // SetSentences sets the "sentences" field.
-func (uwu *UserWordUpdate) SetSentences(ts types.UserSentences) *UserWordUpdate {
-	uwu.mutation.SetSentences(ts)
+func (uwu *UserWordUpdate) SetSentences(e []entity.Sentence) *UserWordUpdate {
+	uwu.mutation.SetSentences(e)
 	return uwu
 }
 
-// AppendSentences appends ts to the "sentences" field.
-func (uwu *UserWordUpdate) AppendSentences(ts types.UserSentences) *UserWordUpdate {
-	uwu.mutation.AppendSentences(ts)
+// AppendSentences appends e to the "sentences" field.
+func (uwu *UserWordUpdate) AppendSentences(e []entity.Sentence) *UserWordUpdate {
+	uwu.mutation.AppendSentences(e)
 	return uwu
 }
 
 // SetRelations sets the "relations" field.
-func (uwu *UserWordUpdate) SetRelations(twr types.UserWordRelations) *UserWordUpdate {
-	uwu.mutation.SetRelations(twr)
+func (uwu *UserWordUpdate) SetRelations(ewr []entity.UserWordRelation) *UserWordUpdate {
+	uwu.mutation.SetRelations(ewr)
 	return uwu
 }
 
-// AppendRelations appends twr to the "relations" field.
-func (uwu *UserWordUpdate) AppendRelations(twr types.UserWordRelations) *UserWordUpdate {
-	uwu.mutation.AppendRelations(twr)
+// AppendRelations appends ewr to the "relations" field.
+func (uwu *UserWordUpdate) AppendRelations(ewr []entity.UserWordRelation) *UserWordUpdate {
+	uwu.mutation.AppendRelations(ewr)
 	return uwu
 }
 
@@ -443,6 +457,9 @@ func (uwu *UserWordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uwu.mutation.Word(); ok {
 		_spec.SetField(userword.FieldWord, field.TypeString, value)
+	}
+	if value, ok := uwu.mutation.Normalized(); ok {
+		_spec.SetField(userword.FieldNormalized, field.TypeString, value)
 	}
 	if value, ok := uwu.mutation.Language(); ok {
 		_spec.SetField(userword.FieldLanguage, field.TypeString, value)
@@ -592,6 +609,20 @@ func (uwuo *UserWordUpdateOne) SetWord(s string) *UserWordUpdateOne {
 func (uwuo *UserWordUpdateOne) SetNillableWord(s *string) *UserWordUpdateOne {
 	if s != nil {
 		uwuo.SetWord(*s)
+	}
+	return uwuo
+}
+
+// SetNormalized sets the "normalized" field.
+func (uwuo *UserWordUpdateOne) SetNormalized(s string) *UserWordUpdateOne {
+	uwuo.mutation.SetNormalized(s)
+	return uwuo
+}
+
+// SetNillableNormalized sets the "normalized" field if the given value is not nil.
+func (uwuo *UserWordUpdateOne) SetNillableNormalized(s *string) *UserWordUpdateOne {
+	if s != nil {
+		uwuo.SetNormalized(*s)
 	}
 	return uwuo
 }
@@ -860,26 +891,26 @@ func (uwuo *UserWordUpdateOne) ClearNotes() *UserWordUpdateOne {
 }
 
 // SetSentences sets the "sentences" field.
-func (uwuo *UserWordUpdateOne) SetSentences(ts types.UserSentences) *UserWordUpdateOne {
-	uwuo.mutation.SetSentences(ts)
+func (uwuo *UserWordUpdateOne) SetSentences(e []entity.Sentence) *UserWordUpdateOne {
+	uwuo.mutation.SetSentences(e)
 	return uwuo
 }
 
-// AppendSentences appends ts to the "sentences" field.
-func (uwuo *UserWordUpdateOne) AppendSentences(ts types.UserSentences) *UserWordUpdateOne {
-	uwuo.mutation.AppendSentences(ts)
+// AppendSentences appends e to the "sentences" field.
+func (uwuo *UserWordUpdateOne) AppendSentences(e []entity.Sentence) *UserWordUpdateOne {
+	uwuo.mutation.AppendSentences(e)
 	return uwuo
 }
 
 // SetRelations sets the "relations" field.
-func (uwuo *UserWordUpdateOne) SetRelations(twr types.UserWordRelations) *UserWordUpdateOne {
-	uwuo.mutation.SetRelations(twr)
+func (uwuo *UserWordUpdateOne) SetRelations(ewr []entity.UserWordRelation) *UserWordUpdateOne {
+	uwuo.mutation.SetRelations(ewr)
 	return uwuo
 }
 
-// AppendRelations appends twr to the "relations" field.
-func (uwuo *UserWordUpdateOne) AppendRelations(twr types.UserWordRelations) *UserWordUpdateOne {
-	uwuo.mutation.AppendRelations(twr)
+// AppendRelations appends ewr to the "relations" field.
+func (uwuo *UserWordUpdateOne) AppendRelations(ewr []entity.UserWordRelation) *UserWordUpdateOne {
+	uwuo.mutation.AppendRelations(ewr)
 	return uwuo
 }
 
@@ -1004,6 +1035,9 @@ func (uwuo *UserWordUpdateOne) sqlSave(ctx context.Context) (_node *UserWord, er
 	}
 	if value, ok := uwuo.mutation.Word(); ok {
 		_spec.SetField(userword.FieldWord, field.TypeString, value)
+	}
+	if value, ok := uwuo.mutation.Normalized(); ok {
+		_spec.SetField(userword.FieldNormalized, field.TypeString, value)
 	}
 	if value, ok := uwuo.mutation.Language(); ok {
 		_spec.SetField(userword.FieldLanguage, field.TypeString, value)

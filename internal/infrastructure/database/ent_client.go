@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/eslsoft/vocnet/internal/infrastructure/config"
@@ -23,5 +24,14 @@ func NewEntClient(cfg *config.Config) (*ent.Client, func(), error) {
 	}
 
 	client, err := ent.Open(driver, dsn, ent.Debug())
+	if err != nil {
+		return nil, nil, err
+	}
+
+	ctx := context.Background()
+	if err := client.Schema.Create(ctx); err != nil {
+		return nil, func() { client.Close() }, fmt.Errorf("migrate schema: %w", err)
+	}
+
 	return client, func() { client.Close() }, err
 }

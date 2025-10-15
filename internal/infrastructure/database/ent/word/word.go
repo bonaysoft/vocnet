@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
+	"github.com/eslsoft/vocnet/internal/entity"
 )
 
 const (
@@ -16,6 +16,8 @@ const (
 	FieldID = "id"
 	// FieldText holds the string denoting the text field in the database.
 	FieldText = "text"
+	// FieldNormalized holds the string denoting the normalized field in the database.
+	FieldNormalized = "normalized"
 	// FieldLanguage holds the string denoting the language field in the database.
 	FieldLanguage = "language"
 	// FieldWordType holds the string denoting the word_type field in the database.
@@ -46,6 +48,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldText,
+	FieldNormalized,
 	FieldLanguage,
 	FieldWordType,
 	FieldLemma,
@@ -72,22 +75,24 @@ func ValidColumn(column string) bool {
 var (
 	// TextValidator is a validator for the "text" field. It is called by the builders before save.
 	TextValidator func(string) error
+	// DefaultNormalized holds the default value on creation for the "normalized" field.
+	DefaultNormalized string
 	// DefaultLanguage holds the default value on creation for the "language" field.
 	DefaultLanguage string
 	// DefaultWordType holds the default value on creation for the "word_type" field.
 	DefaultWordType string
 	// DefaultPhonetics holds the default value on creation for the "phonetics" field.
-	DefaultPhonetics types.WordPhonetics
+	DefaultPhonetics []entity.WordPhonetic
 	// DefaultMeanings holds the default value on creation for the "meanings" field.
-	DefaultMeanings types.WordMeanings
+	DefaultMeanings []entity.WordDefinition
 	// DefaultTags holds the default value on creation for the "tags" field.
 	DefaultTags []string
 	// DefaultPhrases holds the default value on creation for the "phrases" field.
-	DefaultPhrases types.Phrases
+	DefaultPhrases []entity.Phrase
 	// DefaultSentences holds the default value on creation for the "sentences" field.
-	DefaultSentences types.Sentences
+	DefaultSentences []entity.Sentence
 	// DefaultRelations holds the default value on creation for the "relations" field.
-	DefaultRelations types.WordRelations
+	DefaultRelations []entity.WordRelation
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -107,6 +112,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByText orders the results by the text field.
 func ByText(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldText, opts...).ToFunc()
+}
+
+// ByNormalized orders the results by the normalized field.
+func ByNormalized(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNormalized, opts...).ToFunc()
 }
 
 // ByLanguage orders the results by the language field.

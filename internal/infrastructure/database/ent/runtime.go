@@ -5,10 +5,10 @@ package ent
 import (
 	"time"
 
+	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/userword"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/entschema"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -21,64 +21,68 @@ func init() {
 	userwordDescWord := userwordFields[1].Descriptor()
 	// userword.WordValidator is a validator for the "word" field. It is called by the builders before save.
 	userword.WordValidator = userwordDescWord.Validators[0].(func(string) error)
+	// userwordDescNormalized is the schema descriptor for normalized field.
+	userwordDescNormalized := userwordFields[2].Descriptor()
+	// userword.DefaultNormalized holds the default value on creation for the normalized field.
+	userword.DefaultNormalized = userwordDescNormalized.Default.(string)
 	// userwordDescLanguage is the schema descriptor for language field.
-	userwordDescLanguage := userwordFields[2].Descriptor()
+	userwordDescLanguage := userwordFields[3].Descriptor()
 	// userword.DefaultLanguage holds the default value on creation for the language field.
 	userword.DefaultLanguage = userwordDescLanguage.Default.(string)
 	// userwordDescMasteryListen is the schema descriptor for mastery_listen field.
-	userwordDescMasteryListen := userwordFields[3].Descriptor()
+	userwordDescMasteryListen := userwordFields[4].Descriptor()
 	// userword.DefaultMasteryListen holds the default value on creation for the mastery_listen field.
 	userword.DefaultMasteryListen = userwordDescMasteryListen.Default.(int16)
 	// userwordDescMasteryRead is the schema descriptor for mastery_read field.
-	userwordDescMasteryRead := userwordFields[4].Descriptor()
+	userwordDescMasteryRead := userwordFields[5].Descriptor()
 	// userword.DefaultMasteryRead holds the default value on creation for the mastery_read field.
 	userword.DefaultMasteryRead = userwordDescMasteryRead.Default.(int16)
 	// userwordDescMasterySpell is the schema descriptor for mastery_spell field.
-	userwordDescMasterySpell := userwordFields[5].Descriptor()
+	userwordDescMasterySpell := userwordFields[6].Descriptor()
 	// userword.DefaultMasterySpell holds the default value on creation for the mastery_spell field.
 	userword.DefaultMasterySpell = userwordDescMasterySpell.Default.(int16)
 	// userwordDescMasteryPronounce is the schema descriptor for mastery_pronounce field.
-	userwordDescMasteryPronounce := userwordFields[6].Descriptor()
+	userwordDescMasteryPronounce := userwordFields[7].Descriptor()
 	// userword.DefaultMasteryPronounce holds the default value on creation for the mastery_pronounce field.
 	userword.DefaultMasteryPronounce = userwordDescMasteryPronounce.Default.(int16)
 	// userwordDescMasteryUse is the schema descriptor for mastery_use field.
-	userwordDescMasteryUse := userwordFields[7].Descriptor()
+	userwordDescMasteryUse := userwordFields[8].Descriptor()
 	// userword.DefaultMasteryUse holds the default value on creation for the mastery_use field.
 	userword.DefaultMasteryUse = userwordDescMasteryUse.Default.(int16)
 	// userwordDescMasteryOverall is the schema descriptor for mastery_overall field.
-	userwordDescMasteryOverall := userwordFields[8].Descriptor()
+	userwordDescMasteryOverall := userwordFields[9].Descriptor()
 	// userword.DefaultMasteryOverall holds the default value on creation for the mastery_overall field.
 	userword.DefaultMasteryOverall = userwordDescMasteryOverall.Default.(int32)
 	// userwordDescReviewIntervalDays is the schema descriptor for review_interval_days field.
-	userwordDescReviewIntervalDays := userwordFields[11].Descriptor()
+	userwordDescReviewIntervalDays := userwordFields[12].Descriptor()
 	// userword.DefaultReviewIntervalDays holds the default value on creation for the review_interval_days field.
 	userword.DefaultReviewIntervalDays = userwordDescReviewIntervalDays.Default.(int32)
 	// userwordDescReviewFailCount is the schema descriptor for review_fail_count field.
-	userwordDescReviewFailCount := userwordFields[12].Descriptor()
+	userwordDescReviewFailCount := userwordFields[13].Descriptor()
 	// userword.DefaultReviewFailCount holds the default value on creation for the review_fail_count field.
 	userword.DefaultReviewFailCount = userwordDescReviewFailCount.Default.(int32)
 	// userwordDescQueryCount is the schema descriptor for query_count field.
-	userwordDescQueryCount := userwordFields[13].Descriptor()
+	userwordDescQueryCount := userwordFields[14].Descriptor()
 	// userword.DefaultQueryCount holds the default value on creation for the query_count field.
 	userword.DefaultQueryCount = userwordDescQueryCount.Default.(int64)
 	// userwordDescSentences is the schema descriptor for sentences field.
-	userwordDescSentences := userwordFields[15].Descriptor()
+	userwordDescSentences := userwordFields[16].Descriptor()
 	// userword.DefaultSentences holds the default value on creation for the sentences field.
-	userword.DefaultSentences = userwordDescSentences.Default.(types.UserSentences)
+	userword.DefaultSentences = userwordDescSentences.Default.([]entity.Sentence)
 	// userwordDescRelations is the schema descriptor for relations field.
-	userwordDescRelations := userwordFields[16].Descriptor()
+	userwordDescRelations := userwordFields[17].Descriptor()
 	// userword.DefaultRelations holds the default value on creation for the relations field.
-	userword.DefaultRelations = userwordDescRelations.Default.(types.UserWordRelations)
+	userword.DefaultRelations = userwordDescRelations.Default.([]entity.UserWordRelation)
 	// userwordDescCreatedBy is the schema descriptor for created_by field.
-	userwordDescCreatedBy := userwordFields[17].Descriptor()
+	userwordDescCreatedBy := userwordFields[18].Descriptor()
 	// userword.DefaultCreatedBy holds the default value on creation for the created_by field.
 	userword.DefaultCreatedBy = userwordDescCreatedBy.Default.(string)
 	// userwordDescCreatedAt is the schema descriptor for created_at field.
-	userwordDescCreatedAt := userwordFields[18].Descriptor()
+	userwordDescCreatedAt := userwordFields[19].Descriptor()
 	// userword.DefaultCreatedAt holds the default value on creation for the created_at field.
 	userword.DefaultCreatedAt = userwordDescCreatedAt.Default.(func() time.Time)
 	// userwordDescUpdatedAt is the schema descriptor for updated_at field.
-	userwordDescUpdatedAt := userwordFields[19].Descriptor()
+	userwordDescUpdatedAt := userwordFields[20].Descriptor()
 	// userword.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	userword.DefaultUpdatedAt = userwordDescUpdatedAt.Default.(func() time.Time)
 	// userword.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -89,44 +93,48 @@ func init() {
 	wordDescText := wordFields[0].Descriptor()
 	// word.TextValidator is a validator for the "text" field. It is called by the builders before save.
 	word.TextValidator = wordDescText.Validators[0].(func(string) error)
+	// wordDescNormalized is the schema descriptor for normalized field.
+	wordDescNormalized := wordFields[1].Descriptor()
+	// word.DefaultNormalized holds the default value on creation for the normalized field.
+	word.DefaultNormalized = wordDescNormalized.Default.(string)
 	// wordDescLanguage is the schema descriptor for language field.
-	wordDescLanguage := wordFields[1].Descriptor()
+	wordDescLanguage := wordFields[2].Descriptor()
 	// word.DefaultLanguage holds the default value on creation for the language field.
 	word.DefaultLanguage = wordDescLanguage.Default.(string)
 	// wordDescWordType is the schema descriptor for word_type field.
-	wordDescWordType := wordFields[2].Descriptor()
+	wordDescWordType := wordFields[3].Descriptor()
 	// word.DefaultWordType holds the default value on creation for the word_type field.
 	word.DefaultWordType = wordDescWordType.Default.(string)
 	// wordDescPhonetics is the schema descriptor for phonetics field.
-	wordDescPhonetics := wordFields[4].Descriptor()
+	wordDescPhonetics := wordFields[5].Descriptor()
 	// word.DefaultPhonetics holds the default value on creation for the phonetics field.
-	word.DefaultPhonetics = wordDescPhonetics.Default.(types.WordPhonetics)
+	word.DefaultPhonetics = wordDescPhonetics.Default.([]entity.WordPhonetic)
 	// wordDescMeanings is the schema descriptor for meanings field.
-	wordDescMeanings := wordFields[5].Descriptor()
+	wordDescMeanings := wordFields[6].Descriptor()
 	// word.DefaultMeanings holds the default value on creation for the meanings field.
-	word.DefaultMeanings = wordDescMeanings.Default.(types.WordMeanings)
+	word.DefaultMeanings = wordDescMeanings.Default.([]entity.WordDefinition)
 	// wordDescTags is the schema descriptor for tags field.
-	wordDescTags := wordFields[6].Descriptor()
+	wordDescTags := wordFields[7].Descriptor()
 	// word.DefaultTags holds the default value on creation for the tags field.
 	word.DefaultTags = wordDescTags.Default.([]string)
 	// wordDescPhrases is the schema descriptor for phrases field.
-	wordDescPhrases := wordFields[7].Descriptor()
+	wordDescPhrases := wordFields[8].Descriptor()
 	// word.DefaultPhrases holds the default value on creation for the phrases field.
-	word.DefaultPhrases = wordDescPhrases.Default.(types.Phrases)
+	word.DefaultPhrases = wordDescPhrases.Default.([]entity.Phrase)
 	// wordDescSentences is the schema descriptor for sentences field.
-	wordDescSentences := wordFields[8].Descriptor()
+	wordDescSentences := wordFields[9].Descriptor()
 	// word.DefaultSentences holds the default value on creation for the sentences field.
-	word.DefaultSentences = wordDescSentences.Default.(types.Sentences)
+	word.DefaultSentences = wordDescSentences.Default.([]entity.Sentence)
 	// wordDescRelations is the schema descriptor for relations field.
-	wordDescRelations := wordFields[9].Descriptor()
+	wordDescRelations := wordFields[10].Descriptor()
 	// word.DefaultRelations holds the default value on creation for the relations field.
-	word.DefaultRelations = wordDescRelations.Default.(types.WordRelations)
+	word.DefaultRelations = wordDescRelations.Default.([]entity.WordRelation)
 	// wordDescCreatedAt is the schema descriptor for created_at field.
-	wordDescCreatedAt := wordFields[10].Descriptor()
+	wordDescCreatedAt := wordFields[11].Descriptor()
 	// word.DefaultCreatedAt holds the default value on creation for the created_at field.
 	word.DefaultCreatedAt = wordDescCreatedAt.Default.(func() time.Time)
 	// wordDescUpdatedAt is the schema descriptor for updated_at field.
-	wordDescUpdatedAt := wordFields[11].Descriptor()
+	wordDescUpdatedAt := wordFields[12].Descriptor()
 	// word.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	word.DefaultUpdatedAt = wordDescUpdatedAt.Default.(func() time.Time)
 	// word.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

@@ -10,8 +10,8 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/userword"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
 )
 
 // UserWord is the model entity for the UserWord schema.
@@ -23,6 +23,8 @@ type UserWord struct {
 	UserID int64 `json:"user_id,omitempty"`
 	// Word holds the value of the "word" field.
 	Word string `json:"word,omitempty"`
+	// Normalized holds the value of the "normalized" field.
+	Normalized string `json:"normalized,omitempty"`
 	// Language holds the value of the "language" field.
 	Language string `json:"language,omitempty"`
 	// MasteryListen holds the value of the "mastery_listen" field.
@@ -50,9 +52,9 @@ type UserWord struct {
 	// Notes holds the value of the "notes" field.
 	Notes *string `json:"notes,omitempty"`
 	// Sentences holds the value of the "sentences" field.
-	Sentences types.UserSentences `json:"sentences,omitempty"`
+	Sentences []entity.Sentence `json:"sentences,omitempty"`
 	// Relations holds the value of the "relations" field.
-	Relations types.UserWordRelations `json:"relations,omitempty"`
+	Relations []entity.UserWordRelation `json:"relations,omitempty"`
 	// CreatedBy holds the value of the "created_by" field.
 	CreatedBy string `json:"created_by,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -71,7 +73,7 @@ func (*UserWord) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case userword.FieldID, userword.FieldUserID, userword.FieldMasteryListen, userword.FieldMasteryRead, userword.FieldMasterySpell, userword.FieldMasteryPronounce, userword.FieldMasteryUse, userword.FieldMasteryOverall, userword.FieldReviewIntervalDays, userword.FieldReviewFailCount, userword.FieldQueryCount:
 			values[i] = new(sql.NullInt64)
-		case userword.FieldWord, userword.FieldLanguage, userword.FieldNotes, userword.FieldCreatedBy:
+		case userword.FieldWord, userword.FieldNormalized, userword.FieldLanguage, userword.FieldNotes, userword.FieldCreatedBy:
 			values[i] = new(sql.NullString)
 		case userword.FieldReviewLastReviewAt, userword.FieldReviewNextReviewAt, userword.FieldCreatedAt, userword.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -107,6 +109,12 @@ func (uw *UserWord) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field word", values[i])
 			} else if value.Valid {
 				uw.Word = value.String
+			}
+		case userword.FieldNormalized:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field normalized", values[i])
+			} else if value.Valid {
+				uw.Normalized = value.String
 			}
 		case userword.FieldLanguage:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -264,6 +272,9 @@ func (uw *UserWord) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("word=")
 	builder.WriteString(uw.Word)
+	builder.WriteString(", ")
+	builder.WriteString("normalized=")
+	builder.WriteString(uw.Normalized)
 	builder.WriteString(", ")
 	builder.WriteString("language=")
 	builder.WriteString(uw.Language)

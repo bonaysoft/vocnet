@@ -3,7 +3,7 @@ package entschema
 import (
 	"time"
 
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
+	"github.com/eslsoft/vocnet/internal/entity"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -22,22 +22,23 @@ type Word struct {
 func (Word) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("text").NotEmpty(),
+		field.String("normalized").Default(""),
 		field.String("language").Default("en"),
 		field.String("word_type").Default("lemma"),
 		field.String("lemma").Optional().Nillable(),
-		field.JSON("phonetics", types.WordPhonetics{}).
-			Default(types.WordPhonetics{}),
-		field.JSON("meanings", types.WordMeanings{}).
-			Default(types.WordMeanings{}),
+		field.JSON("phonetics", []entity.WordPhonetic{}).
+			Default([]entity.WordPhonetic{}),
+		field.JSON("meanings", []entity.WordDefinition{}).
+			Default([]entity.WordDefinition{}),
 		field.JSON("tags", []string{}).
 			Default([]string{}).
 			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
-		field.JSON("phrases", types.Phrases{}).
-			Default(types.Phrases{}),
-		field.JSON("sentences", types.Sentences{}).
-			Default(types.Sentences{}),
-		field.JSON("relations", types.WordRelations{}).
-			Default(types.WordRelations{}),
+		field.JSON("phrases", []entity.Phrase{}).
+			Default([]entity.Phrase{}),
+		field.JSON("sentences", []entity.Sentence{}).
+			Default([]entity.Sentence{}),
+		field.JSON("relations", []entity.WordRelation{}).
+			Default([]entity.WordRelation{}),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
@@ -50,9 +51,8 @@ func (Word) Fields() []ent.Field {
 // Indexes of the Word.
 func (Word) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("language", "text", "word_type").
-			Unique().
-			StorageKey("uq_words_lang_text_type"),
+		index.Fields("language", "text").Unique(),
+		index.Fields("language", "normalized"),
 	}
 }
 

@@ -21,12 +21,12 @@ plugins:
   - remote: buf.build/bufbuild/validate-go
     out: ./pkg/api
     opt: paths=source_relative
-  - remote: buf.build/bufbuild/es
-    out: api/vocnet-sdk-ts
-    # Also generate any imported dependencies
-    include_imports: true
-    # Add more plugin options here
-    opt: target=ts
+  # - remote: buf.build/bufbuild/es
+  #   out: api/vocnet-sdk-ts
+  #   # Also generate any imported dependencies
+  #   include_imports: true
+  #   # Add more plugin options here
+  #   opt: target=ts
   - remote: buf.build/connectrpc/swift
     out: api/vocnet-sdk-swift/Sources
     opt:

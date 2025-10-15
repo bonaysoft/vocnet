@@ -64,6 +64,11 @@ func Word(v string) predicate.UserWord {
 	return predicate.UserWord(sql.FieldEQ(FieldWord, v))
 }
 
+// Normalized applies equality check predicate on the "normalized" field. It's identical to NormalizedEQ.
+func Normalized(v string) predicate.UserWord {
+	return predicate.UserWord(sql.FieldEQ(FieldNormalized, v))
+}
+
 // Language applies equality check predicate on the "language" field. It's identical to LanguageEQ.
 func Language(v string) predicate.UserWord {
 	return predicate.UserWord(sql.FieldEQ(FieldLanguage, v))
@@ -247,6 +252,71 @@ func WordEqualFold(v string) predicate.UserWord {
 // WordContainsFold applies the ContainsFold predicate on the "word" field.
 func WordContainsFold(v string) predicate.UserWord {
 	return predicate.UserWord(sql.FieldContainsFold(FieldWord, v))
+}
+
+// NormalizedEQ applies the EQ predicate on the "normalized" field.
+func NormalizedEQ(v string) predicate.UserWord {
+	return predicate.UserWord(sql.FieldEQ(FieldNormalized, v))
+}
+
+// NormalizedNEQ applies the NEQ predicate on the "normalized" field.
+func NormalizedNEQ(v string) predicate.UserWord {
+	return predicate.UserWord(sql.FieldNEQ(FieldNormalized, v))
+}
+
+// NormalizedIn applies the In predicate on the "normalized" field.
+func NormalizedIn(vs ...string) predicate.UserWord {
+	return predicate.UserWord(sql.FieldIn(FieldNormalized, vs...))
+}
+
+// NormalizedNotIn applies the NotIn predicate on the "normalized" field.
+func NormalizedNotIn(vs ...string) predicate.UserWord {
+	return predicate.UserWord(sql.FieldNotIn(FieldNormalized, vs...))
+}
+
+// NormalizedGT applies the GT predicate on the "normalized" field.
+func NormalizedGT(v string) predicate.UserWord {
+	return predicate.UserWord(sql.FieldGT(FieldNormalized, v))
+}
+
+// NormalizedGTE applies the GTE predicate on the "normalized" field.
+func NormalizedGTE(v string) predicate.UserWord {
+	return predicate.UserWord(sql.FieldGTE(FieldNormalized, v))
+}
+
+// NormalizedLT applies the LT predicate on the "normalized" field.
+func NormalizedLT(v string) predicate.UserWord {
+	return predicate.UserWord(sql.FieldLT(FieldNormalized, v))
+}
+
+// NormalizedLTE applies the LTE predicate on the "normalized" field.
+func NormalizedLTE(v string) predicate.UserWord {
+	return predicate.UserWord(sql.FieldLTE(FieldNormalized, v))
+}
+
+// NormalizedContains applies the Contains predicate on the "normalized" field.
+func NormalizedContains(v string) predicate.UserWord {
+	return predicate.UserWord(sql.FieldContains(FieldNormalized, v))
+}
+
+// NormalizedHasPrefix applies the HasPrefix predicate on the "normalized" field.
+func NormalizedHasPrefix(v string) predicate.UserWord {
+	return predicate.UserWord(sql.FieldHasPrefix(FieldNormalized, v))
+}
+
+// NormalizedHasSuffix applies the HasSuffix predicate on the "normalized" field.
+func NormalizedHasSuffix(v string) predicate.UserWord {
+	return predicate.UserWord(sql.FieldHasSuffix(FieldNormalized, v))
+}
+
+// NormalizedEqualFold applies the EqualFold predicate on the "normalized" field.
+func NormalizedEqualFold(v string) predicate.UserWord {
+	return predicate.UserWord(sql.FieldEqualFold(FieldNormalized, v))
+}
+
+// NormalizedContainsFold applies the ContainsFold predicate on the "normalized" field.
+func NormalizedContainsFold(v string) predicate.UserWord {
+	return predicate.UserWord(sql.FieldContainsFold(FieldNormalized, v))
 }
 
 // LanguageEQ applies the EQ predicate on the "language" field.

@@ -11,10 +11,10 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/predicate"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/userword"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
 )
 
 const (
@@ -39,6 +39,7 @@ type UserWordMutation struct {
 	user_id                 *int64
 	adduser_id              *int64
 	word                    *string
+	normalized              *string
 	language                *string
 	mastery_listen          *int16
 	addmastery_listen       *int16
@@ -61,10 +62,10 @@ type UserWordMutation struct {
 	query_count             *int64
 	addquery_count          *int64
 	notes                   *string
-	sentences               *types.UserSentences
-	appendsentences         types.UserSentences
-	relations               *types.UserWordRelations
-	appendrelations         types.UserWordRelations
+	sentences               *[]entity.Sentence
+	appendsentences         []entity.Sentence
+	relations               *[]entity.UserWordRelation
+	appendrelations         []entity.UserWordRelation
 	created_by              *string
 	created_at              *time.Time
 	updated_at              *time.Time
@@ -262,6 +263,42 @@ func (m *UserWordMutation) OldWord(ctx context.Context) (v string, err error) {
 // ResetWord resets all changes to the "word" field.
 func (m *UserWordMutation) ResetWord() {
 	m.word = nil
+}
+
+// SetNormalized sets the "normalized" field.
+func (m *UserWordMutation) SetNormalized(s string) {
+	m.normalized = &s
+}
+
+// Normalized returns the value of the "normalized" field in the mutation.
+func (m *UserWordMutation) Normalized() (r string, exists bool) {
+	v := m.normalized
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNormalized returns the old "normalized" field's value of the UserWord entity.
+// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserWordMutation) OldNormalized(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNormalized is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNormalized requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNormalized: %w", err)
+	}
+	return oldValue.Normalized, nil
+}
+
+// ResetNormalized resets all changes to the "normalized" field.
+func (m *UserWordMutation) ResetNormalized() {
+	m.normalized = nil
 }
 
 // SetLanguage sets the "language" field.
@@ -952,13 +989,13 @@ func (m *UserWordMutation) ResetNotes() {
 }
 
 // SetSentences sets the "sentences" field.
-func (m *UserWordMutation) SetSentences(ts types.UserSentences) {
-	m.sentences = &ts
+func (m *UserWordMutation) SetSentences(e []entity.Sentence) {
+	m.sentences = &e
 	m.appendsentences = nil
 }
 
 // Sentences returns the value of the "sentences" field in the mutation.
-func (m *UserWordMutation) Sentences() (r types.UserSentences, exists bool) {
+func (m *UserWordMutation) Sentences() (r []entity.Sentence, exists bool) {
 	v := m.sentences
 	if v == nil {
 		return
@@ -969,7 +1006,7 @@ func (m *UserWordMutation) Sentences() (r types.UserSentences, exists bool) {
 // OldSentences returns the old "sentences" field's value of the UserWord entity.
 // If the UserWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldSentences(ctx context.Context) (v types.UserSentences, err error) {
+func (m *UserWordMutation) OldSentences(ctx context.Context) (v []entity.Sentence, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSentences is only allowed on UpdateOne operations")
 	}
@@ -983,13 +1020,13 @@ func (m *UserWordMutation) OldSentences(ctx context.Context) (v types.UserSenten
 	return oldValue.Sentences, nil
 }
 
-// AppendSentences adds ts to the "sentences" field.
-func (m *UserWordMutation) AppendSentences(ts types.UserSentences) {
-	m.appendsentences = append(m.appendsentences, ts...)
+// AppendSentences adds e to the "sentences" field.
+func (m *UserWordMutation) AppendSentences(e []entity.Sentence) {
+	m.appendsentences = append(m.appendsentences, e...)
 }
 
 // AppendedSentences returns the list of values that were appended to the "sentences" field in this mutation.
-func (m *UserWordMutation) AppendedSentences() (types.UserSentences, bool) {
+func (m *UserWordMutation) AppendedSentences() ([]entity.Sentence, bool) {
 	if len(m.appendsentences) == 0 {
 		return nil, false
 	}
@@ -1003,13 +1040,13 @@ func (m *UserWordMutation) ResetSentences() {
 }
 
 // SetRelations sets the "relations" field.
-func (m *UserWordMutation) SetRelations(twr types.UserWordRelations) {
-	m.relations = &twr
+func (m *UserWordMutation) SetRelations(ewr []entity.UserWordRelation) {
+	m.relations = &ewr
 	m.appendrelations = nil
 }
 
 // Relations returns the value of the "relations" field in the mutation.
-func (m *UserWordMutation) Relations() (r types.UserWordRelations, exists bool) {
+func (m *UserWordMutation) Relations() (r []entity.UserWordRelation, exists bool) {
 	v := m.relations
 	if v == nil {
 		return
@@ -1020,7 +1057,7 @@ func (m *UserWordMutation) Relations() (r types.UserWordRelations, exists bool) 
 // OldRelations returns the old "relations" field's value of the UserWord entity.
 // If the UserWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldRelations(ctx context.Context) (v types.UserWordRelations, err error) {
+func (m *UserWordMutation) OldRelations(ctx context.Context) (v []entity.UserWordRelation, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldRelations is only allowed on UpdateOne operations")
 	}
@@ -1034,13 +1071,13 @@ func (m *UserWordMutation) OldRelations(ctx context.Context) (v types.UserWordRe
 	return oldValue.Relations, nil
 }
 
-// AppendRelations adds twr to the "relations" field.
-func (m *UserWordMutation) AppendRelations(twr types.UserWordRelations) {
-	m.appendrelations = append(m.appendrelations, twr...)
+// AppendRelations adds ewr to the "relations" field.
+func (m *UserWordMutation) AppendRelations(ewr []entity.UserWordRelation) {
+	m.appendrelations = append(m.appendrelations, ewr...)
 }
 
 // AppendedRelations returns the list of values that were appended to the "relations" field in this mutation.
-func (m *UserWordMutation) AppendedRelations() (types.UserWordRelations, bool) {
+func (m *UserWordMutation) AppendedRelations() ([]entity.UserWordRelation, bool) {
 	if len(m.appendrelations) == 0 {
 		return nil, false
 	}
@@ -1195,12 +1232,15 @@ func (m *UserWordMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserWordMutation) Fields() []string {
-	fields := make([]string, 0, 20)
+	fields := make([]string, 0, 21)
 	if m.user_id != nil {
 		fields = append(fields, userword.FieldUserID)
 	}
 	if m.word != nil {
 		fields = append(fields, userword.FieldWord)
+	}
+	if m.normalized != nil {
+		fields = append(fields, userword.FieldNormalized)
 	}
 	if m.language != nil {
 		fields = append(fields, userword.FieldLanguage)
@@ -1268,6 +1308,8 @@ func (m *UserWordMutation) Field(name string) (ent.Value, bool) {
 		return m.UserID()
 	case userword.FieldWord:
 		return m.Word()
+	case userword.FieldNormalized:
+		return m.Normalized()
 	case userword.FieldLanguage:
 		return m.Language()
 	case userword.FieldMasteryListen:
@@ -1317,6 +1359,8 @@ func (m *UserWordMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldUserID(ctx)
 	case userword.FieldWord:
 		return m.OldWord(ctx)
+	case userword.FieldNormalized:
+		return m.OldNormalized(ctx)
 	case userword.FieldLanguage:
 		return m.OldLanguage(ctx)
 	case userword.FieldMasteryListen:
@@ -1375,6 +1419,13 @@ func (m *UserWordMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetWord(v)
+		return nil
+	case userword.FieldNormalized:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNormalized(v)
 		return nil
 	case userword.FieldLanguage:
 		v, ok := value.(string)
@@ -1468,14 +1519,14 @@ func (m *UserWordMutation) SetField(name string, value ent.Value) error {
 		m.SetNotes(v)
 		return nil
 	case userword.FieldSentences:
-		v, ok := value.(types.UserSentences)
+		v, ok := value.([]entity.Sentence)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSentences(v)
 		return nil
 	case userword.FieldRelations:
-		v, ok := value.(types.UserWordRelations)
+		v, ok := value.([]entity.UserWordRelation)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1701,6 +1752,9 @@ func (m *UserWordMutation) ResetField(name string) error {
 	case userword.FieldWord:
 		m.ResetWord()
 		return nil
+	case userword.FieldNormalized:
+		m.ResetNormalized()
+		return nil
 	case userword.FieldLanguage:
 		m.ResetLanguage()
 		return nil
@@ -1814,21 +1868,22 @@ type WordMutation struct {
 	typ             string
 	id              *int
 	text            *string
+	normalized      *string
 	language        *string
 	word_type       *string
 	lemma           *string
-	phonetics       *types.WordPhonetics
-	appendphonetics types.WordPhonetics
-	meanings        *types.WordMeanings
-	appendmeanings  types.WordMeanings
+	phonetics       *[]entity.WordPhonetic
+	appendphonetics []entity.WordPhonetic
+	meanings        *[]entity.WordDefinition
+	appendmeanings  []entity.WordDefinition
 	tags            *[]string
 	appendtags      []string
-	phrases         *types.Phrases
-	appendphrases   types.Phrases
-	sentences       *types.Sentences
-	appendsentences types.Sentences
-	relations       *types.WordRelations
-	appendrelations types.WordRelations
+	phrases         *[]entity.Phrase
+	appendphrases   []entity.Phrase
+	sentences       *[]entity.Sentence
+	appendsentences []entity.Sentence
+	relations       *[]entity.WordRelation
+	appendrelations []entity.WordRelation
 	created_at      *time.Time
 	updated_at      *time.Time
 	clearedFields   map[string]struct{}
@@ -1971,6 +2026,42 @@ func (m *WordMutation) ResetText() {
 	m.text = nil
 }
 
+// SetNormalized sets the "normalized" field.
+func (m *WordMutation) SetNormalized(s string) {
+	m.normalized = &s
+}
+
+// Normalized returns the value of the "normalized" field in the mutation.
+func (m *WordMutation) Normalized() (r string, exists bool) {
+	v := m.normalized
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNormalized returns the old "normalized" field's value of the Word entity.
+// If the Word object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WordMutation) OldNormalized(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNormalized is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNormalized requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNormalized: %w", err)
+	}
+	return oldValue.Normalized, nil
+}
+
+// ResetNormalized resets all changes to the "normalized" field.
+func (m *WordMutation) ResetNormalized() {
+	m.normalized = nil
+}
+
 // SetLanguage sets the "language" field.
 func (m *WordMutation) SetLanguage(s string) {
 	m.language = &s
@@ -2093,13 +2184,13 @@ func (m *WordMutation) ResetLemma() {
 }
 
 // SetPhonetics sets the "phonetics" field.
-func (m *WordMutation) SetPhonetics(tp types.WordPhonetics) {
-	m.phonetics = &tp
+func (m *WordMutation) SetPhonetics(ep []entity.WordPhonetic) {
+	m.phonetics = &ep
 	m.appendphonetics = nil
 }
 
 // Phonetics returns the value of the "phonetics" field in the mutation.
-func (m *WordMutation) Phonetics() (r types.WordPhonetics, exists bool) {
+func (m *WordMutation) Phonetics() (r []entity.WordPhonetic, exists bool) {
 	v := m.phonetics
 	if v == nil {
 		return
@@ -2110,7 +2201,7 @@ func (m *WordMutation) Phonetics() (r types.WordPhonetics, exists bool) {
 // OldPhonetics returns the old "phonetics" field's value of the Word entity.
 // If the Word object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WordMutation) OldPhonetics(ctx context.Context) (v types.WordPhonetics, err error) {
+func (m *WordMutation) OldPhonetics(ctx context.Context) (v []entity.WordPhonetic, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPhonetics is only allowed on UpdateOne operations")
 	}
@@ -2124,13 +2215,13 @@ func (m *WordMutation) OldPhonetics(ctx context.Context) (v types.WordPhonetics,
 	return oldValue.Phonetics, nil
 }
 
-// AppendPhonetics adds tp to the "phonetics" field.
-func (m *WordMutation) AppendPhonetics(tp types.WordPhonetics) {
-	m.appendphonetics = append(m.appendphonetics, tp...)
+// AppendPhonetics adds ep to the "phonetics" field.
+func (m *WordMutation) AppendPhonetics(ep []entity.WordPhonetic) {
+	m.appendphonetics = append(m.appendphonetics, ep...)
 }
 
 // AppendedPhonetics returns the list of values that were appended to the "phonetics" field in this mutation.
-func (m *WordMutation) AppendedPhonetics() (types.WordPhonetics, bool) {
+func (m *WordMutation) AppendedPhonetics() ([]entity.WordPhonetic, bool) {
 	if len(m.appendphonetics) == 0 {
 		return nil, false
 	}
@@ -2144,13 +2235,13 @@ func (m *WordMutation) ResetPhonetics() {
 }
 
 // SetMeanings sets the "meanings" field.
-func (m *WordMutation) SetMeanings(tm types.WordMeanings) {
-	m.meanings = &tm
+func (m *WordMutation) SetMeanings(ed []entity.WordDefinition) {
+	m.meanings = &ed
 	m.appendmeanings = nil
 }
 
 // Meanings returns the value of the "meanings" field in the mutation.
-func (m *WordMutation) Meanings() (r types.WordMeanings, exists bool) {
+func (m *WordMutation) Meanings() (r []entity.WordDefinition, exists bool) {
 	v := m.meanings
 	if v == nil {
 		return
@@ -2161,7 +2252,7 @@ func (m *WordMutation) Meanings() (r types.WordMeanings, exists bool) {
 // OldMeanings returns the old "meanings" field's value of the Word entity.
 // If the Word object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WordMutation) OldMeanings(ctx context.Context) (v types.WordMeanings, err error) {
+func (m *WordMutation) OldMeanings(ctx context.Context) (v []entity.WordDefinition, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMeanings is only allowed on UpdateOne operations")
 	}
@@ -2175,13 +2266,13 @@ func (m *WordMutation) OldMeanings(ctx context.Context) (v types.WordMeanings, e
 	return oldValue.Meanings, nil
 }
 
-// AppendMeanings adds tm to the "meanings" field.
-func (m *WordMutation) AppendMeanings(tm types.WordMeanings) {
-	m.appendmeanings = append(m.appendmeanings, tm...)
+// AppendMeanings adds ed to the "meanings" field.
+func (m *WordMutation) AppendMeanings(ed []entity.WordDefinition) {
+	m.appendmeanings = append(m.appendmeanings, ed...)
 }
 
 // AppendedMeanings returns the list of values that were appended to the "meanings" field in this mutation.
-func (m *WordMutation) AppendedMeanings() (types.WordMeanings, bool) {
+func (m *WordMutation) AppendedMeanings() ([]entity.WordDefinition, bool) {
 	if len(m.appendmeanings) == 0 {
 		return nil, false
 	}
@@ -2246,13 +2337,13 @@ func (m *WordMutation) ResetTags() {
 }
 
 // SetPhrases sets the "phrases" field.
-func (m *WordMutation) SetPhrases(t types.Phrases) {
-	m.phrases = &t
+func (m *WordMutation) SetPhrases(e []entity.Phrase) {
+	m.phrases = &e
 	m.appendphrases = nil
 }
 
 // Phrases returns the value of the "phrases" field in the mutation.
-func (m *WordMutation) Phrases() (r types.Phrases, exists bool) {
+func (m *WordMutation) Phrases() (r []entity.Phrase, exists bool) {
 	v := m.phrases
 	if v == nil {
 		return
@@ -2263,7 +2354,7 @@ func (m *WordMutation) Phrases() (r types.Phrases, exists bool) {
 // OldPhrases returns the old "phrases" field's value of the Word entity.
 // If the Word object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WordMutation) OldPhrases(ctx context.Context) (v types.Phrases, err error) {
+func (m *WordMutation) OldPhrases(ctx context.Context) (v []entity.Phrase, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPhrases is only allowed on UpdateOne operations")
 	}
@@ -2277,13 +2368,13 @@ func (m *WordMutation) OldPhrases(ctx context.Context) (v types.Phrases, err err
 	return oldValue.Phrases, nil
 }
 
-// AppendPhrases adds t to the "phrases" field.
-func (m *WordMutation) AppendPhrases(t types.Phrases) {
-	m.appendphrases = append(m.appendphrases, t...)
+// AppendPhrases adds e to the "phrases" field.
+func (m *WordMutation) AppendPhrases(e []entity.Phrase) {
+	m.appendphrases = append(m.appendphrases, e...)
 }
 
 // AppendedPhrases returns the list of values that were appended to the "phrases" field in this mutation.
-func (m *WordMutation) AppendedPhrases() (types.Phrases, bool) {
+func (m *WordMutation) AppendedPhrases() ([]entity.Phrase, bool) {
 	if len(m.appendphrases) == 0 {
 		return nil, false
 	}
@@ -2297,13 +2388,13 @@ func (m *WordMutation) ResetPhrases() {
 }
 
 // SetSentences sets the "sentences" field.
-func (m *WordMutation) SetSentences(t types.Sentences) {
-	m.sentences = &t
+func (m *WordMutation) SetSentences(e []entity.Sentence) {
+	m.sentences = &e
 	m.appendsentences = nil
 }
 
 // Sentences returns the value of the "sentences" field in the mutation.
-func (m *WordMutation) Sentences() (r types.Sentences, exists bool) {
+func (m *WordMutation) Sentences() (r []entity.Sentence, exists bool) {
 	v := m.sentences
 	if v == nil {
 		return
@@ -2314,7 +2405,7 @@ func (m *WordMutation) Sentences() (r types.Sentences, exists bool) {
 // OldSentences returns the old "sentences" field's value of the Word entity.
 // If the Word object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WordMutation) OldSentences(ctx context.Context) (v types.Sentences, err error) {
+func (m *WordMutation) OldSentences(ctx context.Context) (v []entity.Sentence, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSentences is only allowed on UpdateOne operations")
 	}
@@ -2328,13 +2419,13 @@ func (m *WordMutation) OldSentences(ctx context.Context) (v types.Sentences, err
 	return oldValue.Sentences, nil
 }
 
-// AppendSentences adds t to the "sentences" field.
-func (m *WordMutation) AppendSentences(t types.Sentences) {
-	m.appendsentences = append(m.appendsentences, t...)
+// AppendSentences adds e to the "sentences" field.
+func (m *WordMutation) AppendSentences(e []entity.Sentence) {
+	m.appendsentences = append(m.appendsentences, e...)
 }
 
 // AppendedSentences returns the list of values that were appended to the "sentences" field in this mutation.
-func (m *WordMutation) AppendedSentences() (types.Sentences, bool) {
+func (m *WordMutation) AppendedSentences() ([]entity.Sentence, bool) {
 	if len(m.appendsentences) == 0 {
 		return nil, false
 	}
@@ -2348,13 +2439,13 @@ func (m *WordMutation) ResetSentences() {
 }
 
 // SetRelations sets the "relations" field.
-func (m *WordMutation) SetRelations(tr types.WordRelations) {
-	m.relations = &tr
+func (m *WordMutation) SetRelations(er []entity.WordRelation) {
+	m.relations = &er
 	m.appendrelations = nil
 }
 
 // Relations returns the value of the "relations" field in the mutation.
-func (m *WordMutation) Relations() (r types.WordRelations, exists bool) {
+func (m *WordMutation) Relations() (r []entity.WordRelation, exists bool) {
 	v := m.relations
 	if v == nil {
 		return
@@ -2365,7 +2456,7 @@ func (m *WordMutation) Relations() (r types.WordRelations, exists bool) {
 // OldRelations returns the old "relations" field's value of the Word entity.
 // If the Word object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WordMutation) OldRelations(ctx context.Context) (v types.WordRelations, err error) {
+func (m *WordMutation) OldRelations(ctx context.Context) (v []entity.WordRelation, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldRelations is only allowed on UpdateOne operations")
 	}
@@ -2379,13 +2470,13 @@ func (m *WordMutation) OldRelations(ctx context.Context) (v types.WordRelations,
 	return oldValue.Relations, nil
 }
 
-// AppendRelations adds tr to the "relations" field.
-func (m *WordMutation) AppendRelations(tr types.WordRelations) {
-	m.appendrelations = append(m.appendrelations, tr...)
+// AppendRelations adds er to the "relations" field.
+func (m *WordMutation) AppendRelations(er []entity.WordRelation) {
+	m.appendrelations = append(m.appendrelations, er...)
 }
 
 // AppendedRelations returns the list of values that were appended to the "relations" field in this mutation.
-func (m *WordMutation) AppendedRelations() (types.WordRelations, bool) {
+func (m *WordMutation) AppendedRelations() ([]entity.WordRelation, bool) {
 	if len(m.appendrelations) == 0 {
 		return nil, false
 	}
@@ -2504,9 +2595,12 @@ func (m *WordMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WordMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.text != nil {
 		fields = append(fields, word.FieldText)
+	}
+	if m.normalized != nil {
+		fields = append(fields, word.FieldNormalized)
 	}
 	if m.language != nil {
 		fields = append(fields, word.FieldLanguage)
@@ -2551,6 +2645,8 @@ func (m *WordMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case word.FieldText:
 		return m.Text()
+	case word.FieldNormalized:
+		return m.Normalized()
 	case word.FieldLanguage:
 		return m.Language()
 	case word.FieldWordType:
@@ -2584,6 +2680,8 @@ func (m *WordMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case word.FieldText:
 		return m.OldText(ctx)
+	case word.FieldNormalized:
+		return m.OldNormalized(ctx)
 	case word.FieldLanguage:
 		return m.OldLanguage(ctx)
 	case word.FieldWordType:
@@ -2622,6 +2720,13 @@ func (m *WordMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetText(v)
 		return nil
+	case word.FieldNormalized:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNormalized(v)
+		return nil
 	case word.FieldLanguage:
 		v, ok := value.(string)
 		if !ok {
@@ -2644,14 +2749,14 @@ func (m *WordMutation) SetField(name string, value ent.Value) error {
 		m.SetLemma(v)
 		return nil
 	case word.FieldPhonetics:
-		v, ok := value.(types.WordPhonetics)
+		v, ok := value.([]entity.WordPhonetic)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPhonetics(v)
 		return nil
 	case word.FieldMeanings:
-		v, ok := value.(types.WordMeanings)
+		v, ok := value.([]entity.WordDefinition)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -2665,21 +2770,21 @@ func (m *WordMutation) SetField(name string, value ent.Value) error {
 		m.SetTags(v)
 		return nil
 	case word.FieldPhrases:
-		v, ok := value.(types.Phrases)
+		v, ok := value.([]entity.Phrase)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPhrases(v)
 		return nil
 	case word.FieldSentences:
-		v, ok := value.(types.Sentences)
+		v, ok := value.([]entity.Sentence)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSentences(v)
 		return nil
 	case word.FieldRelations:
-		v, ok := value.(types.WordRelations)
+		v, ok := value.([]entity.WordRelation)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -2759,6 +2864,9 @@ func (m *WordMutation) ResetField(name string) error {
 	switch name {
 	case word.FieldText:
 		m.ResetText()
+		return nil
+	case word.FieldNormalized:
+		m.ResetNormalized()
 		return nil
 	case word.FieldLanguage:
 		m.ResetLanguage()

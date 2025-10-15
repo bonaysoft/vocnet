@@ -10,8 +10,8 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
 )
 
 // Word is the model entity for the Word schema.
@@ -21,6 +21,8 @@ type Word struct {
 	ID int `json:"id,omitempty"`
 	// Text holds the value of the "text" field.
 	Text string `json:"text,omitempty"`
+	// Normalized holds the value of the "normalized" field.
+	Normalized string `json:"normalized,omitempty"`
 	// Language holds the value of the "language" field.
 	Language string `json:"language,omitempty"`
 	// WordType holds the value of the "word_type" field.
@@ -28,17 +30,17 @@ type Word struct {
 	// Lemma holds the value of the "lemma" field.
 	Lemma *string `json:"lemma,omitempty"`
 	// Phonetics holds the value of the "phonetics" field.
-	Phonetics types.WordPhonetics `json:"phonetics,omitempty"`
+	Phonetics []entity.WordPhonetic `json:"phonetics,omitempty"`
 	// Meanings holds the value of the "meanings" field.
-	Meanings types.WordMeanings `json:"meanings,omitempty"`
+	Meanings []entity.WordDefinition `json:"meanings,omitempty"`
 	// Tags holds the value of the "tags" field.
 	Tags []string `json:"tags,omitempty"`
 	// Phrases holds the value of the "phrases" field.
-	Phrases types.Phrases `json:"phrases,omitempty"`
+	Phrases []entity.Phrase `json:"phrases,omitempty"`
 	// Sentences holds the value of the "sentences" field.
-	Sentences types.Sentences `json:"sentences,omitempty"`
+	Sentences []entity.Sentence `json:"sentences,omitempty"`
 	// Relations holds the value of the "relations" field.
-	Relations types.WordRelations `json:"relations,omitempty"`
+	Relations []entity.WordRelation `json:"relations,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -55,7 +57,7 @@ func (*Word) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case word.FieldID:
 			values[i] = new(sql.NullInt64)
-		case word.FieldText, word.FieldLanguage, word.FieldWordType, word.FieldLemma:
+		case word.FieldText, word.FieldNormalized, word.FieldLanguage, word.FieldWordType, word.FieldLemma:
 			values[i] = new(sql.NullString)
 		case word.FieldCreatedAt, word.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -85,6 +87,12 @@ func (w *Word) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field text", values[i])
 			} else if value.Valid {
 				w.Text = value.String
+			}
+		case word.FieldNormalized:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field normalized", values[i])
+			} else if value.Valid {
+				w.Normalized = value.String
 			}
 		case word.FieldLanguage:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -203,6 +211,9 @@ func (w *Word) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", w.ID))
 	builder.WriteString("text=")
 	builder.WriteString(w.Text)
+	builder.WriteString(", ")
+	builder.WriteString("normalized=")
+	builder.WriteString(w.Normalized)
 	builder.WriteString(", ")
 	builder.WriteString("language=")
 	builder.WriteString(w.Language)

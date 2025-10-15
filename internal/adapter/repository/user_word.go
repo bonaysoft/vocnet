@@ -5,16 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strings"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/eslsoft/vocnet/internal/entity"
 	entdb "github.com/eslsoft/vocnet/internal/infrastructure/database/ent"
-	entpredicate "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/predicate"
 	entuserword "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/userword"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
 	"github.com/eslsoft/vocnet/internal/repository"
 	"github.com/eslsoft/vocnet/pkg/filterexpr"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/samber/lo"
 )
 
 type userWordRepository struct {
@@ -67,6 +67,7 @@ func (r *userWordRepository) Create(ctx context.Context, userWord *entity.UserWo
 	builder := r.client.UserWord.Create().
 		SetUserID(userWord.UserID).
 		SetWord(userWord.Word).
+		SetNormalized(entity.NormalizeWordToken(userWord.Word)).
 		SetLanguage(entity.NormalizeLanguage(userWord.Language).Code()).
 		SetMasteryListen(listen).
 		SetMasteryRead(read).
@@ -76,8 +77,8 @@ func (r *userWordRepository) Create(ctx context.Context, userWord *entity.UserWo
 		SetReviewIntervalDays(userWord.Review.IntervalDays).
 		SetReviewFailCount(userWord.Review.FailCount).
 		SetQueryCount(userWord.QueryCount).
-		SetSentences(types.UserSentences(userWord.Sentences)).
-		SetRelations(types.UserWordRelations(userWord.Relations)).
+		SetSentences(userWord.Sentences).
+		SetRelations(userWord.Relations).
 		SetCreatedBy(userWord.CreatedBy).
 		SetCreatedAt(userWord.CreatedAt).
 		SetUpdatedAt(userWord.UpdatedAt)
@@ -124,6 +125,7 @@ func (r *userWordRepository) Update(ctx context.Context, userWord *entity.UserWo
 	mutation := r.client.UserWord.UpdateOneID(int(userWord.ID)).
 		Where(entuserword.UserIDEQ(userWord.UserID)).
 		SetWord(userWord.Word).
+		SetNormalized(entity.NormalizeWordToken(userWord.Word)).
 		SetLanguage(entity.NormalizeLanguage(userWord.Language).Code()).
 		SetMasteryListen(listen).
 		SetMasteryRead(read).
@@ -133,8 +135,8 @@ func (r *userWordRepository) Update(ctx context.Context, userWord *entity.UserWo
 		SetReviewIntervalDays(userWord.Review.IntervalDays).
 		SetReviewFailCount(userWord.Review.FailCount).
 		SetQueryCount(userWord.QueryCount).
-		SetSentences(types.UserSentences(userWord.Sentences)).
-		SetRelations(types.UserWordRelations(userWord.Relations)).
+		SetSentences(userWord.Sentences).
+		SetRelations(userWord.Relations).
 		SetCreatedBy(userWord.CreatedBy).
 		SetUpdatedAt(userWord.UpdatedAt)
 
@@ -279,11 +281,7 @@ func applyUserWordFilters(q *entdb.UserWordQuery, params listUserWordsParams) {
 		q.Where(entuserword.WordContainsFold(params.Keyword))
 	}
 	if words := uniqueFolded(params.Words); len(words) > 0 {
-		preds := make([]entpredicate.UserWord, 0, len(words))
-		for _, word := range words {
-			preds = append(preds, entuserword.WordEqualFold(word))
-		}
-		q.Where(entuserword.Or(preds...))
+		q.Where(entuserword.NormalizedIn(lo.Map(words, func(word string, _ int) string { return strings.ToLower(word) })...))
 	}
 }
 

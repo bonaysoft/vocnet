@@ -14,6 +14,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "user_id", Type: field.TypeInt64},
 		{Name: "word", Type: field.TypeString},
+		{Name: "normalized", Type: field.TypeString, Default: ""},
 		{Name: "language", Type: field.TypeString, Default: "en"},
 		{Name: "mastery_listen", Type: field.TypeInt16, Default: 0},
 		{Name: "mastery_read", Type: field.TypeInt16, Default: 0},
@@ -38,11 +39,24 @@ var (
 		Name:       "user_words",
 		Columns:    UserWordsColumns,
 		PrimaryKey: []*schema.Column{UserWordsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "userword_user_id_language_word",
+				Unique:  true,
+				Columns: []*schema.Column{UserWordsColumns[1], UserWordsColumns[4], UserWordsColumns[2]},
+			},
+			{
+				Name:    "userword_language_normalized",
+				Unique:  false,
+				Columns: []*schema.Column{UserWordsColumns[4], UserWordsColumns[3]},
+			},
+		},
 	}
 	// WordsColumns holds the columns for the "words" table.
 	WordsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "text", Type: field.TypeString},
+		{Name: "normalized", Type: field.TypeString, Default: ""},
 		{Name: "language", Type: field.TypeString, Default: "en"},
 		{Name: "word_type", Type: field.TypeString, Default: "lemma"},
 		{Name: "lemma", Type: field.TypeString, Nullable: true},
@@ -62,9 +76,14 @@ var (
 		PrimaryKey: []*schema.Column{WordsColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "uq_words_lang_text_type",
+				Name:    "word_language_text",
 				Unique:  true,
-				Columns: []*schema.Column{WordsColumns[2], WordsColumns[1], WordsColumns[3]},
+				Columns: []*schema.Column{WordsColumns[3], WordsColumns[1]},
+			},
+			{
+				Name:    "word_language_normalized",
+				Unique:  false,
+				Columns: []*schema.Column{WordsColumns[3], WordsColumns[2]},
 			},
 		},
 	}

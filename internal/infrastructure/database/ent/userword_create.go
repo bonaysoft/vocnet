@@ -11,8 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/userword"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
 )
 
 // UserWordCreate is the builder for creating a UserWord entity.
@@ -32,6 +32,20 @@ func (uwc *UserWordCreate) SetUserID(i int64) *UserWordCreate {
 // SetWord sets the "word" field.
 func (uwc *UserWordCreate) SetWord(s string) *UserWordCreate {
 	uwc.mutation.SetWord(s)
+	return uwc
+}
+
+// SetNormalized sets the "normalized" field.
+func (uwc *UserWordCreate) SetNormalized(s string) *UserWordCreate {
+	uwc.mutation.SetNormalized(s)
+	return uwc
+}
+
+// SetNillableNormalized sets the "normalized" field if the given value is not nil.
+func (uwc *UserWordCreate) SetNillableNormalized(s *string) *UserWordCreate {
+	if s != nil {
+		uwc.SetNormalized(*s)
+	}
 	return uwc
 }
 
@@ -218,14 +232,14 @@ func (uwc *UserWordCreate) SetNillableNotes(s *string) *UserWordCreate {
 }
 
 // SetSentences sets the "sentences" field.
-func (uwc *UserWordCreate) SetSentences(ts types.UserSentences) *UserWordCreate {
-	uwc.mutation.SetSentences(ts)
+func (uwc *UserWordCreate) SetSentences(e []entity.Sentence) *UserWordCreate {
+	uwc.mutation.SetSentences(e)
 	return uwc
 }
 
 // SetRelations sets the "relations" field.
-func (uwc *UserWordCreate) SetRelations(twr types.UserWordRelations) *UserWordCreate {
-	uwc.mutation.SetRelations(twr)
+func (uwc *UserWordCreate) SetRelations(ewr []entity.UserWordRelation) *UserWordCreate {
+	uwc.mutation.SetRelations(ewr)
 	return uwc
 }
 
@@ -306,6 +320,10 @@ func (uwc *UserWordCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (uwc *UserWordCreate) defaults() {
+	if _, ok := uwc.mutation.Normalized(); !ok {
+		v := userword.DefaultNormalized
+		uwc.mutation.SetNormalized(v)
+	}
 	if _, ok := uwc.mutation.Language(); !ok {
 		v := userword.DefaultLanguage
 		uwc.mutation.SetLanguage(v)
@@ -380,6 +398,9 @@ func (uwc *UserWordCreate) check() error {
 		if err := userword.WordValidator(v); err != nil {
 			return &ValidationError{Name: "word", err: fmt.Errorf(`ent: validator failed for field "UserWord.word": %w`, err)}
 		}
+	}
+	if _, ok := uwc.mutation.Normalized(); !ok {
+		return &ValidationError{Name: "normalized", err: errors.New(`ent: missing required field "UserWord.normalized"`)}
 	}
 	if _, ok := uwc.mutation.Language(); !ok {
 		return &ValidationError{Name: "language", err: errors.New(`ent: missing required field "UserWord.language"`)}
@@ -460,6 +481,10 @@ func (uwc *UserWordCreate) createSpec() (*UserWord, *sqlgraph.CreateSpec) {
 	if value, ok := uwc.mutation.Word(); ok {
 		_spec.SetField(userword.FieldWord, field.TypeString, value)
 		_node.Word = value
+	}
+	if value, ok := uwc.mutation.Normalized(); ok {
+		_spec.SetField(userword.FieldNormalized, field.TypeString, value)
+		_node.Normalized = value
 	}
 	if value, ok := uwc.mutation.Language(); ok {
 		_spec.SetField(userword.FieldLanguage, field.TypeString, value)
@@ -612,6 +637,18 @@ func (u *UserWordUpsert) SetWord(v string) *UserWordUpsert {
 // UpdateWord sets the "word" field to the value that was provided on create.
 func (u *UserWordUpsert) UpdateWord() *UserWordUpsert {
 	u.SetExcluded(userword.FieldWord)
+	return u
+}
+
+// SetNormalized sets the "normalized" field.
+func (u *UserWordUpsert) SetNormalized(v string) *UserWordUpsert {
+	u.Set(userword.FieldNormalized, v)
+	return u
+}
+
+// UpdateNormalized sets the "normalized" field to the value that was provided on create.
+func (u *UserWordUpsert) UpdateNormalized() *UserWordUpsert {
+	u.SetExcluded(userword.FieldNormalized)
 	return u
 }
 
@@ -844,7 +881,7 @@ func (u *UserWordUpsert) ClearNotes() *UserWordUpsert {
 }
 
 // SetSentences sets the "sentences" field.
-func (u *UserWordUpsert) SetSentences(v types.UserSentences) *UserWordUpsert {
+func (u *UserWordUpsert) SetSentences(v []entity.Sentence) *UserWordUpsert {
 	u.Set(userword.FieldSentences, v)
 	return u
 }
@@ -856,7 +893,7 @@ func (u *UserWordUpsert) UpdateSentences() *UserWordUpsert {
 }
 
 // SetRelations sets the "relations" field.
-func (u *UserWordUpsert) SetRelations(v types.UserWordRelations) *UserWordUpsert {
+func (u *UserWordUpsert) SetRelations(v []entity.UserWordRelation) *UserWordUpsert {
 	u.Set(userword.FieldRelations, v)
 	return u
 }
@@ -968,6 +1005,20 @@ func (u *UserWordUpsertOne) SetWord(v string) *UserWordUpsertOne {
 func (u *UserWordUpsertOne) UpdateWord() *UserWordUpsertOne {
 	return u.Update(func(s *UserWordUpsert) {
 		s.UpdateWord()
+	})
+}
+
+// SetNormalized sets the "normalized" field.
+func (u *UserWordUpsertOne) SetNormalized(v string) *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetNormalized(v)
+	})
+}
+
+// UpdateNormalized sets the "normalized" field to the value that was provided on create.
+func (u *UserWordUpsertOne) UpdateNormalized() *UserWordUpsertOne {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateNormalized()
 	})
 }
 
@@ -1238,7 +1289,7 @@ func (u *UserWordUpsertOne) ClearNotes() *UserWordUpsertOne {
 }
 
 // SetSentences sets the "sentences" field.
-func (u *UserWordUpsertOne) SetSentences(v types.UserSentences) *UserWordUpsertOne {
+func (u *UserWordUpsertOne) SetSentences(v []entity.Sentence) *UserWordUpsertOne {
 	return u.Update(func(s *UserWordUpsert) {
 		s.SetSentences(v)
 	})
@@ -1252,7 +1303,7 @@ func (u *UserWordUpsertOne) UpdateSentences() *UserWordUpsertOne {
 }
 
 // SetRelations sets the "relations" field.
-func (u *UserWordUpsertOne) SetRelations(v types.UserWordRelations) *UserWordUpsertOne {
+func (u *UserWordUpsertOne) SetRelations(v []entity.UserWordRelation) *UserWordUpsertOne {
 	return u.Update(func(s *UserWordUpsert) {
 		s.SetRelations(v)
 	})
@@ -1539,6 +1590,20 @@ func (u *UserWordUpsertBulk) UpdateWord() *UserWordUpsertBulk {
 	})
 }
 
+// SetNormalized sets the "normalized" field.
+func (u *UserWordUpsertBulk) SetNormalized(v string) *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.SetNormalized(v)
+	})
+}
+
+// UpdateNormalized sets the "normalized" field to the value that was provided on create.
+func (u *UserWordUpsertBulk) UpdateNormalized() *UserWordUpsertBulk {
+	return u.Update(func(s *UserWordUpsert) {
+		s.UpdateNormalized()
+	})
+}
+
 // SetLanguage sets the "language" field.
 func (u *UserWordUpsertBulk) SetLanguage(v string) *UserWordUpsertBulk {
 	return u.Update(func(s *UserWordUpsert) {
@@ -1806,7 +1871,7 @@ func (u *UserWordUpsertBulk) ClearNotes() *UserWordUpsertBulk {
 }
 
 // SetSentences sets the "sentences" field.
-func (u *UserWordUpsertBulk) SetSentences(v types.UserSentences) *UserWordUpsertBulk {
+func (u *UserWordUpsertBulk) SetSentences(v []entity.Sentence) *UserWordUpsertBulk {
 	return u.Update(func(s *UserWordUpsert) {
 		s.SetSentences(v)
 	})
@@ -1820,7 +1885,7 @@ func (u *UserWordUpsertBulk) UpdateSentences() *UserWordUpsertBulk {
 }
 
 // SetRelations sets the "relations" field.
-func (u *UserWordUpsertBulk) SetRelations(v types.UserWordRelations) *UserWordUpsertBulk {
+func (u *UserWordUpsertBulk) SetRelations(v []entity.UserWordRelation) *UserWordUpsertBulk {
 	return u.Update(func(s *UserWordUpsert) {
 		s.SetRelations(v)
 	})

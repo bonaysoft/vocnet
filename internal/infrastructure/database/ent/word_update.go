@@ -12,9 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
+	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/predicate"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
 )
 
 // WordUpdate is the builder for updating Word entities.
@@ -40,6 +40,20 @@ func (wu *WordUpdate) SetText(s string) *WordUpdate {
 func (wu *WordUpdate) SetNillableText(s *string) *WordUpdate {
 	if s != nil {
 		wu.SetText(*s)
+	}
+	return wu
+}
+
+// SetNormalized sets the "normalized" field.
+func (wu *WordUpdate) SetNormalized(s string) *WordUpdate {
+	wu.mutation.SetNormalized(s)
+	return wu
+}
+
+// SetNillableNormalized sets the "normalized" field if the given value is not nil.
+func (wu *WordUpdate) SetNillableNormalized(s *string) *WordUpdate {
+	if s != nil {
+		wu.SetNormalized(*s)
 	}
 	return wu
 }
@@ -93,26 +107,26 @@ func (wu *WordUpdate) ClearLemma() *WordUpdate {
 }
 
 // SetPhonetics sets the "phonetics" field.
-func (wu *WordUpdate) SetPhonetics(tp types.WordPhonetics) *WordUpdate {
-	wu.mutation.SetPhonetics(tp)
+func (wu *WordUpdate) SetPhonetics(ep []entity.WordPhonetic) *WordUpdate {
+	wu.mutation.SetPhonetics(ep)
 	return wu
 }
 
-// AppendPhonetics appends tp to the "phonetics" field.
-func (wu *WordUpdate) AppendPhonetics(tp types.WordPhonetics) *WordUpdate {
-	wu.mutation.AppendPhonetics(tp)
+// AppendPhonetics appends ep to the "phonetics" field.
+func (wu *WordUpdate) AppendPhonetics(ep []entity.WordPhonetic) *WordUpdate {
+	wu.mutation.AppendPhonetics(ep)
 	return wu
 }
 
 // SetMeanings sets the "meanings" field.
-func (wu *WordUpdate) SetMeanings(tm types.WordMeanings) *WordUpdate {
-	wu.mutation.SetMeanings(tm)
+func (wu *WordUpdate) SetMeanings(ed []entity.WordDefinition) *WordUpdate {
+	wu.mutation.SetMeanings(ed)
 	return wu
 }
 
-// AppendMeanings appends tm to the "meanings" field.
-func (wu *WordUpdate) AppendMeanings(tm types.WordMeanings) *WordUpdate {
-	wu.mutation.AppendMeanings(tm)
+// AppendMeanings appends ed to the "meanings" field.
+func (wu *WordUpdate) AppendMeanings(ed []entity.WordDefinition) *WordUpdate {
+	wu.mutation.AppendMeanings(ed)
 	return wu
 }
 
@@ -129,38 +143,38 @@ func (wu *WordUpdate) AppendTags(s []string) *WordUpdate {
 }
 
 // SetPhrases sets the "phrases" field.
-func (wu *WordUpdate) SetPhrases(t types.Phrases) *WordUpdate {
-	wu.mutation.SetPhrases(t)
+func (wu *WordUpdate) SetPhrases(e []entity.Phrase) *WordUpdate {
+	wu.mutation.SetPhrases(e)
 	return wu
 }
 
-// AppendPhrases appends t to the "phrases" field.
-func (wu *WordUpdate) AppendPhrases(t types.Phrases) *WordUpdate {
-	wu.mutation.AppendPhrases(t)
+// AppendPhrases appends e to the "phrases" field.
+func (wu *WordUpdate) AppendPhrases(e []entity.Phrase) *WordUpdate {
+	wu.mutation.AppendPhrases(e)
 	return wu
 }
 
 // SetSentences sets the "sentences" field.
-func (wu *WordUpdate) SetSentences(t types.Sentences) *WordUpdate {
-	wu.mutation.SetSentences(t)
+func (wu *WordUpdate) SetSentences(e []entity.Sentence) *WordUpdate {
+	wu.mutation.SetSentences(e)
 	return wu
 }
 
-// AppendSentences appends t to the "sentences" field.
-func (wu *WordUpdate) AppendSentences(t types.Sentences) *WordUpdate {
-	wu.mutation.AppendSentences(t)
+// AppendSentences appends e to the "sentences" field.
+func (wu *WordUpdate) AppendSentences(e []entity.Sentence) *WordUpdate {
+	wu.mutation.AppendSentences(e)
 	return wu
 }
 
 // SetRelations sets the "relations" field.
-func (wu *WordUpdate) SetRelations(tr types.WordRelations) *WordUpdate {
-	wu.mutation.SetRelations(tr)
+func (wu *WordUpdate) SetRelations(er []entity.WordRelation) *WordUpdate {
+	wu.mutation.SetRelations(er)
 	return wu
 }
 
-// AppendRelations appends tr to the "relations" field.
-func (wu *WordUpdate) AppendRelations(tr types.WordRelations) *WordUpdate {
-	wu.mutation.AppendRelations(tr)
+// AppendRelations appends er to the "relations" field.
+func (wu *WordUpdate) AppendRelations(er []entity.WordRelation) *WordUpdate {
+	wu.mutation.AppendRelations(er)
 	return wu
 }
 
@@ -235,6 +249,9 @@ func (wu *WordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := wu.mutation.Text(); ok {
 		_spec.SetField(word.FieldText, field.TypeString, value)
+	}
+	if value, ok := wu.mutation.Normalized(); ok {
+		_spec.SetField(word.FieldNormalized, field.TypeString, value)
 	}
 	if value, ok := wu.mutation.Language(); ok {
 		_spec.SetField(word.FieldLanguage, field.TypeString, value)
@@ -333,6 +350,20 @@ func (wuo *WordUpdateOne) SetNillableText(s *string) *WordUpdateOne {
 	return wuo
 }
 
+// SetNormalized sets the "normalized" field.
+func (wuo *WordUpdateOne) SetNormalized(s string) *WordUpdateOne {
+	wuo.mutation.SetNormalized(s)
+	return wuo
+}
+
+// SetNillableNormalized sets the "normalized" field if the given value is not nil.
+func (wuo *WordUpdateOne) SetNillableNormalized(s *string) *WordUpdateOne {
+	if s != nil {
+		wuo.SetNormalized(*s)
+	}
+	return wuo
+}
+
 // SetLanguage sets the "language" field.
 func (wuo *WordUpdateOne) SetLanguage(s string) *WordUpdateOne {
 	wuo.mutation.SetLanguage(s)
@@ -382,26 +413,26 @@ func (wuo *WordUpdateOne) ClearLemma() *WordUpdateOne {
 }
 
 // SetPhonetics sets the "phonetics" field.
-func (wuo *WordUpdateOne) SetPhonetics(tp types.WordPhonetics) *WordUpdateOne {
-	wuo.mutation.SetPhonetics(tp)
+func (wuo *WordUpdateOne) SetPhonetics(ep []entity.WordPhonetic) *WordUpdateOne {
+	wuo.mutation.SetPhonetics(ep)
 	return wuo
 }
 
-// AppendPhonetics appends tp to the "phonetics" field.
-func (wuo *WordUpdateOne) AppendPhonetics(tp types.WordPhonetics) *WordUpdateOne {
-	wuo.mutation.AppendPhonetics(tp)
+// AppendPhonetics appends ep to the "phonetics" field.
+func (wuo *WordUpdateOne) AppendPhonetics(ep []entity.WordPhonetic) *WordUpdateOne {
+	wuo.mutation.AppendPhonetics(ep)
 	return wuo
 }
 
 // SetMeanings sets the "meanings" field.
-func (wuo *WordUpdateOne) SetMeanings(tm types.WordMeanings) *WordUpdateOne {
-	wuo.mutation.SetMeanings(tm)
+func (wuo *WordUpdateOne) SetMeanings(ed []entity.WordDefinition) *WordUpdateOne {
+	wuo.mutation.SetMeanings(ed)
 	return wuo
 }
 
-// AppendMeanings appends tm to the "meanings" field.
-func (wuo *WordUpdateOne) AppendMeanings(tm types.WordMeanings) *WordUpdateOne {
-	wuo.mutation.AppendMeanings(tm)
+// AppendMeanings appends ed to the "meanings" field.
+func (wuo *WordUpdateOne) AppendMeanings(ed []entity.WordDefinition) *WordUpdateOne {
+	wuo.mutation.AppendMeanings(ed)
 	return wuo
 }
 
@@ -418,38 +449,38 @@ func (wuo *WordUpdateOne) AppendTags(s []string) *WordUpdateOne {
 }
 
 // SetPhrases sets the "phrases" field.
-func (wuo *WordUpdateOne) SetPhrases(t types.Phrases) *WordUpdateOne {
-	wuo.mutation.SetPhrases(t)
+func (wuo *WordUpdateOne) SetPhrases(e []entity.Phrase) *WordUpdateOne {
+	wuo.mutation.SetPhrases(e)
 	return wuo
 }
 
-// AppendPhrases appends t to the "phrases" field.
-func (wuo *WordUpdateOne) AppendPhrases(t types.Phrases) *WordUpdateOne {
-	wuo.mutation.AppendPhrases(t)
+// AppendPhrases appends e to the "phrases" field.
+func (wuo *WordUpdateOne) AppendPhrases(e []entity.Phrase) *WordUpdateOne {
+	wuo.mutation.AppendPhrases(e)
 	return wuo
 }
 
 // SetSentences sets the "sentences" field.
-func (wuo *WordUpdateOne) SetSentences(t types.Sentences) *WordUpdateOne {
-	wuo.mutation.SetSentences(t)
+func (wuo *WordUpdateOne) SetSentences(e []entity.Sentence) *WordUpdateOne {
+	wuo.mutation.SetSentences(e)
 	return wuo
 }
 
-// AppendSentences appends t to the "sentences" field.
-func (wuo *WordUpdateOne) AppendSentences(t types.Sentences) *WordUpdateOne {
-	wuo.mutation.AppendSentences(t)
+// AppendSentences appends e to the "sentences" field.
+func (wuo *WordUpdateOne) AppendSentences(e []entity.Sentence) *WordUpdateOne {
+	wuo.mutation.AppendSentences(e)
 	return wuo
 }
 
 // SetRelations sets the "relations" field.
-func (wuo *WordUpdateOne) SetRelations(tr types.WordRelations) *WordUpdateOne {
-	wuo.mutation.SetRelations(tr)
+func (wuo *WordUpdateOne) SetRelations(er []entity.WordRelation) *WordUpdateOne {
+	wuo.mutation.SetRelations(er)
 	return wuo
 }
 
-// AppendRelations appends tr to the "relations" field.
-func (wuo *WordUpdateOne) AppendRelations(tr types.WordRelations) *WordUpdateOne {
-	wuo.mutation.AppendRelations(tr)
+// AppendRelations appends er to the "relations" field.
+func (wuo *WordUpdateOne) AppendRelations(er []entity.WordRelation) *WordUpdateOne {
+	wuo.mutation.AppendRelations(er)
 	return wuo
 }
 
@@ -554,6 +585,9 @@ func (wuo *WordUpdateOne) sqlSave(ctx context.Context) (_node *Word, err error) 
 	}
 	if value, ok := wuo.mutation.Text(); ok {
 		_spec.SetField(word.FieldText, field.TypeString, value)
+	}
+	if value, ok := wuo.mutation.Normalized(); ok {
+		_spec.SetField(word.FieldNormalized, field.TypeString, value)
 	}
 	if value, ok := wuo.mutation.Language(); ok {
 		_spec.SetField(word.FieldLanguage, field.TypeString, value)

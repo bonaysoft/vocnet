@@ -42,7 +42,6 @@ import (
 	"github.com/eslsoft/vocnet/internal/infrastructure/database"
 	entdb "github.com/eslsoft/vocnet/internal/infrastructure/database/ent"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 )
@@ -386,7 +385,7 @@ func buildTags(ns sql.NullString) []string {
 	return ordered
 }
 
-func buildPhonetics(ns sql.NullString) types.WordPhonetics {
+func buildPhonetics(ns sql.NullString) []entity.WordPhonetic {
 	if !ns.Valid {
 		return nil
 	}
@@ -394,13 +393,13 @@ func buildPhonetics(ns sql.NullString) types.WordPhonetics {
 	if ipa == "" {
 		return nil
 	}
-	return types.WordPhonetics{
-		entity.WordPhonetic{IPA: ipa, Dialect: "en-US"},
+	return []entity.WordPhonetic{
+		{IPA: ipa, Dialect: "en-US"},
 	}
 }
 
 // buildMeanings converts record fields into structured meanings for ent.
-func buildMeanings(w wordRecord) (types.WordMeanings, error) {
+func buildMeanings(w wordRecord) ([]entity.WordDefinition, error) {
 	defLines := splitLines(nullStringVal(w.Definition))
 	transLines := splitLines(nullStringVal(w.Translation))
 	if len(defLines) == 0 && len(transLines) == 0 {
@@ -453,7 +452,7 @@ func buildMeanings(w wordRecord) (types.WordMeanings, error) {
 	}
 
 	// 构建 meanings: 逐行转换，无权重。
-	meaningsSlice := make(types.WordMeanings, 0, len(lm))
+	meaningsSlice := make([]entity.WordDefinition, 0, len(lm))
 	for _, it := range lm {
 		text := strings.TrimSpace(it.text)
 		if text == "" {

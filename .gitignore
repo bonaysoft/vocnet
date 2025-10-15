@@ -61,3 +61,7 @@ coverage.html
 # Docker
 .dockerignore
 docker-compose.override.yml
+
+# backup
+*.jsonl
+*.jsonl.gz

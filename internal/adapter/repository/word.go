@@ -9,12 +9,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/eslsoft/vocnet/internal/entity"
 	entdb "github.com/eslsoft/vocnet/internal/infrastructure/database/ent"
-	entpredicate "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/predicate"
 	entword "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
 	"github.com/eslsoft/vocnet/internal/repository"
 	"github.com/eslsoft/vocnet/pkg/filterexpr"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/samber/lo"
 )
 
 type wordRepository struct {
@@ -44,14 +43,15 @@ func (r *wordRepository) Create(ctx context.Context, word *entity.Word) (*entity
 
 	builder := r.client.Word.Create().
 		SetText(word.Text).
+		SetNormalized(entity.NormalizeWordToken(word.Text)).
 		SetLanguage(entity.NormalizeLanguage(word.Language).Code()).
 		SetWordType(defaultWordType(word.WordType)).
 		SetNillableLemma(normalizeLemma(word.Lemma)).
-		SetPhonetics(types.WordPhonetics(word.Phonetics)).
-		SetMeanings(types.WordMeanings(word.Definitions)).
-		SetPhrases(types.Phrases(word.Phrases)).
-		SetSentences(types.Sentences(word.Sentences)).
-		SetRelations(types.WordRelations(word.Relations))
+		SetPhonetics(word.Phonetics).
+		SetMeanings(word.Definitions).
+		SetPhrases(word.Phrases).
+		SetSentences(word.Sentences).
+		SetRelations(word.Relations)
 
 	if word.Tags != nil {
 		builder.SetTags(word.Tags)
@@ -74,13 +74,14 @@ func (r *wordRepository) Update(ctx context.Context, word *entity.Word) (*entity
 
 	mutation := r.client.Word.UpdateOneID(int(word.ID)).
 		SetText(word.Text).
+		SetNormalized(entity.NormalizeWordToken(word.Text)).
 		SetLanguage(entity.NormalizeLanguage(word.Language).Code()).
 		SetWordType(defaultWordType(word.WordType)).
-		SetPhonetics(types.WordPhonetics(word.Phonetics)).
-		SetMeanings(types.WordMeanings(word.Definitions)).
-		SetPhrases(types.Phrases(word.Phrases)).
-		SetSentences(types.Sentences(word.Sentences)).
-		SetRelations(types.WordRelations(word.Relations))
+		SetPhonetics(word.Phonetics).
+		SetMeanings(word.Definitions).
+		SetPhrases(word.Phrases).
+		SetSentences(word.Sentences).
+		SetRelations(word.Relations)
 
 	if lemma := normalizeLemma(word.Lemma); lemma != nil {
 		mutation.SetLemma(*lemma)
@@ -248,11 +249,7 @@ func applyListFilters(q *entdb.WordQuery, params listWordsParams) {
 		q.Where(entword.WordTypeEQ(params.WordType))
 	}
 	if words := uniqueFolded(params.Words); len(words) > 0 {
-		preds := make([]entpredicate.Word, 0, len(words))
-		for _, word := range words {
-			preds = append(preds, entword.TextEqualFold(word))
-		}
-		q.Where(entword.Or(preds...))
+		q.Where(entword.NormalizedIn(lo.Map(words, func(word string, _ int) string { return strings.ToLower(word) })...))
 	}
 }
 

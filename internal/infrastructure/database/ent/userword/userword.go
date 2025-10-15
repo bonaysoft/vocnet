@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/types"
+	"github.com/eslsoft/vocnet/internal/entity"
 )
 
 const (
@@ -18,6 +18,8 @@ const (
 	FieldUserID = "user_id"
 	// FieldWord holds the string denoting the word field in the database.
 	FieldWord = "word"
+	// FieldNormalized holds the string denoting the normalized field in the database.
+	FieldNormalized = "normalized"
 	// FieldLanguage holds the string denoting the language field in the database.
 	FieldLanguage = "language"
 	// FieldMasteryListen holds the string denoting the mastery_listen field in the database.
@@ -63,6 +65,7 @@ var Columns = []string{
 	FieldID,
 	FieldUserID,
 	FieldWord,
+	FieldNormalized,
 	FieldLanguage,
 	FieldMasteryListen,
 	FieldMasteryRead,
@@ -96,6 +99,8 @@ func ValidColumn(column string) bool {
 var (
 	// WordValidator is a validator for the "word" field. It is called by the builders before save.
 	WordValidator func(string) error
+	// DefaultNormalized holds the default value on creation for the "normalized" field.
+	DefaultNormalized string
 	// DefaultLanguage holds the default value on creation for the "language" field.
 	DefaultLanguage string
 	// DefaultMasteryListen holds the default value on creation for the "mastery_listen" field.
@@ -117,9 +122,9 @@ var (
 	// DefaultQueryCount holds the default value on creation for the "query_count" field.
 	DefaultQueryCount int64
 	// DefaultSentences holds the default value on creation for the "sentences" field.
-	DefaultSentences types.UserSentences
+	DefaultSentences []entity.Sentence
 	// DefaultRelations holds the default value on creation for the "relations" field.
-	DefaultRelations types.UserWordRelations
+	DefaultRelations []entity.UserWordRelation
 	// DefaultCreatedBy holds the default value on creation for the "created_by" field.
 	DefaultCreatedBy string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
@@ -146,6 +151,11 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 // ByWord orders the results by the word field.
 func ByWord(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWord, opts...).ToFunc()
+}
+
+// ByNormalized orders the results by the normalized field.
+func ByNormalized(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNormalized, opts...).ToFunc()
 }
 
 // ByLanguage orders the results by the language field.

@@ -1,6 +1,9 @@
 package entity
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 // UserWord represents a user's personalised vocabulary entry.
 type UserWord struct {
@@ -48,6 +51,7 @@ type UserWordRelation struct {
 
 // Normalize ensures defaults & constraints before persistence.
 func (uw *UserWord) Normalize(now time.Time) {
+	uw.Word = strings.TrimSpace(uw.Word)
 	if uw.CreatedAt.IsZero() {
 		uw.CreatedAt = now
 	}
