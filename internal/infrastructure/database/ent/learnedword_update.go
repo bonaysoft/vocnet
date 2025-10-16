@@ -177,27 +177,6 @@ func (lwu *LearnedWordUpdate) AddMasteryPronounce(i int16) *LearnedWordUpdate {
 	return lwu
 }
 
-// SetMasteryUse sets the "mastery_use" field.
-func (lwu *LearnedWordUpdate) SetMasteryUse(i int16) *LearnedWordUpdate {
-	lwu.mutation.ResetMasteryUse()
-	lwu.mutation.SetMasteryUse(i)
-	return lwu
-}
-
-// SetNillableMasteryUse sets the "mastery_use" field if the given value is not nil.
-func (lwu *LearnedWordUpdate) SetNillableMasteryUse(i *int16) *LearnedWordUpdate {
-	if i != nil {
-		lwu.SetMasteryUse(*i)
-	}
-	return lwu
-}
-
-// AddMasteryUse adds i to the "mastery_use" field.
-func (lwu *LearnedWordUpdate) AddMasteryUse(i int16) *LearnedWordUpdate {
-	lwu.mutation.AddMasteryUse(i)
-	return lwu
-}
-
 // SetMasteryOverall sets the "mastery_overall" field.
 func (lwu *LearnedWordUpdate) SetMasteryOverall(i int32) *LearnedWordUpdate {
 	lwu.mutation.ResetMasteryOverall()
@@ -366,6 +345,18 @@ func (lwu *LearnedWordUpdate) AppendRelations(ewr []entity.LearnedWordRelation) 
 	return lwu
 }
 
+// SetTags sets the "tags" field.
+func (lwu *LearnedWordUpdate) SetTags(s []string) *LearnedWordUpdate {
+	lwu.mutation.SetTags(s)
+	return lwu
+}
+
+// AppendTags appends s to the "tags" field.
+func (lwu *LearnedWordUpdate) AppendTags(s []string) *LearnedWordUpdate {
+	lwu.mutation.AppendTags(s)
+	return lwu
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (lwu *LearnedWordUpdate) SetCreatedBy(s string) *LearnedWordUpdate {
 	lwu.mutation.SetCreatedBy(s)
@@ -488,12 +479,6 @@ func (lwu *LearnedWordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := lwu.mutation.AddedMasteryPronounce(); ok {
 		_spec.AddField(learnedword.FieldMasteryPronounce, field.TypeInt16, value)
 	}
-	if value, ok := lwu.mutation.MasteryUse(); ok {
-		_spec.SetField(learnedword.FieldMasteryUse, field.TypeInt16, value)
-	}
-	if value, ok := lwu.mutation.AddedMasteryUse(); ok {
-		_spec.AddField(learnedword.FieldMasteryUse, field.TypeInt16, value)
-	}
 	if value, ok := lwu.mutation.MasteryOverall(); ok {
 		_spec.SetField(learnedword.FieldMasteryOverall, field.TypeInt32, value)
 	}
@@ -550,6 +535,14 @@ func (lwu *LearnedWordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := lwu.mutation.AppendedRelations(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, learnedword.FieldRelations, value)
+		})
+	}
+	if value, ok := lwu.mutation.Tags(); ok {
+		_spec.SetField(learnedword.FieldTags, field.TypeJSON, value)
+	}
+	if value, ok := lwu.mutation.AppendedTags(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, learnedword.FieldTags, value)
 		})
 	}
 	if value, ok := lwu.mutation.CreatedBy(); ok {
@@ -725,27 +718,6 @@ func (lwuo *LearnedWordUpdateOne) AddMasteryPronounce(i int16) *LearnedWordUpdat
 	return lwuo
 }
 
-// SetMasteryUse sets the "mastery_use" field.
-func (lwuo *LearnedWordUpdateOne) SetMasteryUse(i int16) *LearnedWordUpdateOne {
-	lwuo.mutation.ResetMasteryUse()
-	lwuo.mutation.SetMasteryUse(i)
-	return lwuo
-}
-
-// SetNillableMasteryUse sets the "mastery_use" field if the given value is not nil.
-func (lwuo *LearnedWordUpdateOne) SetNillableMasteryUse(i *int16) *LearnedWordUpdateOne {
-	if i != nil {
-		lwuo.SetMasteryUse(*i)
-	}
-	return lwuo
-}
-
-// AddMasteryUse adds i to the "mastery_use" field.
-func (lwuo *LearnedWordUpdateOne) AddMasteryUse(i int16) *LearnedWordUpdateOne {
-	lwuo.mutation.AddMasteryUse(i)
-	return lwuo
-}
-
 // SetMasteryOverall sets the "mastery_overall" field.
 func (lwuo *LearnedWordUpdateOne) SetMasteryOverall(i int32) *LearnedWordUpdateOne {
 	lwuo.mutation.ResetMasteryOverall()
@@ -914,6 +886,18 @@ func (lwuo *LearnedWordUpdateOne) AppendRelations(ewr []entity.LearnedWordRelati
 	return lwuo
 }
 
+// SetTags sets the "tags" field.
+func (lwuo *LearnedWordUpdateOne) SetTags(s []string) *LearnedWordUpdateOne {
+	lwuo.mutation.SetTags(s)
+	return lwuo
+}
+
+// AppendTags appends s to the "tags" field.
+func (lwuo *LearnedWordUpdateOne) AppendTags(s []string) *LearnedWordUpdateOne {
+	lwuo.mutation.AppendTags(s)
+	return lwuo
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (lwuo *LearnedWordUpdateOne) SetCreatedBy(s string) *LearnedWordUpdateOne {
 	lwuo.mutation.SetCreatedBy(s)
@@ -1066,12 +1050,6 @@ func (lwuo *LearnedWordUpdateOne) sqlSave(ctx context.Context) (_node *LearnedWo
 	if value, ok := lwuo.mutation.AddedMasteryPronounce(); ok {
 		_spec.AddField(learnedword.FieldMasteryPronounce, field.TypeInt16, value)
 	}
-	if value, ok := lwuo.mutation.MasteryUse(); ok {
-		_spec.SetField(learnedword.FieldMasteryUse, field.TypeInt16, value)
-	}
-	if value, ok := lwuo.mutation.AddedMasteryUse(); ok {
-		_spec.AddField(learnedword.FieldMasteryUse, field.TypeInt16, value)
-	}
 	if value, ok := lwuo.mutation.MasteryOverall(); ok {
 		_spec.SetField(learnedword.FieldMasteryOverall, field.TypeInt32, value)
 	}
@@ -1128,6 +1106,14 @@ func (lwuo *LearnedWordUpdateOne) sqlSave(ctx context.Context) (_node *LearnedWo
 	if value, ok := lwuo.mutation.AppendedRelations(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, learnedword.FieldRelations, value)
+		})
+	}
+	if value, ok := lwuo.mutation.Tags(); ok {
+		_spec.SetField(learnedword.FieldTags, field.TypeJSON, value)
+	}
+	if value, ok := lwuo.mutation.AppendedTags(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, learnedword.FieldTags, value)
 		})
 	}
 	if value, ok := lwuo.mutation.CreatedBy(); ok {

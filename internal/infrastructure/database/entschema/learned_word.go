@@ -6,6 +6,7 @@ import (
 	"github.com/eslsoft/vocnet/internal/entity"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
@@ -28,7 +29,6 @@ func (LearnedWord) Fields() []ent.Field {
 		field.Int16("mastery_read").Default(0),
 		field.Int16("mastery_spell").Default(0),
 		field.Int16("mastery_pronounce").Default(0),
-		field.Int16("mastery_use").Default(0),
 		field.Int32("mastery_overall").Default(0),
 		field.Time("review_last_review_at").Optional().Nillable(),
 		field.Time("review_next_review_at").Optional().Nillable(),
@@ -40,6 +40,9 @@ func (LearnedWord) Fields() []ent.Field {
 			Default([]entity.Sentence{}),
 		field.JSON("relations", []entity.LearnedWordRelation{}).
 			Default([]entity.LearnedWordRelation{}),
+		field.JSON("tags", []string{}).
+			Default([]string{}).
+			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
 		field.String("created_by").Default(""),
 		field.Time("created_at").
 			Default(time.Now).

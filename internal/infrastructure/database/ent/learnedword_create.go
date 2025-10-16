@@ -119,20 +119,6 @@ func (lwc *LearnedWordCreate) SetNillableMasteryPronounce(i *int16) *LearnedWord
 	return lwc
 }
 
-// SetMasteryUse sets the "mastery_use" field.
-func (lwc *LearnedWordCreate) SetMasteryUse(i int16) *LearnedWordCreate {
-	lwc.mutation.SetMasteryUse(i)
-	return lwc
-}
-
-// SetNillableMasteryUse sets the "mastery_use" field if the given value is not nil.
-func (lwc *LearnedWordCreate) SetNillableMasteryUse(i *int16) *LearnedWordCreate {
-	if i != nil {
-		lwc.SetMasteryUse(*i)
-	}
-	return lwc
-}
-
 // SetMasteryOverall sets the "mastery_overall" field.
 func (lwc *LearnedWordCreate) SetMasteryOverall(i int32) *LearnedWordCreate {
 	lwc.mutation.SetMasteryOverall(i)
@@ -243,6 +229,12 @@ func (lwc *LearnedWordCreate) SetRelations(ewr []entity.LearnedWordRelation) *Le
 	return lwc
 }
 
+// SetTags sets the "tags" field.
+func (lwc *LearnedWordCreate) SetTags(s []string) *LearnedWordCreate {
+	lwc.mutation.SetTags(s)
+	return lwc
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (lwc *LearnedWordCreate) SetCreatedBy(s string) *LearnedWordCreate {
 	lwc.mutation.SetCreatedBy(s)
@@ -344,10 +336,6 @@ func (lwc *LearnedWordCreate) defaults() {
 		v := learnedword.DefaultMasteryPronounce
 		lwc.mutation.SetMasteryPronounce(v)
 	}
-	if _, ok := lwc.mutation.MasteryUse(); !ok {
-		v := learnedword.DefaultMasteryUse
-		lwc.mutation.SetMasteryUse(v)
-	}
 	if _, ok := lwc.mutation.MasteryOverall(); !ok {
 		v := learnedword.DefaultMasteryOverall
 		lwc.mutation.SetMasteryOverall(v)
@@ -371,6 +359,10 @@ func (lwc *LearnedWordCreate) defaults() {
 	if _, ok := lwc.mutation.Relations(); !ok {
 		v := learnedword.DefaultRelations
 		lwc.mutation.SetRelations(v)
+	}
+	if _, ok := lwc.mutation.Tags(); !ok {
+		v := learnedword.DefaultTags
+		lwc.mutation.SetTags(v)
 	}
 	if _, ok := lwc.mutation.CreatedBy(); !ok {
 		v := learnedword.DefaultCreatedBy
@@ -417,9 +409,6 @@ func (lwc *LearnedWordCreate) check() error {
 	if _, ok := lwc.mutation.MasteryPronounce(); !ok {
 		return &ValidationError{Name: "mastery_pronounce", err: errors.New(`ent: missing required field "LearnedWord.mastery_pronounce"`)}
 	}
-	if _, ok := lwc.mutation.MasteryUse(); !ok {
-		return &ValidationError{Name: "mastery_use", err: errors.New(`ent: missing required field "LearnedWord.mastery_use"`)}
-	}
 	if _, ok := lwc.mutation.MasteryOverall(); !ok {
 		return &ValidationError{Name: "mastery_overall", err: errors.New(`ent: missing required field "LearnedWord.mastery_overall"`)}
 	}
@@ -437,6 +426,9 @@ func (lwc *LearnedWordCreate) check() error {
 	}
 	if _, ok := lwc.mutation.Relations(); !ok {
 		return &ValidationError{Name: "relations", err: errors.New(`ent: missing required field "LearnedWord.relations"`)}
+	}
+	if _, ok := lwc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "LearnedWord.tags"`)}
 	}
 	if _, ok := lwc.mutation.CreatedBy(); !ok {
 		return &ValidationError{Name: "created_by", err: errors.New(`ent: missing required field "LearnedWord.created_by"`)}
@@ -506,10 +498,6 @@ func (lwc *LearnedWordCreate) createSpec() (*LearnedWord, *sqlgraph.CreateSpec) 
 		_spec.SetField(learnedword.FieldMasteryPronounce, field.TypeInt16, value)
 		_node.MasteryPronounce = value
 	}
-	if value, ok := lwc.mutation.MasteryUse(); ok {
-		_spec.SetField(learnedword.FieldMasteryUse, field.TypeInt16, value)
-		_node.MasteryUse = value
-	}
 	if value, ok := lwc.mutation.MasteryOverall(); ok {
 		_spec.SetField(learnedword.FieldMasteryOverall, field.TypeInt32, value)
 		_node.MasteryOverall = value
@@ -545,6 +533,10 @@ func (lwc *LearnedWordCreate) createSpec() (*LearnedWord, *sqlgraph.CreateSpec) 
 	if value, ok := lwc.mutation.Relations(); ok {
 		_spec.SetField(learnedword.FieldRelations, field.TypeJSON, value)
 		_node.Relations = value
+	}
+	if value, ok := lwc.mutation.Tags(); ok {
+		_spec.SetField(learnedword.FieldTags, field.TypeJSON, value)
+		_node.Tags = value
 	}
 	if value, ok := lwc.mutation.CreatedBy(); ok {
 		_spec.SetField(learnedword.FieldCreatedBy, field.TypeString, value)
@@ -736,24 +728,6 @@ func (u *LearnedWordUpsert) AddMasteryPronounce(v int16) *LearnedWordUpsert {
 	return u
 }
 
-// SetMasteryUse sets the "mastery_use" field.
-func (u *LearnedWordUpsert) SetMasteryUse(v int16) *LearnedWordUpsert {
-	u.Set(learnedword.FieldMasteryUse, v)
-	return u
-}
-
-// UpdateMasteryUse sets the "mastery_use" field to the value that was provided on create.
-func (u *LearnedWordUpsert) UpdateMasteryUse() *LearnedWordUpsert {
-	u.SetExcluded(learnedword.FieldMasteryUse)
-	return u
-}
-
-// AddMasteryUse adds v to the "mastery_use" field.
-func (u *LearnedWordUpsert) AddMasteryUse(v int16) *LearnedWordUpsert {
-	u.Add(learnedword.FieldMasteryUse, v)
-	return u
-}
-
 // SetMasteryOverall sets the "mastery_overall" field.
 func (u *LearnedWordUpsert) SetMasteryOverall(v int32) *LearnedWordUpsert {
 	u.Set(learnedword.FieldMasteryOverall, v)
@@ -901,6 +875,18 @@ func (u *LearnedWordUpsert) SetRelations(v []entity.LearnedWordRelation) *Learne
 // UpdateRelations sets the "relations" field to the value that was provided on create.
 func (u *LearnedWordUpsert) UpdateRelations() *LearnedWordUpsert {
 	u.SetExcluded(learnedword.FieldRelations)
+	return u
+}
+
+// SetTags sets the "tags" field.
+func (u *LearnedWordUpsert) SetTags(v []string) *LearnedWordUpsert {
+	u.Set(learnedword.FieldTags, v)
+	return u
+}
+
+// UpdateTags sets the "tags" field to the value that was provided on create.
+func (u *LearnedWordUpsert) UpdateTags() *LearnedWordUpsert {
+	u.SetExcluded(learnedword.FieldTags)
 	return u
 }
 
@@ -1120,27 +1106,6 @@ func (u *LearnedWordUpsertOne) UpdateMasteryPronounce() *LearnedWordUpsertOne {
 	})
 }
 
-// SetMasteryUse sets the "mastery_use" field.
-func (u *LearnedWordUpsertOne) SetMasteryUse(v int16) *LearnedWordUpsertOne {
-	return u.Update(func(s *LearnedWordUpsert) {
-		s.SetMasteryUse(v)
-	})
-}
-
-// AddMasteryUse adds v to the "mastery_use" field.
-func (u *LearnedWordUpsertOne) AddMasteryUse(v int16) *LearnedWordUpsertOne {
-	return u.Update(func(s *LearnedWordUpsert) {
-		s.AddMasteryUse(v)
-	})
-}
-
-// UpdateMasteryUse sets the "mastery_use" field to the value that was provided on create.
-func (u *LearnedWordUpsertOne) UpdateMasteryUse() *LearnedWordUpsertOne {
-	return u.Update(func(s *LearnedWordUpsert) {
-		s.UpdateMasteryUse()
-	})
-}
-
 // SetMasteryOverall sets the "mastery_overall" field.
 func (u *LearnedWordUpsertOne) SetMasteryOverall(v int32) *LearnedWordUpsertOne {
 	return u.Update(func(s *LearnedWordUpsert) {
@@ -1313,6 +1278,20 @@ func (u *LearnedWordUpsertOne) SetRelations(v []entity.LearnedWordRelation) *Lea
 func (u *LearnedWordUpsertOne) UpdateRelations() *LearnedWordUpsertOne {
 	return u.Update(func(s *LearnedWordUpsert) {
 		s.UpdateRelations()
+	})
+}
+
+// SetTags sets the "tags" field.
+func (u *LearnedWordUpsertOne) SetTags(v []string) *LearnedWordUpsertOne {
+	return u.Update(func(s *LearnedWordUpsert) {
+		s.SetTags(v)
+	})
+}
+
+// UpdateTags sets the "tags" field to the value that was provided on create.
+func (u *LearnedWordUpsertOne) UpdateTags() *LearnedWordUpsertOne {
+	return u.Update(func(s *LearnedWordUpsert) {
+		s.UpdateTags()
 	})
 }
 
@@ -1702,27 +1681,6 @@ func (u *LearnedWordUpsertBulk) UpdateMasteryPronounce() *LearnedWordUpsertBulk 
 	})
 }
 
-// SetMasteryUse sets the "mastery_use" field.
-func (u *LearnedWordUpsertBulk) SetMasteryUse(v int16) *LearnedWordUpsertBulk {
-	return u.Update(func(s *LearnedWordUpsert) {
-		s.SetMasteryUse(v)
-	})
-}
-
-// AddMasteryUse adds v to the "mastery_use" field.
-func (u *LearnedWordUpsertBulk) AddMasteryUse(v int16) *LearnedWordUpsertBulk {
-	return u.Update(func(s *LearnedWordUpsert) {
-		s.AddMasteryUse(v)
-	})
-}
-
-// UpdateMasteryUse sets the "mastery_use" field to the value that was provided on create.
-func (u *LearnedWordUpsertBulk) UpdateMasteryUse() *LearnedWordUpsertBulk {
-	return u.Update(func(s *LearnedWordUpsert) {
-		s.UpdateMasteryUse()
-	})
-}
-
 // SetMasteryOverall sets the "mastery_overall" field.
 func (u *LearnedWordUpsertBulk) SetMasteryOverall(v int32) *LearnedWordUpsertBulk {
 	return u.Update(func(s *LearnedWordUpsert) {
@@ -1895,6 +1853,20 @@ func (u *LearnedWordUpsertBulk) SetRelations(v []entity.LearnedWordRelation) *Le
 func (u *LearnedWordUpsertBulk) UpdateRelations() *LearnedWordUpsertBulk {
 	return u.Update(func(s *LearnedWordUpsert) {
 		s.UpdateRelations()
+	})
+}
+
+// SetTags sets the "tags" field.
+func (u *LearnedWordUpsertBulk) SetTags(v []string) *LearnedWordUpsertBulk {
+	return u.Update(func(s *LearnedWordUpsert) {
+		s.SetTags(v)
+	})
+}
+
+// UpdateTags sets the "tags" field to the value that was provided on create.
+func (u *LearnedWordUpsertBulk) UpdateTags() *LearnedWordUpsertBulk {
+	return u.Update(func(s *LearnedWordUpsert) {
+		s.UpdateTags()
 	})
 }
 

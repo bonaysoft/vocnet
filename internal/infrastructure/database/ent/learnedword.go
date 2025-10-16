@@ -35,8 +35,6 @@ type LearnedWord struct {
 	MasterySpell int16 `json:"mastery_spell,omitempty"`
 	// MasteryPronounce holds the value of the "mastery_pronounce" field.
 	MasteryPronounce int16 `json:"mastery_pronounce,omitempty"`
-	// MasteryUse holds the value of the "mastery_use" field.
-	MasteryUse int16 `json:"mastery_use,omitempty"`
 	// MasteryOverall holds the value of the "mastery_overall" field.
 	MasteryOverall int32 `json:"mastery_overall,omitempty"`
 	// ReviewLastReviewAt holds the value of the "review_last_review_at" field.
@@ -55,6 +53,8 @@ type LearnedWord struct {
 	Sentences []entity.Sentence `json:"sentences,omitempty"`
 	// Relations holds the value of the "relations" field.
 	Relations []entity.LearnedWordRelation `json:"relations,omitempty"`
+	// Tags holds the value of the "tags" field.
+	Tags []string `json:"tags,omitempty"`
 	// CreatedBy holds the value of the "created_by" field.
 	CreatedBy string `json:"created_by,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -69,9 +69,9 @@ func (*LearnedWord) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case learnedword.FieldSentences, learnedword.FieldRelations:
+		case learnedword.FieldSentences, learnedword.FieldRelations, learnedword.FieldTags:
 			values[i] = new([]byte)
-		case learnedword.FieldID, learnedword.FieldUserID, learnedword.FieldMasteryListen, learnedword.FieldMasteryRead, learnedword.FieldMasterySpell, learnedword.FieldMasteryPronounce, learnedword.FieldMasteryUse, learnedword.FieldMasteryOverall, learnedword.FieldReviewIntervalDays, learnedword.FieldReviewFailCount, learnedword.FieldQueryCount:
+		case learnedword.FieldID, learnedword.FieldUserID, learnedword.FieldMasteryListen, learnedword.FieldMasteryRead, learnedword.FieldMasterySpell, learnedword.FieldMasteryPronounce, learnedword.FieldMasteryOverall, learnedword.FieldReviewIntervalDays, learnedword.FieldReviewFailCount, learnedword.FieldQueryCount:
 			values[i] = new(sql.NullInt64)
 		case learnedword.FieldTerm, learnedword.FieldNormalized, learnedword.FieldLanguage, learnedword.FieldNotes, learnedword.FieldCreatedBy:
 			values[i] = new(sql.NullString)
@@ -146,12 +146,6 @@ func (lw *LearnedWord) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				lw.MasteryPronounce = int16(value.Int64)
 			}
-		case learnedword.FieldMasteryUse:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field mastery_use", values[i])
-			} else if value.Valid {
-				lw.MasteryUse = int16(value.Int64)
-			}
 		case learnedword.FieldMasteryOverall:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field mastery_overall", values[i])
@@ -211,6 +205,14 @@ func (lw *LearnedWord) assignValues(columns []string, values []any) error {
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &lw.Relations); err != nil {
 					return fmt.Errorf("unmarshal field relations: %w", err)
+				}
+			}
+		case learnedword.FieldTags:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field tags", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &lw.Tags); err != nil {
+					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
 		case learnedword.FieldCreatedBy:
@@ -291,9 +293,6 @@ func (lw *LearnedWord) String() string {
 	builder.WriteString("mastery_pronounce=")
 	builder.WriteString(fmt.Sprintf("%v", lw.MasteryPronounce))
 	builder.WriteString(", ")
-	builder.WriteString("mastery_use=")
-	builder.WriteString(fmt.Sprintf("%v", lw.MasteryUse))
-	builder.WriteString(", ")
 	builder.WriteString("mastery_overall=")
 	builder.WriteString(fmt.Sprintf("%v", lw.MasteryOverall))
 	builder.WriteString(", ")
@@ -326,6 +325,9 @@ func (lw *LearnedWord) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("relations=")
 	builder.WriteString(fmt.Sprintf("%v", lw.Relations))
+	builder.WriteString(", ")
+	builder.WriteString("tags=")
+	builder.WriteString(fmt.Sprintf("%v", lw.Tags))
 	builder.WriteString(", ")
 	builder.WriteString("created_by=")
 	builder.WriteString(lw.CreatedBy)

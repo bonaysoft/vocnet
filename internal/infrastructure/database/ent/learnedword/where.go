@@ -94,11 +94,6 @@ func MasteryPronounce(v int16) predicate.LearnedWord {
 	return predicate.LearnedWord(sql.FieldEQ(FieldMasteryPronounce, v))
 }
 
-// MasteryUse applies equality check predicate on the "mastery_use" field. It's identical to MasteryUseEQ.
-func MasteryUse(v int16) predicate.LearnedWord {
-	return predicate.LearnedWord(sql.FieldEQ(FieldMasteryUse, v))
-}
-
 // MasteryOverall applies equality check predicate on the "mastery_overall" field. It's identical to MasteryOverallEQ.
 func MasteryOverall(v int32) predicate.LearnedWord {
 	return predicate.LearnedWord(sql.FieldEQ(FieldMasteryOverall, v))
@@ -542,46 +537,6 @@ func MasteryPronounceLT(v int16) predicate.LearnedWord {
 // MasteryPronounceLTE applies the LTE predicate on the "mastery_pronounce" field.
 func MasteryPronounceLTE(v int16) predicate.LearnedWord {
 	return predicate.LearnedWord(sql.FieldLTE(FieldMasteryPronounce, v))
-}
-
-// MasteryUseEQ applies the EQ predicate on the "mastery_use" field.
-func MasteryUseEQ(v int16) predicate.LearnedWord {
-	return predicate.LearnedWord(sql.FieldEQ(FieldMasteryUse, v))
-}
-
-// MasteryUseNEQ applies the NEQ predicate on the "mastery_use" field.
-func MasteryUseNEQ(v int16) predicate.LearnedWord {
-	return predicate.LearnedWord(sql.FieldNEQ(FieldMasteryUse, v))
-}
-
-// MasteryUseIn applies the In predicate on the "mastery_use" field.
-func MasteryUseIn(vs ...int16) predicate.LearnedWord {
-	return predicate.LearnedWord(sql.FieldIn(FieldMasteryUse, vs...))
-}
-
-// MasteryUseNotIn applies the NotIn predicate on the "mastery_use" field.
-func MasteryUseNotIn(vs ...int16) predicate.LearnedWord {
-	return predicate.LearnedWord(sql.FieldNotIn(FieldMasteryUse, vs...))
-}
-
-// MasteryUseGT applies the GT predicate on the "mastery_use" field.
-func MasteryUseGT(v int16) predicate.LearnedWord {
-	return predicate.LearnedWord(sql.FieldGT(FieldMasteryUse, v))
-}
-
-// MasteryUseGTE applies the GTE predicate on the "mastery_use" field.
-func MasteryUseGTE(v int16) predicate.LearnedWord {
-	return predicate.LearnedWord(sql.FieldGTE(FieldMasteryUse, v))
-}
-
-// MasteryUseLT applies the LT predicate on the "mastery_use" field.
-func MasteryUseLT(v int16) predicate.LearnedWord {
-	return predicate.LearnedWord(sql.FieldLT(FieldMasteryUse, v))
-}
-
-// MasteryUseLTE applies the LTE predicate on the "mastery_use" field.
-func MasteryUseLTE(v int16) predicate.LearnedWord {
-	return predicate.LearnedWord(sql.FieldLTE(FieldMasteryUse, v))
 }
 
 // MasteryOverallEQ applies the EQ predicate on the "mastery_overall" field.

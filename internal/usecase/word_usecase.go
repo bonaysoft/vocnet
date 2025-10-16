@@ -117,8 +117,6 @@ func normalizeVocForUpsert(in *entity.Word) (*entity.Word, error) {
 	} else {
 		out.Lemma = nil
 	}
-	if len(out.Tags) == 0 {
-		out.Tags = nil
-	}
+
 	return &out, nil
 }

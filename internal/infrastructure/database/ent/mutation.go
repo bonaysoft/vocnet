@@ -49,8 +49,6 @@ type LearnedWordMutation struct {
 	addmastery_spell        *int16
 	mastery_pronounce       *int16
 	addmastery_pronounce    *int16
-	mastery_use             *int16
-	addmastery_use          *int16
 	mastery_overall         *int32
 	addmastery_overall      *int32
 	review_last_review_at   *time.Time
@@ -66,6 +64,8 @@ type LearnedWordMutation struct {
 	appendsentences         []entity.Sentence
 	relations               *[]entity.LearnedWordRelation
 	appendrelations         []entity.LearnedWordRelation
+	tags                    *[]string
+	appendtags              []string
 	created_by              *string
 	created_at              *time.Time
 	updated_at              *time.Time
@@ -561,62 +561,6 @@ func (m *LearnedWordMutation) ResetMasteryPronounce() {
 	m.addmastery_pronounce = nil
 }
 
-// SetMasteryUse sets the "mastery_use" field.
-func (m *LearnedWordMutation) SetMasteryUse(i int16) {
-	m.mastery_use = &i
-	m.addmastery_use = nil
-}
-
-// MasteryUse returns the value of the "mastery_use" field in the mutation.
-func (m *LearnedWordMutation) MasteryUse() (r int16, exists bool) {
-	v := m.mastery_use
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMasteryUse returns the old "mastery_use" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldMasteryUse(ctx context.Context) (v int16, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMasteryUse is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMasteryUse requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMasteryUse: %w", err)
-	}
-	return oldValue.MasteryUse, nil
-}
-
-// AddMasteryUse adds i to the "mastery_use" field.
-func (m *LearnedWordMutation) AddMasteryUse(i int16) {
-	if m.addmastery_use != nil {
-		*m.addmastery_use += i
-	} else {
-		m.addmastery_use = &i
-	}
-}
-
-// AddedMasteryUse returns the value that was added to the "mastery_use" field in this mutation.
-func (m *LearnedWordMutation) AddedMasteryUse() (r int16, exists bool) {
-	v := m.addmastery_use
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetMasteryUse resets all changes to the "mastery_use" field.
-func (m *LearnedWordMutation) ResetMasteryUse() {
-	m.mastery_use = nil
-	m.addmastery_use = nil
-}
-
 // SetMasteryOverall sets the "mastery_overall" field.
 func (m *LearnedWordMutation) SetMasteryOverall(i int32) {
 	m.mastery_overall = &i
@@ -1090,6 +1034,57 @@ func (m *LearnedWordMutation) ResetRelations() {
 	m.appendrelations = nil
 }
 
+// SetTags sets the "tags" field.
+func (m *LearnedWordMutation) SetTags(s []string) {
+	m.tags = &s
+	m.appendtags = nil
+}
+
+// Tags returns the value of the "tags" field in the mutation.
+func (m *LearnedWordMutation) Tags() (r []string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old "tags" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LearnedWordMutation) OldTags(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTags is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// AppendTags adds s to the "tags" field.
+func (m *LearnedWordMutation) AppendTags(s []string) {
+	m.appendtags = append(m.appendtags, s...)
+}
+
+// AppendedTags returns the list of values that were appended to the "tags" field in this mutation.
+func (m *LearnedWordMutation) AppendedTags() ([]string, bool) {
+	if len(m.appendtags) == 0 {
+		return nil, false
+	}
+	return m.appendtags, true
+}
+
+// ResetTags resets all changes to the "tags" field.
+func (m *LearnedWordMutation) ResetTags() {
+	m.tags = nil
+	m.appendtags = nil
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (m *LearnedWordMutation) SetCreatedBy(s string) {
 	m.created_by = &s
@@ -1257,9 +1252,6 @@ func (m *LearnedWordMutation) Fields() []string {
 	if m.mastery_pronounce != nil {
 		fields = append(fields, learnedword.FieldMasteryPronounce)
 	}
-	if m.mastery_use != nil {
-		fields = append(fields, learnedword.FieldMasteryUse)
-	}
 	if m.mastery_overall != nil {
 		fields = append(fields, learnedword.FieldMasteryOverall)
 	}
@@ -1286,6 +1278,9 @@ func (m *LearnedWordMutation) Fields() []string {
 	}
 	if m.relations != nil {
 		fields = append(fields, learnedword.FieldRelations)
+	}
+	if m.tags != nil {
+		fields = append(fields, learnedword.FieldTags)
 	}
 	if m.created_by != nil {
 		fields = append(fields, learnedword.FieldCreatedBy)
@@ -1320,8 +1315,6 @@ func (m *LearnedWordMutation) Field(name string) (ent.Value, bool) {
 		return m.MasterySpell()
 	case learnedword.FieldMasteryPronounce:
 		return m.MasteryPronounce()
-	case learnedword.FieldMasteryUse:
-		return m.MasteryUse()
 	case learnedword.FieldMasteryOverall:
 		return m.MasteryOverall()
 	case learnedword.FieldReviewLastReviewAt:
@@ -1340,6 +1333,8 @@ func (m *LearnedWordMutation) Field(name string) (ent.Value, bool) {
 		return m.Sentences()
 	case learnedword.FieldRelations:
 		return m.Relations()
+	case learnedword.FieldTags:
+		return m.Tags()
 	case learnedword.FieldCreatedBy:
 		return m.CreatedBy()
 	case learnedword.FieldCreatedAt:
@@ -1371,8 +1366,6 @@ func (m *LearnedWordMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldMasterySpell(ctx)
 	case learnedword.FieldMasteryPronounce:
 		return m.OldMasteryPronounce(ctx)
-	case learnedword.FieldMasteryUse:
-		return m.OldMasteryUse(ctx)
 	case learnedword.FieldMasteryOverall:
 		return m.OldMasteryOverall(ctx)
 	case learnedword.FieldReviewLastReviewAt:
@@ -1391,6 +1384,8 @@ func (m *LearnedWordMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldSentences(ctx)
 	case learnedword.FieldRelations:
 		return m.OldRelations(ctx)
+	case learnedword.FieldTags:
+		return m.OldTags(ctx)
 	case learnedword.FieldCreatedBy:
 		return m.OldCreatedBy(ctx)
 	case learnedword.FieldCreatedAt:
@@ -1462,13 +1457,6 @@ func (m *LearnedWordMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetMasteryPronounce(v)
 		return nil
-	case learnedword.FieldMasteryUse:
-		v, ok := value.(int16)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMasteryUse(v)
-		return nil
 	case learnedword.FieldMasteryOverall:
 		v, ok := value.(int32)
 		if !ok {
@@ -1532,6 +1520,13 @@ func (m *LearnedWordMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetRelations(v)
 		return nil
+	case learnedword.FieldTags:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
+		return nil
 	case learnedword.FieldCreatedBy:
 		v, ok := value.(string)
 		if !ok {
@@ -1576,9 +1571,6 @@ func (m *LearnedWordMutation) AddedFields() []string {
 	if m.addmastery_pronounce != nil {
 		fields = append(fields, learnedword.FieldMasteryPronounce)
 	}
-	if m.addmastery_use != nil {
-		fields = append(fields, learnedword.FieldMasteryUse)
-	}
 	if m.addmastery_overall != nil {
 		fields = append(fields, learnedword.FieldMasteryOverall)
 	}
@@ -1609,8 +1601,6 @@ func (m *LearnedWordMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedMasterySpell()
 	case learnedword.FieldMasteryPronounce:
 		return m.AddedMasteryPronounce()
-	case learnedword.FieldMasteryUse:
-		return m.AddedMasteryUse()
 	case learnedword.FieldMasteryOverall:
 		return m.AddedMasteryOverall()
 	case learnedword.FieldReviewIntervalDays:
@@ -1662,13 +1652,6 @@ func (m *LearnedWordMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddMasteryPronounce(v)
-		return nil
-	case learnedword.FieldMasteryUse:
-		v, ok := value.(int16)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddMasteryUse(v)
 		return nil
 	case learnedword.FieldMasteryOverall:
 		v, ok := value.(int32)
@@ -1770,9 +1753,6 @@ func (m *LearnedWordMutation) ResetField(name string) error {
 	case learnedword.FieldMasteryPronounce:
 		m.ResetMasteryPronounce()
 		return nil
-	case learnedword.FieldMasteryUse:
-		m.ResetMasteryUse()
-		return nil
 	case learnedword.FieldMasteryOverall:
 		m.ResetMasteryOverall()
 		return nil
@@ -1799,6 +1779,9 @@ func (m *LearnedWordMutation) ResetField(name string) error {
 		return nil
 	case learnedword.FieldRelations:
 		m.ResetRelations()
+		return nil
+	case learnedword.FieldTags:
+		m.ResetTags()
 		return nil
 	case learnedword.FieldCreatedBy:
 		m.ResetCreatedBy()
@@ -1864,32 +1847,32 @@ func (m *LearnedWordMutation) ResetEdge(name string) error {
 // WordMutation represents an operation that mutates the Word nodes in the graph.
 type WordMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *int
-	text            *string
-	normalized      *string
-	language        *string
-	word_type       *string
-	lemma           *string
-	phonetics       *[]entity.WordPhonetic
-	appendphonetics []entity.WordPhonetic
-	meanings        *[]entity.WordDefinition
-	appendmeanings  []entity.WordDefinition
-	tags            *[]string
-	appendtags      []string
-	phrases         *[]entity.Phrase
-	appendphrases   []entity.Phrase
-	sentences       *[]entity.Sentence
-	appendsentences []entity.Sentence
-	relations       *[]entity.WordRelation
-	appendrelations []entity.WordRelation
-	created_at      *time.Time
-	updated_at      *time.Time
-	clearedFields   map[string]struct{}
-	done            bool
-	oldValue        func(context.Context) (*Word, error)
-	predicates      []predicate.Word
+	op                Op
+	typ               string
+	id                *int
+	text              *string
+	normalized        *string
+	language          *string
+	word_type         *string
+	lemma             *string
+	phonetics         *[]entity.WordPhonetic
+	appendphonetics   []entity.WordPhonetic
+	definitions       *[]entity.WordDefinition
+	appenddefinitions []entity.WordDefinition
+	phrases           *[]entity.Phrase
+	appendphrases     []entity.Phrase
+	sentences         *[]entity.Sentence
+	appendsentences   []entity.Sentence
+	relations         *[]entity.WordRelation
+	appendrelations   []entity.WordRelation
+	categories        *[]string
+	appendcategories  []string
+	created_at        *time.Time
+	updated_at        *time.Time
+	clearedFields     map[string]struct{}
+	done              bool
+	oldValue          func(context.Context) (*Word, error)
+	predicates        []predicate.Word
 }
 
 var _ ent.Mutation = (*WordMutation)(nil)
@@ -2234,106 +2217,55 @@ func (m *WordMutation) ResetPhonetics() {
 	m.appendphonetics = nil
 }
 
-// SetMeanings sets the "meanings" field.
-func (m *WordMutation) SetMeanings(ed []entity.WordDefinition) {
-	m.meanings = &ed
-	m.appendmeanings = nil
+// SetDefinitions sets the "definitions" field.
+func (m *WordMutation) SetDefinitions(ed []entity.WordDefinition) {
+	m.definitions = &ed
+	m.appenddefinitions = nil
 }
 
-// Meanings returns the value of the "meanings" field in the mutation.
-func (m *WordMutation) Meanings() (r []entity.WordDefinition, exists bool) {
-	v := m.meanings
+// Definitions returns the value of the "definitions" field in the mutation.
+func (m *WordMutation) Definitions() (r []entity.WordDefinition, exists bool) {
+	v := m.definitions
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldMeanings returns the old "meanings" field's value of the Word entity.
+// OldDefinitions returns the old "definitions" field's value of the Word entity.
 // If the Word object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WordMutation) OldMeanings(ctx context.Context) (v []entity.WordDefinition, err error) {
+func (m *WordMutation) OldDefinitions(ctx context.Context) (v []entity.WordDefinition, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMeanings is only allowed on UpdateOne operations")
+		return v, errors.New("OldDefinitions is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMeanings requires an ID field in the mutation")
+		return v, errors.New("OldDefinitions requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMeanings: %w", err)
+		return v, fmt.Errorf("querying old value for OldDefinitions: %w", err)
 	}
-	return oldValue.Meanings, nil
+	return oldValue.Definitions, nil
 }
 
-// AppendMeanings adds ed to the "meanings" field.
-func (m *WordMutation) AppendMeanings(ed []entity.WordDefinition) {
-	m.appendmeanings = append(m.appendmeanings, ed...)
+// AppendDefinitions adds ed to the "definitions" field.
+func (m *WordMutation) AppendDefinitions(ed []entity.WordDefinition) {
+	m.appenddefinitions = append(m.appenddefinitions, ed...)
 }
 
-// AppendedMeanings returns the list of values that were appended to the "meanings" field in this mutation.
-func (m *WordMutation) AppendedMeanings() ([]entity.WordDefinition, bool) {
-	if len(m.appendmeanings) == 0 {
+// AppendedDefinitions returns the list of values that were appended to the "definitions" field in this mutation.
+func (m *WordMutation) AppendedDefinitions() ([]entity.WordDefinition, bool) {
+	if len(m.appenddefinitions) == 0 {
 		return nil, false
 	}
-	return m.appendmeanings, true
+	return m.appenddefinitions, true
 }
 
-// ResetMeanings resets all changes to the "meanings" field.
-func (m *WordMutation) ResetMeanings() {
-	m.meanings = nil
-	m.appendmeanings = nil
-}
-
-// SetTags sets the "tags" field.
-func (m *WordMutation) SetTags(s []string) {
-	m.tags = &s
-	m.appendtags = nil
-}
-
-// Tags returns the value of the "tags" field in the mutation.
-func (m *WordMutation) Tags() (r []string, exists bool) {
-	v := m.tags
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTags returns the old "tags" field's value of the Word entity.
-// If the Word object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WordMutation) OldTags(ctx context.Context) (v []string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTags is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTags requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTags: %w", err)
-	}
-	return oldValue.Tags, nil
-}
-
-// AppendTags adds s to the "tags" field.
-func (m *WordMutation) AppendTags(s []string) {
-	m.appendtags = append(m.appendtags, s...)
-}
-
-// AppendedTags returns the list of values that were appended to the "tags" field in this mutation.
-func (m *WordMutation) AppendedTags() ([]string, bool) {
-	if len(m.appendtags) == 0 {
-		return nil, false
-	}
-	return m.appendtags, true
-}
-
-// ResetTags resets all changes to the "tags" field.
-func (m *WordMutation) ResetTags() {
-	m.tags = nil
-	m.appendtags = nil
+// ResetDefinitions resets all changes to the "definitions" field.
+func (m *WordMutation) ResetDefinitions() {
+	m.definitions = nil
+	m.appenddefinitions = nil
 }
 
 // SetPhrases sets the "phrases" field.
@@ -2489,6 +2421,57 @@ func (m *WordMutation) ResetRelations() {
 	m.appendrelations = nil
 }
 
+// SetCategories sets the "categories" field.
+func (m *WordMutation) SetCategories(s []string) {
+	m.categories = &s
+	m.appendcategories = nil
+}
+
+// Categories returns the value of the "categories" field in the mutation.
+func (m *WordMutation) Categories() (r []string, exists bool) {
+	v := m.categories
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCategories returns the old "categories" field's value of the Word entity.
+// If the Word object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WordMutation) OldCategories(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCategories is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCategories requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCategories: %w", err)
+	}
+	return oldValue.Categories, nil
+}
+
+// AppendCategories adds s to the "categories" field.
+func (m *WordMutation) AppendCategories(s []string) {
+	m.appendcategories = append(m.appendcategories, s...)
+}
+
+// AppendedCategories returns the list of values that were appended to the "categories" field in this mutation.
+func (m *WordMutation) AppendedCategories() ([]string, bool) {
+	if len(m.appendcategories) == 0 {
+		return nil, false
+	}
+	return m.appendcategories, true
+}
+
+// ResetCategories resets all changes to the "categories" field.
+func (m *WordMutation) ResetCategories() {
+	m.categories = nil
+	m.appendcategories = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *WordMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -2614,11 +2597,8 @@ func (m *WordMutation) Fields() []string {
 	if m.phonetics != nil {
 		fields = append(fields, word.FieldPhonetics)
 	}
-	if m.meanings != nil {
-		fields = append(fields, word.FieldMeanings)
-	}
-	if m.tags != nil {
-		fields = append(fields, word.FieldTags)
+	if m.definitions != nil {
+		fields = append(fields, word.FieldDefinitions)
 	}
 	if m.phrases != nil {
 		fields = append(fields, word.FieldPhrases)
@@ -2628,6 +2608,9 @@ func (m *WordMutation) Fields() []string {
 	}
 	if m.relations != nil {
 		fields = append(fields, word.FieldRelations)
+	}
+	if m.categories != nil {
+		fields = append(fields, word.FieldCategories)
 	}
 	if m.created_at != nil {
 		fields = append(fields, word.FieldCreatedAt)
@@ -2655,16 +2638,16 @@ func (m *WordMutation) Field(name string) (ent.Value, bool) {
 		return m.Lemma()
 	case word.FieldPhonetics:
 		return m.Phonetics()
-	case word.FieldMeanings:
-		return m.Meanings()
-	case word.FieldTags:
-		return m.Tags()
+	case word.FieldDefinitions:
+		return m.Definitions()
 	case word.FieldPhrases:
 		return m.Phrases()
 	case word.FieldSentences:
 		return m.Sentences()
 	case word.FieldRelations:
 		return m.Relations()
+	case word.FieldCategories:
+		return m.Categories()
 	case word.FieldCreatedAt:
 		return m.CreatedAt()
 	case word.FieldUpdatedAt:
@@ -2690,16 +2673,16 @@ func (m *WordMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldLemma(ctx)
 	case word.FieldPhonetics:
 		return m.OldPhonetics(ctx)
-	case word.FieldMeanings:
-		return m.OldMeanings(ctx)
-	case word.FieldTags:
-		return m.OldTags(ctx)
+	case word.FieldDefinitions:
+		return m.OldDefinitions(ctx)
 	case word.FieldPhrases:
 		return m.OldPhrases(ctx)
 	case word.FieldSentences:
 		return m.OldSentences(ctx)
 	case word.FieldRelations:
 		return m.OldRelations(ctx)
+	case word.FieldCategories:
+		return m.OldCategories(ctx)
 	case word.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case word.FieldUpdatedAt:
@@ -2755,19 +2738,12 @@ func (m *WordMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetPhonetics(v)
 		return nil
-	case word.FieldMeanings:
+	case word.FieldDefinitions:
 		v, ok := value.([]entity.WordDefinition)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetMeanings(v)
-		return nil
-	case word.FieldTags:
-		v, ok := value.([]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTags(v)
+		m.SetDefinitions(v)
 		return nil
 	case word.FieldPhrases:
 		v, ok := value.([]entity.Phrase)
@@ -2789,6 +2765,13 @@ func (m *WordMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRelations(v)
+		return nil
+	case word.FieldCategories:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCategories(v)
 		return nil
 	case word.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -2880,11 +2863,8 @@ func (m *WordMutation) ResetField(name string) error {
 	case word.FieldPhonetics:
 		m.ResetPhonetics()
 		return nil
-	case word.FieldMeanings:
-		m.ResetMeanings()
-		return nil
-	case word.FieldTags:
-		m.ResetTags()
+	case word.FieldDefinitions:
+		m.ResetDefinitions()
 		return nil
 	case word.FieldPhrases:
 		m.ResetPhrases()
@@ -2894,6 +2874,9 @@ func (m *WordMutation) ResetField(name string) error {
 		return nil
 	case word.FieldRelations:
 		m.ResetRelations()
+		return nil
+	case word.FieldCategories:
+		m.ResetCategories()
 		return nil
 	case word.FieldCreatedAt:
 		m.ResetCreatedAt()

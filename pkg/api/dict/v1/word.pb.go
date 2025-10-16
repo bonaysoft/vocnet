@@ -35,7 +35,7 @@ type Word struct {
 	Lemma       string                 `protobuf:"bytes,5,opt,name=lemma,proto3" json:"lemma,omitempty"`                                // Present only if word_type != lemma; empty when this is the lemma itself
 	Phonetics   []*Phonetic            `protobuf:"bytes,6,rep,name=phonetics,proto3" json:"phonetics,omitempty"`                        // IPAs for this word
 	Definitions []*Definition          `protobuf:"bytes,7,rep,name=definitions,proto3" json:"definitions,omitempty"`                    // Possibly multiple languages' definitions
-	Tags        []string               `protobuf:"bytes,8,rep,name=tags,proto3" json:"tags,omitempty"`                                  // Level / topic tags
+	Categories  []string               `protobuf:"bytes,8,rep,name=categories,proto3" json:"categories,omitempty"`                      // Level / topic tags
 	Phrases     []*Phrase              `protobuf:"bytes,9,rep,name=phrases,proto3" json:"phrases,omitempty"`                            // Common phrases/idioms containing this word
 	Sentences   []*Sentence            `protobuf:"bytes,10,rep,name=sentences,proto3" json:"sentences,omitempty"`                       // Example sentences
 	// When this entry is a lemma (word_type == "lemma"), forms lists all other surface forms
@@ -131,9 +131,9 @@ func (x *Word) GetDefinitions() []*Definition {
 	return nil
 }
 
-func (x *Word) GetTags() []string {
+func (x *Word) GetCategories() []string {
 	if x != nil {
-		return x.Tags
+		return x.Categories
 	}
 	return nil
 }
@@ -675,7 +675,7 @@ var File_dict_v1_word_proto protoreflect.FileDescriptor
 
 const file_dict_v1_word_proto_rawDesc = "" +
 	"\n" +
-	"\x12dict/v1/word.proto\x12\adict.v1\x1a\x15common/v1/types.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17validate/validate.proto\x1a\x14dict/v1/phrase.proto\"\xbd\x04\n" +
+	"\x12dict/v1/word.proto\x12\adict.v1\x1a\x15common/v1/types.proto\x1a\x14dict/v1/phrase.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17validate/validate.proto\"\xc9\x04\n" +
 	"\x04Word\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04text\x18\x02 \x01(\tR\x04text\x12/\n" +
@@ -683,8 +683,10 @@ const file_dict_v1_word_proto_rawDesc = "" +
 	"\tword_type\x18\x04 \x01(\tR\bwordType\x12\x14\n" +
 	"\x05lemma\x18\x05 \x01(\tR\x05lemma\x12/\n" +
 	"\tphonetics\x18\x06 \x03(\v2\x11.dict.v1.PhoneticR\tphonetics\x125\n" +
-	"\vdefinitions\x18\a \x03(\v2\x13.dict.v1.DefinitionR\vdefinitions\x12\x12\n" +
-	"\x04tags\x18\b \x03(\tR\x04tags\x12)\n" +
+	"\vdefinitions\x18\a \x03(\v2\x13.dict.v1.DefinitionR\vdefinitions\x12\x1e\n" +
+	"\n" +
+	"categories\x18\b \x03(\tR\n" +
+	"categories\x12)\n" +
 	"\aphrases\x18\t \x03(\v2\x0f.dict.v1.PhraseR\aphrases\x12/\n" +
 	"\tsentences\x18\n" +
 	" \x03(\v2\x11.dict.v1.SentenceR\tsentences\x12*\n" +

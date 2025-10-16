@@ -337,10 +337,10 @@ func insertBatchEnt(ctx context.Context, client *entdb.Client, batch []wordRecor
 			builder.SetPhonetics(phonetics)
 		}
 		if len(meanings) > 0 {
-			builder.SetMeanings(meanings)
+			builder.SetDefinitions(meanings)
 		}
 		if tags := buildTags(w.Tags); len(tags) > 0 {
-			builder.SetTags(tags)
+			builder.SetCategories(tags)
 		}
 		builders = append(builders, builder)
 	}

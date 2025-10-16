@@ -31,16 +31,16 @@ type Word struct {
 	Lemma *string `json:"lemma,omitempty"`
 	// Phonetics holds the value of the "phonetics" field.
 	Phonetics []entity.WordPhonetic `json:"phonetics,omitempty"`
-	// Meanings holds the value of the "meanings" field.
-	Meanings []entity.WordDefinition `json:"meanings,omitempty"`
-	// Tags holds the value of the "tags" field.
-	Tags []string `json:"tags,omitempty"`
+	// Definitions holds the value of the "definitions" field.
+	Definitions []entity.WordDefinition `json:"definitions,omitempty"`
 	// Phrases holds the value of the "phrases" field.
 	Phrases []entity.Phrase `json:"phrases,omitempty"`
 	// Sentences holds the value of the "sentences" field.
 	Sentences []entity.Sentence `json:"sentences,omitempty"`
 	// Relations holds the value of the "relations" field.
 	Relations []entity.WordRelation `json:"relations,omitempty"`
+	// Categories holds the value of the "categories" field.
+	Categories []string `json:"categories,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -53,7 +53,7 @@ func (*Word) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case word.FieldPhonetics, word.FieldMeanings, word.FieldTags, word.FieldPhrases, word.FieldSentences, word.FieldRelations:
+		case word.FieldPhonetics, word.FieldDefinitions, word.FieldPhrases, word.FieldSentences, word.FieldRelations, word.FieldCategories:
 			values[i] = new([]byte)
 		case word.FieldID:
 			values[i] = new(sql.NullInt64)
@@ -121,20 +121,12 @@ func (w *Word) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field phonetics: %w", err)
 				}
 			}
-		case word.FieldMeanings:
+		case word.FieldDefinitions:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field meanings", values[i])
+				return fmt.Errorf("unexpected type %T for field definitions", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &w.Meanings); err != nil {
-					return fmt.Errorf("unmarshal field meanings: %w", err)
-				}
-			}
-		case word.FieldTags:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field tags", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &w.Tags); err != nil {
-					return fmt.Errorf("unmarshal field tags: %w", err)
+				if err := json.Unmarshal(*value, &w.Definitions); err != nil {
+					return fmt.Errorf("unmarshal field definitions: %w", err)
 				}
 			}
 		case word.FieldPhrases:
@@ -159,6 +151,14 @@ func (w *Word) assignValues(columns []string, values []any) error {
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &w.Relations); err != nil {
 					return fmt.Errorf("unmarshal field relations: %w", err)
+				}
+			}
+		case word.FieldCategories:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field categories", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &w.Categories); err != nil {
+					return fmt.Errorf("unmarshal field categories: %w", err)
 				}
 			}
 		case word.FieldCreatedAt:
@@ -229,11 +229,8 @@ func (w *Word) String() string {
 	builder.WriteString("phonetics=")
 	builder.WriteString(fmt.Sprintf("%v", w.Phonetics))
 	builder.WriteString(", ")
-	builder.WriteString("meanings=")
-	builder.WriteString(fmt.Sprintf("%v", w.Meanings))
-	builder.WriteString(", ")
-	builder.WriteString("tags=")
-	builder.WriteString(fmt.Sprintf("%v", w.Tags))
+	builder.WriteString("definitions=")
+	builder.WriteString(fmt.Sprintf("%v", w.Definitions))
 	builder.WriteString(", ")
 	builder.WriteString("phrases=")
 	builder.WriteString(fmt.Sprintf("%v", w.Phrases))
@@ -243,6 +240,9 @@ func (w *Word) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("relations=")
 	builder.WriteString(fmt.Sprintf("%v", w.Relations))
+	builder.WriteString(", ")
+	builder.WriteString("categories=")
+	builder.WriteString(fmt.Sprintf("%v", w.Categories))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(w.CreatedAt.Format(time.ANSIC))

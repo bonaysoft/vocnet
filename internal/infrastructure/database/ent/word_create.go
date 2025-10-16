@@ -91,15 +91,9 @@ func (wc *WordCreate) SetPhonetics(ep []entity.WordPhonetic) *WordCreate {
 	return wc
 }
 
-// SetMeanings sets the "meanings" field.
-func (wc *WordCreate) SetMeanings(ed []entity.WordDefinition) *WordCreate {
-	wc.mutation.SetMeanings(ed)
-	return wc
-}
-
-// SetTags sets the "tags" field.
-func (wc *WordCreate) SetTags(s []string) *WordCreate {
-	wc.mutation.SetTags(s)
+// SetDefinitions sets the "definitions" field.
+func (wc *WordCreate) SetDefinitions(ed []entity.WordDefinition) *WordCreate {
+	wc.mutation.SetDefinitions(ed)
 	return wc
 }
 
@@ -118,6 +112,12 @@ func (wc *WordCreate) SetSentences(e []entity.Sentence) *WordCreate {
 // SetRelations sets the "relations" field.
 func (wc *WordCreate) SetRelations(er []entity.WordRelation) *WordCreate {
 	wc.mutation.SetRelations(er)
+	return wc
+}
+
+// SetCategories sets the "categories" field.
+func (wc *WordCreate) SetCategories(s []string) *WordCreate {
+	wc.mutation.SetCategories(s)
 	return wc
 }
 
@@ -200,13 +200,9 @@ func (wc *WordCreate) defaults() {
 		v := word.DefaultPhonetics
 		wc.mutation.SetPhonetics(v)
 	}
-	if _, ok := wc.mutation.Meanings(); !ok {
-		v := word.DefaultMeanings
-		wc.mutation.SetMeanings(v)
-	}
-	if _, ok := wc.mutation.Tags(); !ok {
-		v := word.DefaultTags
-		wc.mutation.SetTags(v)
+	if _, ok := wc.mutation.Definitions(); !ok {
+		v := word.DefaultDefinitions
+		wc.mutation.SetDefinitions(v)
 	}
 	if _, ok := wc.mutation.Phrases(); !ok {
 		v := word.DefaultPhrases
@@ -219,6 +215,10 @@ func (wc *WordCreate) defaults() {
 	if _, ok := wc.mutation.Relations(); !ok {
 		v := word.DefaultRelations
 		wc.mutation.SetRelations(v)
+	}
+	if _, ok := wc.mutation.Categories(); !ok {
+		v := word.DefaultCategories
+		wc.mutation.SetCategories(v)
 	}
 	if _, ok := wc.mutation.CreatedAt(); !ok {
 		v := word.DefaultCreatedAt()
@@ -252,11 +252,8 @@ func (wc *WordCreate) check() error {
 	if _, ok := wc.mutation.Phonetics(); !ok {
 		return &ValidationError{Name: "phonetics", err: errors.New(`ent: missing required field "Word.phonetics"`)}
 	}
-	if _, ok := wc.mutation.Meanings(); !ok {
-		return &ValidationError{Name: "meanings", err: errors.New(`ent: missing required field "Word.meanings"`)}
-	}
-	if _, ok := wc.mutation.Tags(); !ok {
-		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "Word.tags"`)}
+	if _, ok := wc.mutation.Definitions(); !ok {
+		return &ValidationError{Name: "definitions", err: errors.New(`ent: missing required field "Word.definitions"`)}
 	}
 	if _, ok := wc.mutation.Phrases(); !ok {
 		return &ValidationError{Name: "phrases", err: errors.New(`ent: missing required field "Word.phrases"`)}
@@ -266,6 +263,9 @@ func (wc *WordCreate) check() error {
 	}
 	if _, ok := wc.mutation.Relations(); !ok {
 		return &ValidationError{Name: "relations", err: errors.New(`ent: missing required field "Word.relations"`)}
+	}
+	if _, ok := wc.mutation.Categories(); !ok {
+		return &ValidationError{Name: "categories", err: errors.New(`ent: missing required field "Word.categories"`)}
 	}
 	if _, ok := wc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Word.created_at"`)}
@@ -324,13 +324,9 @@ func (wc *WordCreate) createSpec() (*Word, *sqlgraph.CreateSpec) {
 		_spec.SetField(word.FieldPhonetics, field.TypeJSON, value)
 		_node.Phonetics = value
 	}
-	if value, ok := wc.mutation.Meanings(); ok {
-		_spec.SetField(word.FieldMeanings, field.TypeJSON, value)
-		_node.Meanings = value
-	}
-	if value, ok := wc.mutation.Tags(); ok {
-		_spec.SetField(word.FieldTags, field.TypeJSON, value)
-		_node.Tags = value
+	if value, ok := wc.mutation.Definitions(); ok {
+		_spec.SetField(word.FieldDefinitions, field.TypeJSON, value)
+		_node.Definitions = value
 	}
 	if value, ok := wc.mutation.Phrases(); ok {
 		_spec.SetField(word.FieldPhrases, field.TypeJSON, value)
@@ -343,6 +339,10 @@ func (wc *WordCreate) createSpec() (*Word, *sqlgraph.CreateSpec) {
 	if value, ok := wc.mutation.Relations(); ok {
 		_spec.SetField(word.FieldRelations, field.TypeJSON, value)
 		_node.Relations = value
+	}
+	if value, ok := wc.mutation.Categories(); ok {
+		_spec.SetField(word.FieldCategories, field.TypeJSON, value)
+		_node.Categories = value
 	}
 	if value, ok := wc.mutation.CreatedAt(); ok {
 		_spec.SetField(word.FieldCreatedAt, field.TypeTime, value)
@@ -482,27 +482,15 @@ func (u *WordUpsert) UpdatePhonetics() *WordUpsert {
 	return u
 }
 
-// SetMeanings sets the "meanings" field.
-func (u *WordUpsert) SetMeanings(v []entity.WordDefinition) *WordUpsert {
-	u.Set(word.FieldMeanings, v)
+// SetDefinitions sets the "definitions" field.
+func (u *WordUpsert) SetDefinitions(v []entity.WordDefinition) *WordUpsert {
+	u.Set(word.FieldDefinitions, v)
 	return u
 }
 
-// UpdateMeanings sets the "meanings" field to the value that was provided on create.
-func (u *WordUpsert) UpdateMeanings() *WordUpsert {
-	u.SetExcluded(word.FieldMeanings)
-	return u
-}
-
-// SetTags sets the "tags" field.
-func (u *WordUpsert) SetTags(v []string) *WordUpsert {
-	u.Set(word.FieldTags, v)
-	return u
-}
-
-// UpdateTags sets the "tags" field to the value that was provided on create.
-func (u *WordUpsert) UpdateTags() *WordUpsert {
-	u.SetExcluded(word.FieldTags)
+// UpdateDefinitions sets the "definitions" field to the value that was provided on create.
+func (u *WordUpsert) UpdateDefinitions() *WordUpsert {
+	u.SetExcluded(word.FieldDefinitions)
 	return u
 }
 
@@ -539,6 +527,18 @@ func (u *WordUpsert) SetRelations(v []entity.WordRelation) *WordUpsert {
 // UpdateRelations sets the "relations" field to the value that was provided on create.
 func (u *WordUpsert) UpdateRelations() *WordUpsert {
 	u.SetExcluded(word.FieldRelations)
+	return u
+}
+
+// SetCategories sets the "categories" field.
+func (u *WordUpsert) SetCategories(v []string) *WordUpsert {
+	u.Set(word.FieldCategories, v)
+	return u
+}
+
+// UpdateCategories sets the "categories" field to the value that was provided on create.
+func (u *WordUpsert) UpdateCategories() *WordUpsert {
+	u.SetExcluded(word.FieldCategories)
 	return u
 }
 
@@ -690,31 +690,17 @@ func (u *WordUpsertOne) UpdatePhonetics() *WordUpsertOne {
 	})
 }
 
-// SetMeanings sets the "meanings" field.
-func (u *WordUpsertOne) SetMeanings(v []entity.WordDefinition) *WordUpsertOne {
+// SetDefinitions sets the "definitions" field.
+func (u *WordUpsertOne) SetDefinitions(v []entity.WordDefinition) *WordUpsertOne {
 	return u.Update(func(s *WordUpsert) {
-		s.SetMeanings(v)
+		s.SetDefinitions(v)
 	})
 }
 
-// UpdateMeanings sets the "meanings" field to the value that was provided on create.
-func (u *WordUpsertOne) UpdateMeanings() *WordUpsertOne {
+// UpdateDefinitions sets the "definitions" field to the value that was provided on create.
+func (u *WordUpsertOne) UpdateDefinitions() *WordUpsertOne {
 	return u.Update(func(s *WordUpsert) {
-		s.UpdateMeanings()
-	})
-}
-
-// SetTags sets the "tags" field.
-func (u *WordUpsertOne) SetTags(v []string) *WordUpsertOne {
-	return u.Update(func(s *WordUpsert) {
-		s.SetTags(v)
-	})
-}
-
-// UpdateTags sets the "tags" field to the value that was provided on create.
-func (u *WordUpsertOne) UpdateTags() *WordUpsertOne {
-	return u.Update(func(s *WordUpsert) {
-		s.UpdateTags()
+		s.UpdateDefinitions()
 	})
 }
 
@@ -757,6 +743,20 @@ func (u *WordUpsertOne) SetRelations(v []entity.WordRelation) *WordUpsertOne {
 func (u *WordUpsertOne) UpdateRelations() *WordUpsertOne {
 	return u.Update(func(s *WordUpsert) {
 		s.UpdateRelations()
+	})
+}
+
+// SetCategories sets the "categories" field.
+func (u *WordUpsertOne) SetCategories(v []string) *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.SetCategories(v)
+	})
+}
+
+// UpdateCategories sets the "categories" field to the value that was provided on create.
+func (u *WordUpsertOne) UpdateCategories() *WordUpsertOne {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateCategories()
 	})
 }
 
@@ -1076,31 +1076,17 @@ func (u *WordUpsertBulk) UpdatePhonetics() *WordUpsertBulk {
 	})
 }
 
-// SetMeanings sets the "meanings" field.
-func (u *WordUpsertBulk) SetMeanings(v []entity.WordDefinition) *WordUpsertBulk {
+// SetDefinitions sets the "definitions" field.
+func (u *WordUpsertBulk) SetDefinitions(v []entity.WordDefinition) *WordUpsertBulk {
 	return u.Update(func(s *WordUpsert) {
-		s.SetMeanings(v)
+		s.SetDefinitions(v)
 	})
 }
 
-// UpdateMeanings sets the "meanings" field to the value that was provided on create.
-func (u *WordUpsertBulk) UpdateMeanings() *WordUpsertBulk {
+// UpdateDefinitions sets the "definitions" field to the value that was provided on create.
+func (u *WordUpsertBulk) UpdateDefinitions() *WordUpsertBulk {
 	return u.Update(func(s *WordUpsert) {
-		s.UpdateMeanings()
-	})
-}
-
-// SetTags sets the "tags" field.
-func (u *WordUpsertBulk) SetTags(v []string) *WordUpsertBulk {
-	return u.Update(func(s *WordUpsert) {
-		s.SetTags(v)
-	})
-}
-
-// UpdateTags sets the "tags" field to the value that was provided on create.
-func (u *WordUpsertBulk) UpdateTags() *WordUpsertBulk {
-	return u.Update(func(s *WordUpsert) {
-		s.UpdateTags()
+		s.UpdateDefinitions()
 	})
 }
 
@@ -1143,6 +1129,20 @@ func (u *WordUpsertBulk) SetRelations(v []entity.WordRelation) *WordUpsertBulk {
 func (u *WordUpsertBulk) UpdateRelations() *WordUpsertBulk {
 	return u.Update(func(s *WordUpsert) {
 		s.UpdateRelations()
+	})
+}
+
+// SetCategories sets the "categories" field.
+func (u *WordUpsertBulk) SetCategories(v []string) *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.SetCategories(v)
+	})
+}
+
+// UpdateCategories sets the "categories" field to the value that was provided on create.
+func (u *WordUpsertBulk) UpdateCategories() *WordUpsertBulk {
+	return u.Update(func(s *WordUpsert) {
+		s.UpdateCategories()
 	})
 }
 

@@ -30,8 +30,6 @@ const (
 	FieldMasterySpell = "mastery_spell"
 	// FieldMasteryPronounce holds the string denoting the mastery_pronounce field in the database.
 	FieldMasteryPronounce = "mastery_pronounce"
-	// FieldMasteryUse holds the string denoting the mastery_use field in the database.
-	FieldMasteryUse = "mastery_use"
 	// FieldMasteryOverall holds the string denoting the mastery_overall field in the database.
 	FieldMasteryOverall = "mastery_overall"
 	// FieldReviewLastReviewAt holds the string denoting the review_last_review_at field in the database.
@@ -50,6 +48,8 @@ const (
 	FieldSentences = "sentences"
 	// FieldRelations holds the string denoting the relations field in the database.
 	FieldRelations = "relations"
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
 	// FieldCreatedBy holds the string denoting the created_by field in the database.
 	FieldCreatedBy = "created_by"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -71,7 +71,6 @@ var Columns = []string{
 	FieldMasteryRead,
 	FieldMasterySpell,
 	FieldMasteryPronounce,
-	FieldMasteryUse,
 	FieldMasteryOverall,
 	FieldReviewLastReviewAt,
 	FieldReviewNextReviewAt,
@@ -81,6 +80,7 @@ var Columns = []string{
 	FieldNotes,
 	FieldSentences,
 	FieldRelations,
+	FieldTags,
 	FieldCreatedBy,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -111,8 +111,6 @@ var (
 	DefaultMasterySpell int16
 	// DefaultMasteryPronounce holds the default value on creation for the "mastery_pronounce" field.
 	DefaultMasteryPronounce int16
-	// DefaultMasteryUse holds the default value on creation for the "mastery_use" field.
-	DefaultMasteryUse int16
 	// DefaultMasteryOverall holds the default value on creation for the "mastery_overall" field.
 	DefaultMasteryOverall int32
 	// DefaultReviewIntervalDays holds the default value on creation for the "review_interval_days" field.
@@ -125,6 +123,8 @@ var (
 	DefaultSentences []entity.Sentence
 	// DefaultRelations holds the default value on creation for the "relations" field.
 	DefaultRelations []entity.LearnedWordRelation
+	// DefaultTags holds the default value on creation for the "tags" field.
+	DefaultTags []string
 	// DefaultCreatedBy holds the default value on creation for the "created_by" field.
 	DefaultCreatedBy string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
@@ -181,11 +181,6 @@ func ByMasterySpell(opts ...sql.OrderTermOption) OrderOption {
 // ByMasteryPronounce orders the results by the mastery_pronounce field.
 func ByMasteryPronounce(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMasteryPronounce, opts...).ToFunc()
-}
-
-// ByMasteryUse orders the results by the mastery_use field.
-func ByMasteryUse(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldMasteryUse, opts...).ToFunc()
 }
 
 // ByMasteryOverall orders the results by the mastery_overall field.

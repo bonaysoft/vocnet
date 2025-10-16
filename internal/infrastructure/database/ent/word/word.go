@@ -26,16 +26,16 @@ const (
 	FieldLemma = "lemma"
 	// FieldPhonetics holds the string denoting the phonetics field in the database.
 	FieldPhonetics = "phonetics"
-	// FieldMeanings holds the string denoting the meanings field in the database.
-	FieldMeanings = "meanings"
-	// FieldTags holds the string denoting the tags field in the database.
-	FieldTags = "tags"
+	// FieldDefinitions holds the string denoting the definitions field in the database.
+	FieldDefinitions = "definitions"
 	// FieldPhrases holds the string denoting the phrases field in the database.
 	FieldPhrases = "phrases"
 	// FieldSentences holds the string denoting the sentences field in the database.
 	FieldSentences = "sentences"
 	// FieldRelations holds the string denoting the relations field in the database.
 	FieldRelations = "relations"
+	// FieldCategories holds the string denoting the categories field in the database.
+	FieldCategories = "categories"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -53,11 +53,11 @@ var Columns = []string{
 	FieldWordType,
 	FieldLemma,
 	FieldPhonetics,
-	FieldMeanings,
-	FieldTags,
+	FieldDefinitions,
 	FieldPhrases,
 	FieldSentences,
 	FieldRelations,
+	FieldCategories,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -83,16 +83,16 @@ var (
 	DefaultWordType string
 	// DefaultPhonetics holds the default value on creation for the "phonetics" field.
 	DefaultPhonetics []entity.WordPhonetic
-	// DefaultMeanings holds the default value on creation for the "meanings" field.
-	DefaultMeanings []entity.WordDefinition
-	// DefaultTags holds the default value on creation for the "tags" field.
-	DefaultTags []string
+	// DefaultDefinitions holds the default value on creation for the "definitions" field.
+	DefaultDefinitions []entity.WordDefinition
 	// DefaultPhrases holds the default value on creation for the "phrases" field.
 	DefaultPhrases []entity.Phrase
 	// DefaultSentences holds the default value on creation for the "sentences" field.
 	DefaultSentences []entity.Sentence
 	// DefaultRelations holds the default value on creation for the "relations" field.
 	DefaultRelations []entity.WordRelation
+	// DefaultCategories holds the default value on creation for the "categories" field.
+	DefaultCategories []string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.

@@ -61,7 +61,7 @@ func FromPbWord(in *dictv1.Word) *entity.Word {
 				RelationType: int32(rel.GetRelationType()),
 			}
 		}),
-		Tags: in.GetTags(),
+		Categories: in.GetCategories(),
 	}
 	if lemma := strings.TrimSpace(in.GetLemma()); lemma != "" {
 		word.Lemma = &lemma
@@ -86,7 +86,7 @@ func ToPbWord(v *entity.Word) *dictv1.Word {
 		Forms: lo.Map(v.Forms, func(form entity.WordFormRef, _ int) *dictv1.WordFormRef {
 			return &dictv1.WordFormRef{Text: form.Text, WordType: form.WordType}
 		}),
-		Tags: v.Tags,
+		Categories: v.Categories,
 		Phrases: lo.Map(v.Phrases, func(phrase entity.Phrase, _ int) *dictv1.Phrase {
 			return &dictv1.Phrase{
 				Text:     phrase.Text,

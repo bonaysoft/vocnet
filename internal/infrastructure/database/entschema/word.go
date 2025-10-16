@@ -28,17 +28,17 @@ func (Word) Fields() []ent.Field {
 		field.String("lemma").Optional().Nillable(),
 		field.JSON("phonetics", []entity.WordPhonetic{}).
 			Default([]entity.WordPhonetic{}),
-		field.JSON("meanings", []entity.WordDefinition{}).
+		field.JSON("definitions", []entity.WordDefinition{}).
 			Default([]entity.WordDefinition{}),
-		field.JSON("tags", []string{}).
-			Default([]string{}).
-			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
 		field.JSON("phrases", []entity.Phrase{}).
 			Default([]entity.Phrase{}),
 		field.JSON("sentences", []entity.Sentence{}).
 			Default([]entity.Sentence{}),
 		field.JSON("relations", []entity.WordRelation{}).
 			Default([]entity.WordRelation{}),
+		field.JSON("categories", []string{}).
+			Default([]string{}).
+			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),

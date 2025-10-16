@@ -3,11 +3,11 @@ syntax = "proto3";
 package dict.v1;
 
 import "common/v1/types.proto";
+import "dict/v1/phrase.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "validate/validate.proto";
-import "dict/v1/phrase.proto";
 
 message Word {
   int64 id = 1; // Auto-increment ID (CRUD only)
@@ -17,7 +17,7 @@ message Word {
   string lemma = 5; // Present only if word_type != lemma; empty when this is the lemma itself
   repeated Phonetic phonetics = 6; // IPAs for this word
   repeated Definition definitions = 7; // Possibly multiple languages' definitions
-  repeated string tags = 8; // Level / topic tags
+  repeated string categories = 8; // Level / topic tags
   repeated Phrase phrases = 9; // Common phrases/idioms containing this word
   repeated Sentence sentences = 10; // Example sentences
 

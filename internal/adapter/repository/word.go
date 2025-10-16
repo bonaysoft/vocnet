@@ -44,16 +44,11 @@ func (r *wordRepository) Create(ctx context.Context, word *entity.Word) (*entity
 		SetWordType(defaultWordType(word.WordType)).
 		SetNillableLemma(normalizeLemma(word.Lemma)).
 		SetPhonetics(word.Phonetics).
-		SetMeanings(word.Definitions).
+		SetDefinitions(word.Definitions).
 		SetPhrases(word.Phrases).
 		SetSentences(word.Sentences).
-		SetRelations(word.Relations)
-
-	if word.Tags != nil {
-		builder.SetTags(word.Tags)
-	} else {
-		builder.SetTags([]string{})
-	}
+		SetRelations(word.Relations).
+		SetCategories(word.Categories)
 
 	rec, err := builder.Save(ctx)
 	if err != nil {
@@ -70,21 +65,16 @@ func (r *wordRepository) Update(ctx context.Context, word *entity.Word) (*entity
 		SetLanguage(entity.NormalizeLanguage(word.Language).Code()).
 		SetWordType(defaultWordType(word.WordType)).
 		SetPhonetics(word.Phonetics).
-		SetMeanings(word.Definitions).
+		SetDefinitions(word.Definitions).
 		SetPhrases(word.Phrases).
 		SetSentences(word.Sentences).
-		SetRelations(word.Relations)
+		SetRelations(word.Relations).
+		SetCategories(word.Categories)
 
 	if lemma := normalizeLemma(word.Lemma); lemma != nil {
 		mutation.SetLemma(*lemma)
 	} else {
 		mutation.ClearLemma()
-	}
-
-	if word.Tags != nil {
-		mutation.SetTags(word.Tags)
-	} else {
-		mutation.SetTags([]string{})
 	}
 
 	rec, err := mutation.Save(ctx)
@@ -300,8 +290,8 @@ func mapEntWord(rec *entdb.Word) *entity.Word {
 		Language:    entity.ParseLanguage(rec.Language),
 		WordType:    rec.WordType,
 		Phonetics:   rec.Phonetics,
-		Definitions: rec.Meanings,
-		Tags:        rec.Tags,
+		Definitions: rec.Definitions,
+		Categories:  rec.Categories,
 		Phrases:     rec.Phrases,
 		Sentences:   rec.Sentences,
 		Relations:   rec.Relations,

@@ -131,8 +131,8 @@ func seedData(t *testing.T, ctx context.Context, client *entdb.Client) ([]wordSn
 		SetLanguage("en").
 		SetWordType("lemma").
 		SetPhonetics([]entity.WordPhonetic{{IPA: "ˈæpəl", Dialect: "us"}}).
-		SetMeanings([]entity.WordDefinition{{Pos: "noun", Text: "fruit", Language: "en"}}).
-		SetTags([]string{"fruit"}).
+		SetDefinitions([]entity.WordDefinition{{Pos: "noun", Text: "fruit", Language: "en"}}).
+		SetCategories([]string{"fruit"}).
 		SetRelations([]entity.WordRelation{{Word: "pear", RelationType: 1}}).
 		SetCreatedAt(createdAt).
 		SetUpdatedAt(updatedAt).
@@ -161,7 +161,6 @@ func seedData(t *testing.T, ctx context.Context, client *entdb.Client) ([]wordSn
 		SetMasteryRead(4).
 		SetMasterySpell(2).
 		SetMasteryPronounce(1).
-		SetMasteryUse(0).
 		SetMasteryOverall(2).
 		SetReviewLastReviewAt(updatedAt).
 		SetReviewNextReviewAt(nextReview).
@@ -183,19 +182,19 @@ func seedData(t *testing.T, ctx context.Context, client *entdb.Client) ([]wordSn
 }
 
 type wordSnapshot struct {
-	ID        int
-	Text      string
-	Language  string
-	WordType  string
-	Lemma     *string
-	Phonetics []entity.WordPhonetic
-	Meanings  []entity.WordDefinition
-	Tags      []string
-	Phrases   []entity.Phrase
-	Sentences []entity.Sentence
-	Relations []entity.WordRelation
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID         int
+	Text       string
+	Language   string
+	WordType   string
+	Lemma      *string
+	Phonetics  []entity.WordPhonetic
+	Meanings   []entity.WordDefinition
+	Categories []string
+	Phrases    []entity.Phrase
+	Sentences  []entity.Sentence
+	Relations  []entity.WordRelation
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
 
 type LearnedWordSnapshot struct {
@@ -231,19 +230,19 @@ func snapshotWords(t *testing.T, ctx context.Context, client *entdb.Client) []wo
 	result := make([]wordSnapshot, 0, len(rows))
 	for _, row := range rows {
 		result = append(result, wordSnapshot{
-			ID:        row.ID,
-			Text:      row.Text,
-			Language:  row.Language,
-			WordType:  row.WordType,
-			Lemma:     row.Lemma,
-			Phonetics: append([]entity.WordPhonetic{}, row.Phonetics...),
-			Meanings:  append([]entity.WordDefinition{}, row.Meanings...),
-			Tags:      append([]string{}, row.Tags...),
-			Phrases:   append([]entity.Phrase{}, row.Phrases...),
-			Sentences: append([]entity.Sentence{}, row.Sentences...),
-			Relations: append([]entity.WordRelation{}, row.Relations...),
-			CreatedAt: row.CreatedAt.UTC(),
-			UpdatedAt: row.UpdatedAt.UTC(),
+			ID:         row.ID,
+			Text:       row.Text,
+			Language:   row.Language,
+			WordType:   row.WordType,
+			Lemma:      row.Lemma,
+			Phonetics:  append([]entity.WordPhonetic{}, row.Phonetics...),
+			Meanings:   append([]entity.WordDefinition{}, row.Definitions...),
+			Categories: append([]string{}, row.Categories...),
+			Phrases:    append([]entity.Phrase{}, row.Phrases...),
+			Sentences:  append([]entity.Sentence{}, row.Sentences...),
+			Relations:  append([]entity.WordRelation{}, row.Relations...),
+			CreatedAt:  row.CreatedAt.UTC(),
+			UpdatedAt:  row.UpdatedAt.UTC(),
 		})
 	}
 	return result
@@ -266,7 +265,6 @@ func snapshotLearnedWords(t *testing.T, ctx context.Context, client *entdb.Clien
 			MasteryRead:        row.MasteryRead,
 			MasterySpell:       row.MasterySpell,
 			MasteryPronounce:   row.MasteryPronounce,
-			MasteryUse:         row.MasteryUse,
 			MasteryOverall:     row.MasteryOverall,
 			ReviewLastReviewAt: copyTimePointer(row.ReviewLastReviewAt),
 			ReviewNextReviewAt: copyTimePointer(row.ReviewNextReviewAt),

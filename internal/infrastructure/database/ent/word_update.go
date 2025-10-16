@@ -118,27 +118,15 @@ func (wu *WordUpdate) AppendPhonetics(ep []entity.WordPhonetic) *WordUpdate {
 	return wu
 }
 
-// SetMeanings sets the "meanings" field.
-func (wu *WordUpdate) SetMeanings(ed []entity.WordDefinition) *WordUpdate {
-	wu.mutation.SetMeanings(ed)
+// SetDefinitions sets the "definitions" field.
+func (wu *WordUpdate) SetDefinitions(ed []entity.WordDefinition) *WordUpdate {
+	wu.mutation.SetDefinitions(ed)
 	return wu
 }
 
-// AppendMeanings appends ed to the "meanings" field.
-func (wu *WordUpdate) AppendMeanings(ed []entity.WordDefinition) *WordUpdate {
-	wu.mutation.AppendMeanings(ed)
-	return wu
-}
-
-// SetTags sets the "tags" field.
-func (wu *WordUpdate) SetTags(s []string) *WordUpdate {
-	wu.mutation.SetTags(s)
-	return wu
-}
-
-// AppendTags appends s to the "tags" field.
-func (wu *WordUpdate) AppendTags(s []string) *WordUpdate {
-	wu.mutation.AppendTags(s)
+// AppendDefinitions appends ed to the "definitions" field.
+func (wu *WordUpdate) AppendDefinitions(ed []entity.WordDefinition) *WordUpdate {
+	wu.mutation.AppendDefinitions(ed)
 	return wu
 }
 
@@ -175,6 +163,18 @@ func (wu *WordUpdate) SetRelations(er []entity.WordRelation) *WordUpdate {
 // AppendRelations appends er to the "relations" field.
 func (wu *WordUpdate) AppendRelations(er []entity.WordRelation) *WordUpdate {
 	wu.mutation.AppendRelations(er)
+	return wu
+}
+
+// SetCategories sets the "categories" field.
+func (wu *WordUpdate) SetCategories(s []string) *WordUpdate {
+	wu.mutation.SetCategories(s)
+	return wu
+}
+
+// AppendCategories appends s to the "categories" field.
+func (wu *WordUpdate) AppendCategories(s []string) *WordUpdate {
+	wu.mutation.AppendCategories(s)
 	return wu
 }
 
@@ -273,20 +273,12 @@ func (wu *WordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			sqljson.Append(u, word.FieldPhonetics, value)
 		})
 	}
-	if value, ok := wu.mutation.Meanings(); ok {
-		_spec.SetField(word.FieldMeanings, field.TypeJSON, value)
+	if value, ok := wu.mutation.Definitions(); ok {
+		_spec.SetField(word.FieldDefinitions, field.TypeJSON, value)
 	}
-	if value, ok := wu.mutation.AppendedMeanings(); ok {
+	if value, ok := wu.mutation.AppendedDefinitions(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, word.FieldMeanings, value)
-		})
-	}
-	if value, ok := wu.mutation.Tags(); ok {
-		_spec.SetField(word.FieldTags, field.TypeJSON, value)
-	}
-	if value, ok := wu.mutation.AppendedTags(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, word.FieldTags, value)
+			sqljson.Append(u, word.FieldDefinitions, value)
 		})
 	}
 	if value, ok := wu.mutation.Phrases(); ok {
@@ -311,6 +303,14 @@ func (wu *WordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := wu.mutation.AppendedRelations(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, word.FieldRelations, value)
+		})
+	}
+	if value, ok := wu.mutation.Categories(); ok {
+		_spec.SetField(word.FieldCategories, field.TypeJSON, value)
+	}
+	if value, ok := wu.mutation.AppendedCategories(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, word.FieldCategories, value)
 		})
 	}
 	if value, ok := wu.mutation.UpdatedAt(); ok {
@@ -424,27 +424,15 @@ func (wuo *WordUpdateOne) AppendPhonetics(ep []entity.WordPhonetic) *WordUpdateO
 	return wuo
 }
 
-// SetMeanings sets the "meanings" field.
-func (wuo *WordUpdateOne) SetMeanings(ed []entity.WordDefinition) *WordUpdateOne {
-	wuo.mutation.SetMeanings(ed)
+// SetDefinitions sets the "definitions" field.
+func (wuo *WordUpdateOne) SetDefinitions(ed []entity.WordDefinition) *WordUpdateOne {
+	wuo.mutation.SetDefinitions(ed)
 	return wuo
 }
 
-// AppendMeanings appends ed to the "meanings" field.
-func (wuo *WordUpdateOne) AppendMeanings(ed []entity.WordDefinition) *WordUpdateOne {
-	wuo.mutation.AppendMeanings(ed)
-	return wuo
-}
-
-// SetTags sets the "tags" field.
-func (wuo *WordUpdateOne) SetTags(s []string) *WordUpdateOne {
-	wuo.mutation.SetTags(s)
-	return wuo
-}
-
-// AppendTags appends s to the "tags" field.
-func (wuo *WordUpdateOne) AppendTags(s []string) *WordUpdateOne {
-	wuo.mutation.AppendTags(s)
+// AppendDefinitions appends ed to the "definitions" field.
+func (wuo *WordUpdateOne) AppendDefinitions(ed []entity.WordDefinition) *WordUpdateOne {
+	wuo.mutation.AppendDefinitions(ed)
 	return wuo
 }
 
@@ -481,6 +469,18 @@ func (wuo *WordUpdateOne) SetRelations(er []entity.WordRelation) *WordUpdateOne 
 // AppendRelations appends er to the "relations" field.
 func (wuo *WordUpdateOne) AppendRelations(er []entity.WordRelation) *WordUpdateOne {
 	wuo.mutation.AppendRelations(er)
+	return wuo
+}
+
+// SetCategories sets the "categories" field.
+func (wuo *WordUpdateOne) SetCategories(s []string) *WordUpdateOne {
+	wuo.mutation.SetCategories(s)
+	return wuo
+}
+
+// AppendCategories appends s to the "categories" field.
+func (wuo *WordUpdateOne) AppendCategories(s []string) *WordUpdateOne {
+	wuo.mutation.AppendCategories(s)
 	return wuo
 }
 
@@ -609,20 +609,12 @@ func (wuo *WordUpdateOne) sqlSave(ctx context.Context) (_node *Word, err error) 
 			sqljson.Append(u, word.FieldPhonetics, value)
 		})
 	}
-	if value, ok := wuo.mutation.Meanings(); ok {
-		_spec.SetField(word.FieldMeanings, field.TypeJSON, value)
+	if value, ok := wuo.mutation.Definitions(); ok {
+		_spec.SetField(word.FieldDefinitions, field.TypeJSON, value)
 	}
-	if value, ok := wuo.mutation.AppendedMeanings(); ok {
+	if value, ok := wuo.mutation.AppendedDefinitions(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, word.FieldMeanings, value)
-		})
-	}
-	if value, ok := wuo.mutation.Tags(); ok {
-		_spec.SetField(word.FieldTags, field.TypeJSON, value)
-	}
-	if value, ok := wuo.mutation.AppendedTags(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, word.FieldTags, value)
+			sqljson.Append(u, word.FieldDefinitions, value)
 		})
 	}
 	if value, ok := wuo.mutation.Phrases(); ok {
@@ -647,6 +639,14 @@ func (wuo *WordUpdateOne) sqlSave(ctx context.Context) (_node *Word, err error) 
 	if value, ok := wuo.mutation.AppendedRelations(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, word.FieldRelations, value)
+		})
+	}
+	if value, ok := wuo.mutation.Categories(); ok {
+		_spec.SetField(word.FieldCategories, field.TypeJSON, value)
+	}
+	if value, ok := wuo.mutation.AppendedCategories(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, word.FieldCategories, value)
 		})
 	}
 	if value, ok := wuo.mutation.UpdatedAt(); ok {

@@ -12,7 +12,7 @@ type Word struct {
 	Lemma       *string // nil if this row itself is the lemma
 	Phonetics   []WordPhonetic
 	Definitions []WordDefinition // only populated for lemma rows
-	Tags        []string
+	Categories  []string
 	Phrases     []Phrase
 	Sentences   []Sentence
 	Forms       []WordFormRef // if this is lemma: other forms; if not lemma: empty
