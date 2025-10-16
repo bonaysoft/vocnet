@@ -15,6 +15,7 @@ import (
 	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/predicate"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 )
 
 // LearnedWordUpdate is the builder for updating LearnedWord entities.
@@ -90,6 +91,26 @@ func (lwu *LearnedWordUpdate) SetNillableLanguage(s *string) *LearnedWordUpdate 
 	if s != nil {
 		lwu.SetLanguage(*s)
 	}
+	return lwu
+}
+
+// SetWordID sets the "word_id" field.
+func (lwu *LearnedWordUpdate) SetWordID(i int) *LearnedWordUpdate {
+	lwu.mutation.SetWordID(i)
+	return lwu
+}
+
+// SetNillableWordID sets the "word_id" field if the given value is not nil.
+func (lwu *LearnedWordUpdate) SetNillableWordID(i *int) *LearnedWordUpdate {
+	if i != nil {
+		lwu.SetWordID(*i)
+	}
+	return lwu
+}
+
+// ClearWordID clears the value of the "word_id" field.
+func (lwu *LearnedWordUpdate) ClearWordID() *LearnedWordUpdate {
+	lwu.mutation.ClearWordID()
 	return lwu
 }
 
@@ -377,9 +398,20 @@ func (lwu *LearnedWordUpdate) SetUpdatedAt(t time.Time) *LearnedWordUpdate {
 	return lwu
 }
 
+// SetWord sets the "word" edge to the Word entity.
+func (lwu *LearnedWordUpdate) SetWord(w *Word) *LearnedWordUpdate {
+	return lwu.SetWordID(w.ID)
+}
+
 // Mutation returns the LearnedWordMutation object of the builder.
 func (lwu *LearnedWordUpdate) Mutation() *LearnedWordMutation {
 	return lwu.mutation
+}
+
+// ClearWord clears the "word" edge to the Word entity.
+func (lwu *LearnedWordUpdate) ClearWord() *LearnedWordUpdate {
+	lwu.mutation.ClearWord()
+	return lwu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -551,6 +583,35 @@ func (lwu *LearnedWordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := lwu.mutation.UpdatedAt(); ok {
 		_spec.SetField(learnedword.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if lwu.mutation.WordCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   learnedword.WordTable,
+			Columns: []string{learnedword.WordColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(word.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lwu.mutation.WordIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   learnedword.WordTable,
+			Columns: []string{learnedword.WordColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(word.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, lwu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{learnedword.Label}
@@ -631,6 +692,26 @@ func (lwuo *LearnedWordUpdateOne) SetNillableLanguage(s *string) *LearnedWordUpd
 	if s != nil {
 		lwuo.SetLanguage(*s)
 	}
+	return lwuo
+}
+
+// SetWordID sets the "word_id" field.
+func (lwuo *LearnedWordUpdateOne) SetWordID(i int) *LearnedWordUpdateOne {
+	lwuo.mutation.SetWordID(i)
+	return lwuo
+}
+
+// SetNillableWordID sets the "word_id" field if the given value is not nil.
+func (lwuo *LearnedWordUpdateOne) SetNillableWordID(i *int) *LearnedWordUpdateOne {
+	if i != nil {
+		lwuo.SetWordID(*i)
+	}
+	return lwuo
+}
+
+// ClearWordID clears the value of the "word_id" field.
+func (lwuo *LearnedWordUpdateOne) ClearWordID() *LearnedWordUpdateOne {
+	lwuo.mutation.ClearWordID()
 	return lwuo
 }
 
@@ -918,9 +999,20 @@ func (lwuo *LearnedWordUpdateOne) SetUpdatedAt(t time.Time) *LearnedWordUpdateOn
 	return lwuo
 }
 
+// SetWord sets the "word" edge to the Word entity.
+func (lwuo *LearnedWordUpdateOne) SetWord(w *Word) *LearnedWordUpdateOne {
+	return lwuo.SetWordID(w.ID)
+}
+
 // Mutation returns the LearnedWordMutation object of the builder.
 func (lwuo *LearnedWordUpdateOne) Mutation() *LearnedWordMutation {
 	return lwuo.mutation
+}
+
+// ClearWord clears the "word" edge to the Word entity.
+func (lwuo *LearnedWordUpdateOne) ClearWord() *LearnedWordUpdateOne {
+	lwuo.mutation.ClearWord()
+	return lwuo
 }
 
 // Where appends a list predicates to the LearnedWordUpdate builder.
@@ -1121,6 +1213,35 @@ func (lwuo *LearnedWordUpdateOne) sqlSave(ctx context.Context) (_node *LearnedWo
 	}
 	if value, ok := lwuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(learnedword.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if lwuo.mutation.WordCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   learnedword.WordTable,
+			Columns: []string{learnedword.WordColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(word.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lwuo.mutation.WordIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   learnedword.WordTable,
+			Columns: []string{learnedword.WordColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(word.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &LearnedWord{config: lwuo.config}
 	_spec.Assign = _node.assignValues

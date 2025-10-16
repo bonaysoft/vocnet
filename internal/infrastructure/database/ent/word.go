@@ -44,8 +44,29 @@ type Word struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the WordQuery when eager-loading is set.
+	Edges        WordEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// WordEdges holds the relations/edges for other nodes in the graph.
+type WordEdges struct {
+	// LearnedWords holds the value of the learned_words edge.
+	LearnedWords []*LearnedWord `json:"learned_words,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// LearnedWordsOrErr returns the LearnedWords value or an error if the edge
+// was not loaded in eager-loading.
+func (e WordEdges) LearnedWordsOrErr() ([]*LearnedWord, error) {
+	if e.loadedTypes[0] {
+		return e.LearnedWords, nil
+	}
+	return nil, &NotLoadedError{edge: "learned_words"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -184,6 +205,11 @@ func (w *Word) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (w *Word) Value(name string) (ent.Value, error) {
 	return w.selectValues.Get(name)
+}
+
+// QueryLearnedWords queries the "learned_words" edge of the Word entity.
+func (w *Word) QueryLearnedWords() *LearnedWordQuery {
+	return NewWordClient(w.config).QueryLearnedWords(w)
 }
 
 // Update returns a builder for updating this Word.

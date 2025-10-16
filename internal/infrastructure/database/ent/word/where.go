@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/predicate"
 )
 
@@ -502,6 +503,29 @@ func UpdatedAtLT(v time.Time) predicate.Word {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.Word {
 	return predicate.Word(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasLearnedWords applies the HasEdge predicate on the "learned_words" edge.
+func HasLearnedWords() predicate.Word {
+	return predicate.Word(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, LearnedWordsTable, LearnedWordsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLearnedWordsWith applies the HasEdge predicate on the "learned_words" edge with a given conditions (other predicates).
+func HasLearnedWordsWith(preds ...predicate.LearnedWord) predicate.Word {
+	return predicate.Word(func(s *sql.Selector) {
+		step := newLearnedWordsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

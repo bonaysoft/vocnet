@@ -33,12 +33,21 @@ var (
 		{Name: "created_by", Type: field.TypeString, Default: ""},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "word_id", Type: field.TypeInt, Nullable: true},
 	}
 	// LearnedWordsTable holds the schema information for the "learned_words" table.
 	LearnedWordsTable = &schema.Table{
 		Name:       "learned_words",
 		Columns:    LearnedWordsColumns,
 		PrimaryKey: []*schema.Column{LearnedWordsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "learned_words_words_learned_words",
+				Columns:    []*schema.Column{LearnedWordsColumns[22]},
+				RefColumns: []*schema.Column{WordsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "learnedword_user_id_language_term",
@@ -95,6 +104,7 @@ var (
 )
 
 func init() {
+	LearnedWordsTable.ForeignKeys[0].RefTable = WordsTable
 	LearnedWordsTable.Annotation = &entsql.Annotation{
 		Table: "learned_words",
 	}

@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 )
@@ -25,6 +26,7 @@ func (LearnedWord) Fields() []ent.Field {
 		field.String("term").NotEmpty(),
 		field.String("normalized").Default(""),
 		field.String("language").Default("en"),
+		field.Int("word_id").Optional().Nillable(),
 		field.Int16("mastery_listen").Default(0),
 		field.Int16("mastery_read").Default(0),
 		field.Int16("mastery_spell").Default(0),
@@ -50,6 +52,16 @@ func (LearnedWord) Fields() []ent.Field {
 		field.Time("updated_at").
 			Default(time.Now).
 			UpdateDefault(time.Now),
+	}
+}
+
+// Edges of the LearnedWord.
+func (LearnedWord) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("word", Word.Type).
+			Ref("learned_words").
+			Field("word_id").
+			Unique(),
 	}
 }
 

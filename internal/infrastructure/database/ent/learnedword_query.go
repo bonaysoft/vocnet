@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/predicate"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 )
 
 // LearnedWordQuery is the builder for querying LearnedWord entities.
@@ -22,6 +23,7 @@ type LearnedWordQuery struct {
 	order      []learnedword.OrderOption
 	inters     []Interceptor
 	predicates []predicate.LearnedWord
+	withWord   *WordQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -56,6 +58,28 @@ func (lwq *LearnedWordQuery) Unique(unique bool) *LearnedWordQuery {
 func (lwq *LearnedWordQuery) Order(o ...learnedword.OrderOption) *LearnedWordQuery {
 	lwq.order = append(lwq.order, o...)
 	return lwq
+}
+
+// QueryWord chains the current query on the "word" edge.
+func (lwq *LearnedWordQuery) QueryWord() *WordQuery {
+	query := (&WordClient{config: lwq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := lwq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := lwq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(learnedword.Table, learnedword.FieldID, selector),
+			sqlgraph.To(word.Table, word.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, learnedword.WordTable, learnedword.WordColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(lwq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first LearnedWord entity from the query.
@@ -250,10 +274,22 @@ func (lwq *LearnedWordQuery) Clone() *LearnedWordQuery {
 		order:      append([]learnedword.OrderOption{}, lwq.order...),
 		inters:     append([]Interceptor{}, lwq.inters...),
 		predicates: append([]predicate.LearnedWord{}, lwq.predicates...),
+		withWord:   lwq.withWord.Clone(),
 		// clone intermediate query.
 		sql:  lwq.sql.Clone(),
 		path: lwq.path,
 	}
+}
+
+// WithWord tells the query-builder to eager-load the nodes that are connected to
+// the "word" edge. The optional arguments are used to configure the query builder of the edge.
+func (lwq *LearnedWordQuery) WithWord(opts ...func(*WordQuery)) *LearnedWordQuery {
+	query := (&WordClient{config: lwq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	lwq.withWord = query
+	return lwq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -332,8 +368,11 @@ func (lwq *LearnedWordQuery) prepareQuery(ctx context.Context) error {
 
 func (lwq *LearnedWordQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*LearnedWord, error) {
 	var (
-		nodes = []*LearnedWord{}
-		_spec = lwq.querySpec()
+		nodes       = []*LearnedWord{}
+		_spec       = lwq.querySpec()
+		loadedTypes = [1]bool{
+			lwq.withWord != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*LearnedWord).scanValues(nil, columns)
@@ -341,6 +380,7 @@ func (lwq *LearnedWordQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &LearnedWord{config: lwq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -352,7 +392,46 @@ func (lwq *LearnedWordQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := lwq.withWord; query != nil {
+		if err := lwq.loadWord(ctx, query, nodes, nil,
+			func(n *LearnedWord, e *Word) { n.Edges.Word = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (lwq *LearnedWordQuery) loadWord(ctx context.Context, query *WordQuery, nodes []*LearnedWord, init func(*LearnedWord), assign func(*LearnedWord, *Word)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*LearnedWord)
+	for i := range nodes {
+		if nodes[i].WordID == nil {
+			continue
+		}
+		fk := *nodes[i].WordID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(word.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "word_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (lwq *LearnedWordQuery) sqlCount(ctx context.Context) (int, error) {
@@ -379,6 +458,9 @@ func (lwq *LearnedWordQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != learnedword.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if lwq.withWord != nil {
+			_spec.Node.AddColumnOnce(learnedword.FieldWordID)
 		}
 	}
 	if ps := lwq.predicates; len(ps) > 0 {

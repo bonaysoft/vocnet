@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 )
 
 // LearnedWord is the model entity for the LearnedWord schema.
@@ -27,6 +28,8 @@ type LearnedWord struct {
 	Normalized string `json:"normalized,omitempty"`
 	// Language holds the value of the "language" field.
 	Language string `json:"language,omitempty"`
+	// WordID holds the value of the "word_id" field.
+	WordID *int `json:"word_id,omitempty"`
 	// MasteryListen holds the value of the "mastery_listen" field.
 	MasteryListen int16 `json:"mastery_listen,omitempty"`
 	// MasteryRead holds the value of the "mastery_read" field.
@@ -60,8 +63,31 @@ type LearnedWord struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the LearnedWordQuery when eager-loading is set.
+	Edges        LearnedWordEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// LearnedWordEdges holds the relations/edges for other nodes in the graph.
+type LearnedWordEdges struct {
+	// Word holds the value of the word edge.
+	Word *Word `json:"word,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// WordOrErr returns the Word value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e LearnedWordEdges) WordOrErr() (*Word, error) {
+	if e.Word != nil {
+		return e.Word, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: word.Label}
+	}
+	return nil, &NotLoadedError{edge: "word"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -71,7 +97,7 @@ func (*LearnedWord) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case learnedword.FieldSentences, learnedword.FieldRelations, learnedword.FieldTags:
 			values[i] = new([]byte)
-		case learnedword.FieldID, learnedword.FieldUserID, learnedword.FieldMasteryListen, learnedword.FieldMasteryRead, learnedword.FieldMasterySpell, learnedword.FieldMasteryPronounce, learnedword.FieldMasteryOverall, learnedword.FieldReviewIntervalDays, learnedword.FieldReviewFailCount, learnedword.FieldQueryCount:
+		case learnedword.FieldID, learnedword.FieldUserID, learnedword.FieldWordID, learnedword.FieldMasteryListen, learnedword.FieldMasteryRead, learnedword.FieldMasterySpell, learnedword.FieldMasteryPronounce, learnedword.FieldMasteryOverall, learnedword.FieldReviewIntervalDays, learnedword.FieldReviewFailCount, learnedword.FieldQueryCount:
 			values[i] = new(sql.NullInt64)
 		case learnedword.FieldTerm, learnedword.FieldNormalized, learnedword.FieldLanguage, learnedword.FieldNotes, learnedword.FieldCreatedBy:
 			values[i] = new(sql.NullString)
@@ -121,6 +147,13 @@ func (lw *LearnedWord) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field language", values[i])
 			} else if value.Valid {
 				lw.Language = value.String
+			}
+		case learnedword.FieldWordID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field word_id", values[i])
+			} else if value.Valid {
+				lw.WordID = new(int)
+				*lw.WordID = int(value.Int64)
 			}
 		case learnedword.FieldMasteryListen:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -246,6 +279,11 @@ func (lw *LearnedWord) Value(name string) (ent.Value, error) {
 	return lw.selectValues.Get(name)
 }
 
+// QueryWord queries the "word" edge of the LearnedWord entity.
+func (lw *LearnedWord) QueryWord() *WordQuery {
+	return NewLearnedWordClient(lw.config).QueryWord(lw)
+}
+
 // Update returns a builder for updating this LearnedWord.
 // Note that you need to call LearnedWord.Unwrap() before calling this method if this LearnedWord
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -280,6 +318,11 @@ func (lw *LearnedWord) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("language=")
 	builder.WriteString(lw.Language)
+	builder.WriteString(", ")
+	if v := lw.WordID; v != nil {
+		builder.WriteString("word_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("mastery_listen=")
 	builder.WriteString(fmt.Sprintf("%v", lw.MasteryListen))

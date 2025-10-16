@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 )
@@ -314,6 +315,22 @@ func (c *LearnedWordClient) GetX(ctx context.Context, id int) *LearnedWord {
 	return obj
 }
 
+// QueryWord queries the word edge of a LearnedWord.
+func (c *LearnedWordClient) QueryWord(lw *LearnedWord) *WordQuery {
+	query := (&WordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := lw.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(learnedword.Table, learnedword.FieldID, id),
+			sqlgraph.To(word.Table, word.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, learnedword.WordTable, learnedword.WordColumn),
+		)
+		fromV = sqlgraph.Neighbors(lw.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *LearnedWordClient) Hooks() []Hook {
 	return c.hooks.LearnedWord
@@ -445,6 +462,22 @@ func (c *WordClient) GetX(ctx context.Context, id int) *Word {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryLearnedWords queries the learned_words edge of a Word.
+func (c *WordClient) QueryLearnedWords(w *Word) *LearnedWordQuery {
+	query := (&LearnedWordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := w.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(word.Table, word.FieldID, id),
+			sqlgraph.To(learnedword.Table, learnedword.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, word.LearnedWordsTable, word.LearnedWordsColumn),
+		)
+		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

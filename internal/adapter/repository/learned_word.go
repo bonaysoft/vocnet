@@ -8,9 +8,11 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"github.com/eslsoft/vocnet/internal/entity"
 	entdb "github.com/eslsoft/vocnet/internal/infrastructure/database/ent"
 	entlearnedword "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
+	entword "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 	"github.com/eslsoft/vocnet/internal/repository"
 	"github.com/eslsoft/vocnet/pkg/filterexpr"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -36,6 +38,8 @@ func NewLearnedWordRepository(client *entdb.Client) repository.LearnedWordReposi
 type listLearnedWordsParams struct {
 	Keyword       string
 	Words         []string
+	Tags          []string
+	Categories    []string
 	PrimaryKey    string
 	PrimaryDesc   bool
 	SecondaryKey  string
@@ -60,11 +64,14 @@ func (r *LearnedWordRepository) Create(ctx context.Context, learnedWord *entity.
 		return nil, err
 	}
 
+	normalizedTerm := entity.NormalizeWordToken(learnedWord.Term)
+	languageCode := entity.NormalizeLanguage(learnedWord.Language).Code()
+
 	builder := r.client.LearnedWord.Create().
 		SetUserID(learnedWord.UserID).
 		SetTerm(learnedWord.Term).
-		SetNormalized(entity.NormalizeWordToken(learnedWord.Term)).
-		SetLanguage(entity.NormalizeLanguage(learnedWord.Language).Code()).
+		SetNormalized(normalizedTerm).
+		SetLanguage(languageCode).
 		SetMasteryListen(listen).
 		SetMasteryRead(read).
 		SetMasterySpell(spell).
@@ -78,6 +85,14 @@ func (r *LearnedWordRepository) Create(ctx context.Context, learnedWord *entity.
 		SetCreatedBy(learnedWord.CreatedBy).
 		SetCreatedAt(learnedWord.CreatedAt).
 		SetUpdatedAt(learnedWord.UpdatedAt)
+
+	if learnedWord.Tags != nil {
+		builder.SetTags(append([]string{}, learnedWord.Tags...))
+	}
+
+	if err := r.attachDictionaryWord(ctx, builder.Mutation(), languageCode, normalizedTerm); err != nil {
+		return nil, err
+	}
 
 	if !learnedWord.Review.LastReviewAt.IsZero() {
 		builder.SetReviewLastReviewAt(learnedWord.Review.LastReviewAt)
@@ -114,11 +129,14 @@ func (r *LearnedWordRepository) Update(ctx context.Context, learnedWord *entity.
 		return nil, err
 	}
 
+	normalizedTerm := entity.NormalizeWordToken(learnedWord.Term)
+	languageCode := entity.NormalizeLanguage(learnedWord.Language).Code()
+
 	mutation := r.client.LearnedWord.UpdateOneID(int(learnedWord.ID)).
 		Where(entlearnedword.UserIDEQ(learnedWord.UserID)).
 		SetTerm(learnedWord.Term).
-		SetNormalized(entity.NormalizeWordToken(learnedWord.Term)).
-		SetLanguage(entity.NormalizeLanguage(learnedWord.Language).Code()).
+		SetNormalized(normalizedTerm).
+		SetLanguage(languageCode).
 		SetMasteryListen(listen).
 		SetMasteryRead(read).
 		SetMasterySpell(spell).
@@ -131,6 +149,14 @@ func (r *LearnedWordRepository) Update(ctx context.Context, learnedWord *entity.
 		SetRelations(learnedWord.Relations).
 		SetCreatedBy(learnedWord.CreatedBy).
 		SetUpdatedAt(learnedWord.UpdatedAt)
+
+	if learnedWord.Tags != nil {
+		mutation.SetTags(append([]string{}, learnedWord.Tags...))
+	}
+
+	if err := r.attachDictionaryWord(ctx, mutation.Mutation(), languageCode, normalizedTerm); err != nil {
+		return nil, err
+	}
 
 	if !learnedWord.Review.LastReviewAt.IsZero() {
 		mutation.SetReviewLastReviewAt(learnedWord.Review.LastReviewAt)
@@ -260,6 +286,22 @@ func applyLearnedWordFilters(q *entdb.LearnedWordQuery, params listLearnedWordsP
 	if words := uniqueFolded(params.Words); len(words) > 0 {
 		q.Where(entlearnedword.NormalizedIn(lo.Map(words, func(word string, _ int) string { return strings.ToLower(word) })...))
 	}
+	if tags := uniqueFolded(params.Tags); len(tags) > 0 {
+		q.Where(func(s *sql.Selector) {
+			column := s.C(entlearnedword.FieldTags)
+			for _, tag := range tags {
+				s.Where(sqljson.ValueContains(column, tag))
+			}
+		})
+	}
+	if categories := uniqueFolded(params.Categories); len(categories) > 0 {
+		q.Where(entlearnedword.HasWordWith(func(s *sql.Selector) {
+			column := s.C(entword.FieldCategories)
+			for _, category := range categories {
+				s.Where(sqljson.ValueContains(column, category))
+			}
+		}))
+	}
 }
 
 func applyLearnedWordOrdering(q *entdb.LearnedWordQuery, params listLearnedWordsParams) {
@@ -310,6 +352,34 @@ func applyLearnedWordOrdering(q *entdb.LearnedWordQuery, params listLearnedWords
 	q.Order(entlearnedword.ByID())
 }
 
+func (r *LearnedWordRepository) attachDictionaryWord(ctx context.Context, mut *entdb.LearnedWordMutation, languageCode, normalizedTerm string) error {
+	if mut == nil {
+		return nil
+	}
+
+	if normalizedTerm == "" || languageCode == "" {
+		mut.ClearWord()
+		return nil
+	}
+
+	dictWord, err := r.client.Word.Query().
+		Where(
+			entword.LanguageEQ(languageCode),
+			entword.NormalizedEQ(normalizedTerm),
+		).
+		First(ctx)
+	if err != nil {
+		if entdb.IsNotFound(err) {
+			mut.ClearWord()
+			return nil
+		}
+		return fmt.Errorf("lookup dictionary word: %w", err)
+	}
+
+	mut.SetWordID(dictWord.ID)
+	return nil
+}
+
 func mapEntLearnedWord(rec *entdb.LearnedWord) *entity.LearnedWord {
 	if rec == nil {
 		return nil
@@ -332,11 +402,17 @@ func mapEntLearnedWord(rec *entdb.LearnedWord) *entity.LearnedWord {
 			FailCount:    rec.ReviewFailCount,
 		},
 		QueryCount: rec.QueryCount,
+		Tags:       append([]string{}, rec.Tags...),
 		Sentences:  rec.Sentences,
 		Relations:  rec.Relations,
 		CreatedBy:  rec.CreatedBy,
 		CreatedAt:  rec.CreatedAt,
 		UpdatedAt:  rec.UpdatedAt,
+	}
+
+	if rec.WordID != nil {
+		id := int64(*rec.WordID)
+		LearnedWord.WordID = &id
 	}
 
 	if rec.ReviewLastReviewAt != nil {

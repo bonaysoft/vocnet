@@ -15,8 +15,10 @@ type LearnedWord struct {
 	Review     ReviewTiming
 	QueryCount int64
 	Notes      string
+	Tags       []string
 	Sentences  []Sentence
 	Relations  []LearnedWordRelation
+	WordID     *int64
 	CreatedBy  string
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
@@ -64,5 +66,8 @@ func (uw *LearnedWord) Normalize(now time.Time) {
 	}
 	if uw.Relations == nil {
 		uw.Relations = []LearnedWordRelation{}
+	}
+	if uw.Tags == nil {
+		uw.Tags = []string{}
 	}
 }

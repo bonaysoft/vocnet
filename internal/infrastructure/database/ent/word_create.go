@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/eslsoft/vocnet/internal/entity"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 )
 
@@ -147,6 +148,21 @@ func (wc *WordCreate) SetNillableUpdatedAt(t *time.Time) *WordCreate {
 		wc.SetUpdatedAt(*t)
 	}
 	return wc
+}
+
+// AddLearnedWordIDs adds the "learned_words" edge to the LearnedWord entity by IDs.
+func (wc *WordCreate) AddLearnedWordIDs(ids ...int) *WordCreate {
+	wc.mutation.AddLearnedWordIDs(ids...)
+	return wc
+}
+
+// AddLearnedWords adds the "learned_words" edges to the LearnedWord entity.
+func (wc *WordCreate) AddLearnedWords(l ...*LearnedWord) *WordCreate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return wc.AddLearnedWordIDs(ids...)
 }
 
 // Mutation returns the WordMutation object of the builder.
@@ -351,6 +367,22 @@ func (wc *WordCreate) createSpec() (*Word, *sqlgraph.CreateSpec) {
 	if value, ok := wc.mutation.UpdatedAt(); ok {
 		_spec.SetField(word.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := wc.mutation.LearnedWordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   word.LearnedWordsTable,
+			Columns: []string{word.LearnedWordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(learnedword.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

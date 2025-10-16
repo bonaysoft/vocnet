@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/eslsoft/vocnet/internal/entity"
 )
 
@@ -40,8 +41,17 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeLearnedWords holds the string denoting the learned_words edge name in mutations.
+	EdgeLearnedWords = "learned_words"
 	// Table holds the table name of the word in the database.
 	Table = "words"
+	// LearnedWordsTable is the table that holds the learned_words relation/edge.
+	LearnedWordsTable = "learned_words"
+	// LearnedWordsInverseTable is the table name for the LearnedWord entity.
+	// It exists in this package in order to avoid circular dependency with the "learnedword" package.
+	LearnedWordsInverseTable = "learned_words"
+	// LearnedWordsColumn is the table column denoting the learned_words relation/edge.
+	LearnedWordsColumn = "word_id"
 )
 
 // Columns holds all SQL columns for word fields.
@@ -142,4 +152,25 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByLearnedWordsCount orders the results by learned_words count.
+func ByLearnedWordsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLearnedWordsStep(), opts...)
+	}
+}
+
+// ByLearnedWords orders the results by learned_words terms.
+func ByLearnedWords(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLearnedWordsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newLearnedWordsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LearnedWordsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, LearnedWordsTable, LearnedWordsColumn),
+	)
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/predicate"
 )
 
@@ -72,6 +73,11 @@ func Normalized(v string) predicate.LearnedWord {
 // Language applies equality check predicate on the "language" field. It's identical to LanguageEQ.
 func Language(v string) predicate.LearnedWord {
 	return predicate.LearnedWord(sql.FieldEQ(FieldLanguage, v))
+}
+
+// WordID applies equality check predicate on the "word_id" field. It's identical to WordIDEQ.
+func WordID(v int) predicate.LearnedWord {
+	return predicate.LearnedWord(sql.FieldEQ(FieldWordID, v))
 }
 
 // MasteryListen applies equality check predicate on the "mastery_listen" field. It's identical to MasteryListenEQ.
@@ -377,6 +383,36 @@ func LanguageEqualFold(v string) predicate.LearnedWord {
 // LanguageContainsFold applies the ContainsFold predicate on the "language" field.
 func LanguageContainsFold(v string) predicate.LearnedWord {
 	return predicate.LearnedWord(sql.FieldContainsFold(FieldLanguage, v))
+}
+
+// WordIDEQ applies the EQ predicate on the "word_id" field.
+func WordIDEQ(v int) predicate.LearnedWord {
+	return predicate.LearnedWord(sql.FieldEQ(FieldWordID, v))
+}
+
+// WordIDNEQ applies the NEQ predicate on the "word_id" field.
+func WordIDNEQ(v int) predicate.LearnedWord {
+	return predicate.LearnedWord(sql.FieldNEQ(FieldWordID, v))
+}
+
+// WordIDIn applies the In predicate on the "word_id" field.
+func WordIDIn(vs ...int) predicate.LearnedWord {
+	return predicate.LearnedWord(sql.FieldIn(FieldWordID, vs...))
+}
+
+// WordIDNotIn applies the NotIn predicate on the "word_id" field.
+func WordIDNotIn(vs ...int) predicate.LearnedWord {
+	return predicate.LearnedWord(sql.FieldNotIn(FieldWordID, vs...))
+}
+
+// WordIDIsNil applies the IsNil predicate on the "word_id" field.
+func WordIDIsNil() predicate.LearnedWord {
+	return predicate.LearnedWord(sql.FieldIsNull(FieldWordID))
+}
+
+// WordIDNotNil applies the NotNil predicate on the "word_id" field.
+func WordIDNotNil() predicate.LearnedWord {
+	return predicate.LearnedWord(sql.FieldNotNull(FieldWordID))
 }
 
 // MasteryListenEQ applies the EQ predicate on the "mastery_listen" field.
@@ -1017,6 +1053,29 @@ func UpdatedAtLT(v time.Time) predicate.LearnedWord {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.LearnedWord {
 	return predicate.LearnedWord(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasWord applies the HasEdge predicate on the "word" edge.
+func HasWord() predicate.LearnedWord {
+	return predicate.LearnedWord(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, WordTable, WordColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasWordWith applies the HasEdge predicate on the "word" edge with a given conditions (other predicates).
+func HasWordWith(preds ...predicate.Word) predicate.LearnedWord {
+	return predicate.LearnedWord(func(s *sql.Selector) {
+		step := newWordStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

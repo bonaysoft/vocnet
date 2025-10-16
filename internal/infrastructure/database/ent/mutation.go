@@ -70,6 +70,8 @@ type LearnedWordMutation struct {
 	created_at              *time.Time
 	updated_at              *time.Time
 	clearedFields           map[string]struct{}
+	word                    *int
+	clearedword             bool
 	done                    bool
 	oldValue                func(context.Context) (*LearnedWord, error)
 	predicates              []predicate.LearnedWord
@@ -335,6 +337,55 @@ func (m *LearnedWordMutation) OldLanguage(ctx context.Context) (v string, err er
 // ResetLanguage resets all changes to the "language" field.
 func (m *LearnedWordMutation) ResetLanguage() {
 	m.language = nil
+}
+
+// SetWordID sets the "word_id" field.
+func (m *LearnedWordMutation) SetWordID(i int) {
+	m.word = &i
+}
+
+// WordID returns the value of the "word_id" field in the mutation.
+func (m *LearnedWordMutation) WordID() (r int, exists bool) {
+	v := m.word
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWordID returns the old "word_id" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LearnedWordMutation) OldWordID(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWordID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWordID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWordID: %w", err)
+	}
+	return oldValue.WordID, nil
+}
+
+// ClearWordID clears the value of the "word_id" field.
+func (m *LearnedWordMutation) ClearWordID() {
+	m.word = nil
+	m.clearedFields[learnedword.FieldWordID] = struct{}{}
+}
+
+// WordIDCleared returns if the "word_id" field was cleared in this mutation.
+func (m *LearnedWordMutation) WordIDCleared() bool {
+	_, ok := m.clearedFields[learnedword.FieldWordID]
+	return ok
+}
+
+// ResetWordID resets all changes to the "word_id" field.
+func (m *LearnedWordMutation) ResetWordID() {
+	m.word = nil
+	delete(m.clearedFields, learnedword.FieldWordID)
 }
 
 // SetMasteryListen sets the "mastery_listen" field.
@@ -1193,6 +1244,33 @@ func (m *LearnedWordMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// ClearWord clears the "word" edge to the Word entity.
+func (m *LearnedWordMutation) ClearWord() {
+	m.clearedword = true
+	m.clearedFields[learnedword.FieldWordID] = struct{}{}
+}
+
+// WordCleared reports if the "word" edge to the Word entity was cleared.
+func (m *LearnedWordMutation) WordCleared() bool {
+	return m.WordIDCleared() || m.clearedword
+}
+
+// WordIDs returns the "word" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// WordID instead. It exists only for internal usage by the builders.
+func (m *LearnedWordMutation) WordIDs() (ids []int) {
+	if id := m.word; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetWord resets all changes to the "word" edge.
+func (m *LearnedWordMutation) ResetWord() {
+	m.word = nil
+	m.clearedword = false
+}
+
 // Where appends a list predicates to the LearnedWordMutation builder.
 func (m *LearnedWordMutation) Where(ps ...predicate.LearnedWord) {
 	m.predicates = append(m.predicates, ps...)
@@ -1227,7 +1305,7 @@ func (m *LearnedWordMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LearnedWordMutation) Fields() []string {
-	fields := make([]string, 0, 21)
+	fields := make([]string, 0, 22)
 	if m.user_id != nil {
 		fields = append(fields, learnedword.FieldUserID)
 	}
@@ -1239,6 +1317,9 @@ func (m *LearnedWordMutation) Fields() []string {
 	}
 	if m.language != nil {
 		fields = append(fields, learnedword.FieldLanguage)
+	}
+	if m.word != nil {
+		fields = append(fields, learnedword.FieldWordID)
 	}
 	if m.mastery_listen != nil {
 		fields = append(fields, learnedword.FieldMasteryListen)
@@ -1307,6 +1388,8 @@ func (m *LearnedWordMutation) Field(name string) (ent.Value, bool) {
 		return m.Normalized()
 	case learnedword.FieldLanguage:
 		return m.Language()
+	case learnedword.FieldWordID:
+		return m.WordID()
 	case learnedword.FieldMasteryListen:
 		return m.MasteryListen()
 	case learnedword.FieldMasteryRead:
@@ -1358,6 +1441,8 @@ func (m *LearnedWordMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldNormalized(ctx)
 	case learnedword.FieldLanguage:
 		return m.OldLanguage(ctx)
+	case learnedword.FieldWordID:
+		return m.OldWordID(ctx)
 	case learnedword.FieldMasteryListen:
 		return m.OldMasteryListen(ctx)
 	case learnedword.FieldMasteryRead:
@@ -1428,6 +1513,13 @@ func (m *LearnedWordMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLanguage(v)
+		return nil
+	case learnedword.FieldWordID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWordID(v)
 		return nil
 	case learnedword.FieldMasteryListen:
 		v, ok := value.(int16)
@@ -1689,6 +1781,9 @@ func (m *LearnedWordMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *LearnedWordMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(learnedword.FieldWordID) {
+		fields = append(fields, learnedword.FieldWordID)
+	}
 	if m.FieldCleared(learnedword.FieldReviewLastReviewAt) {
 		fields = append(fields, learnedword.FieldReviewLastReviewAt)
 	}
@@ -1712,6 +1807,9 @@ func (m *LearnedWordMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *LearnedWordMutation) ClearField(name string) error {
 	switch name {
+	case learnedword.FieldWordID:
+		m.ClearWordID()
+		return nil
 	case learnedword.FieldReviewLastReviewAt:
 		m.ClearReviewLastReviewAt()
 		return nil
@@ -1740,6 +1838,9 @@ func (m *LearnedWordMutation) ResetField(name string) error {
 		return nil
 	case learnedword.FieldLanguage:
 		m.ResetLanguage()
+		return nil
+	case learnedword.FieldWordID:
+		m.ResetWordID()
 		return nil
 	case learnedword.FieldMasteryListen:
 		m.ResetMasteryListen()
@@ -1798,19 +1899,28 @@ func (m *LearnedWordMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *LearnedWordMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.word != nil {
+		edges = append(edges, learnedword.EdgeWord)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *LearnedWordMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case learnedword.EdgeWord:
+		if id := m.word; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *LearnedWordMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -1822,57 +1932,77 @@ func (m *LearnedWordMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *LearnedWordMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedword {
+		edges = append(edges, learnedword.EdgeWord)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *LearnedWordMutation) EdgeCleared(name string) bool {
+	switch name {
+	case learnedword.EdgeWord:
+		return m.clearedword
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *LearnedWordMutation) ClearEdge(name string) error {
+	switch name {
+	case learnedword.EdgeWord:
+		m.ClearWord()
+		return nil
+	}
 	return fmt.Errorf("unknown LearnedWord unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *LearnedWordMutation) ResetEdge(name string) error {
+	switch name {
+	case learnedword.EdgeWord:
+		m.ResetWord()
+		return nil
+	}
 	return fmt.Errorf("unknown LearnedWord edge %s", name)
 }
 
 // WordMutation represents an operation that mutates the Word nodes in the graph.
 type WordMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *int
-	text              *string
-	normalized        *string
-	language          *string
-	word_type         *string
-	lemma             *string
-	phonetics         *[]entity.WordPhonetic
-	appendphonetics   []entity.WordPhonetic
-	definitions       *[]entity.WordDefinition
-	appenddefinitions []entity.WordDefinition
-	phrases           *[]entity.Phrase
-	appendphrases     []entity.Phrase
-	sentences         *[]entity.Sentence
-	appendsentences   []entity.Sentence
-	relations         *[]entity.WordRelation
-	appendrelations   []entity.WordRelation
-	categories        *[]string
-	appendcategories  []string
-	created_at        *time.Time
-	updated_at        *time.Time
-	clearedFields     map[string]struct{}
-	done              bool
-	oldValue          func(context.Context) (*Word, error)
-	predicates        []predicate.Word
+	op                   Op
+	typ                  string
+	id                   *int
+	text                 *string
+	normalized           *string
+	language             *string
+	word_type            *string
+	lemma                *string
+	phonetics            *[]entity.WordPhonetic
+	appendphonetics      []entity.WordPhonetic
+	definitions          *[]entity.WordDefinition
+	appenddefinitions    []entity.WordDefinition
+	phrases              *[]entity.Phrase
+	appendphrases        []entity.Phrase
+	sentences            *[]entity.Sentence
+	appendsentences      []entity.Sentence
+	relations            *[]entity.WordRelation
+	appendrelations      []entity.WordRelation
+	categories           *[]string
+	appendcategories     []string
+	created_at           *time.Time
+	updated_at           *time.Time
+	clearedFields        map[string]struct{}
+	learned_words        map[int]struct{}
+	removedlearned_words map[int]struct{}
+	clearedlearned_words bool
+	done                 bool
+	oldValue             func(context.Context) (*Word, error)
+	predicates           []predicate.Word
 }
 
 var _ ent.Mutation = (*WordMutation)(nil)
@@ -2544,6 +2674,60 @@ func (m *WordMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// AddLearnedWordIDs adds the "learned_words" edge to the LearnedWord entity by ids.
+func (m *WordMutation) AddLearnedWordIDs(ids ...int) {
+	if m.learned_words == nil {
+		m.learned_words = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.learned_words[ids[i]] = struct{}{}
+	}
+}
+
+// ClearLearnedWords clears the "learned_words" edge to the LearnedWord entity.
+func (m *WordMutation) ClearLearnedWords() {
+	m.clearedlearned_words = true
+}
+
+// LearnedWordsCleared reports if the "learned_words" edge to the LearnedWord entity was cleared.
+func (m *WordMutation) LearnedWordsCleared() bool {
+	return m.clearedlearned_words
+}
+
+// RemoveLearnedWordIDs removes the "learned_words" edge to the LearnedWord entity by IDs.
+func (m *WordMutation) RemoveLearnedWordIDs(ids ...int) {
+	if m.removedlearned_words == nil {
+		m.removedlearned_words = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.learned_words, ids[i])
+		m.removedlearned_words[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLearnedWords returns the removed IDs of the "learned_words" edge to the LearnedWord entity.
+func (m *WordMutation) RemovedLearnedWordsIDs() (ids []int) {
+	for id := range m.removedlearned_words {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// LearnedWordsIDs returns the "learned_words" edge IDs in the mutation.
+func (m *WordMutation) LearnedWordsIDs() (ids []int) {
+	for id := range m.learned_words {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLearnedWords resets all changes to the "learned_words" edge.
+func (m *WordMutation) ResetLearnedWords() {
+	m.learned_words = nil
+	m.clearedlearned_words = false
+	m.removedlearned_words = nil
+}
+
 // Where appends a list predicates to the WordMutation builder.
 func (m *WordMutation) Where(ps ...predicate.Word) {
 	m.predicates = append(m.predicates, ps...)
@@ -2890,48 +3074,84 @@ func (m *WordMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *WordMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.learned_words != nil {
+		edges = append(edges, word.EdgeLearnedWords)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *WordMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case word.EdgeLearnedWords:
+		ids := make([]ent.Value, 0, len(m.learned_words))
+		for id := range m.learned_words {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *WordMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedlearned_words != nil {
+		edges = append(edges, word.EdgeLearnedWords)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *WordMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case word.EdgeLearnedWords:
+		ids := make([]ent.Value, 0, len(m.removedlearned_words))
+		for id := range m.removedlearned_words {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *WordMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedlearned_words {
+		edges = append(edges, word.EdgeLearnedWords)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *WordMutation) EdgeCleared(name string) bool {
+	switch name {
+	case word.EdgeLearnedWords:
+		return m.clearedlearned_words
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *WordMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Word unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *WordMutation) ResetEdge(name string) error {
+	switch name {
+	case word.EdgeLearnedWords:
+		m.ResetLearnedWords()
+		return nil
+	}
 	return fmt.Errorf("unknown Word edge %s", name)
 }

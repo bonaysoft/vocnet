@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/eslsoft/vocnet/internal/entity"
 )
 
@@ -22,6 +23,8 @@ const (
 	FieldNormalized = "normalized"
 	// FieldLanguage holds the string denoting the language field in the database.
 	FieldLanguage = "language"
+	// FieldWordID holds the string denoting the word_id field in the database.
+	FieldWordID = "word_id"
 	// FieldMasteryListen holds the string denoting the mastery_listen field in the database.
 	FieldMasteryListen = "mastery_listen"
 	// FieldMasteryRead holds the string denoting the mastery_read field in the database.
@@ -56,8 +59,17 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeWord holds the string denoting the word edge name in mutations.
+	EdgeWord = "word"
 	// Table holds the table name of the learnedword in the database.
 	Table = "learned_words"
+	// WordTable is the table that holds the word relation/edge.
+	WordTable = "learned_words"
+	// WordInverseTable is the table name for the Word entity.
+	// It exists in this package in order to avoid circular dependency with the "word" package.
+	WordInverseTable = "words"
+	// WordColumn is the table column denoting the word relation/edge.
+	WordColumn = "word_id"
 )
 
 // Columns holds all SQL columns for learnedword fields.
@@ -67,6 +79,7 @@ var Columns = []string{
 	FieldTerm,
 	FieldNormalized,
 	FieldLanguage,
+	FieldWordID,
 	FieldMasteryListen,
 	FieldMasteryRead,
 	FieldMasterySpell,
@@ -163,6 +176,11 @@ func ByLanguage(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLanguage, opts...).ToFunc()
 }
 
+// ByWordID orders the results by the word_id field.
+func ByWordID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWordID, opts...).ToFunc()
+}
+
 // ByMasteryListen orders the results by the mastery_listen field.
 func ByMasteryListen(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMasteryListen, opts...).ToFunc()
@@ -231,4 +249,18 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByWordField orders the results by word field.
+func ByWordField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newWordStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newWordStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(WordInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, WordTable, WordColumn),
+	)
 }

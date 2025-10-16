@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/eslsoft/vocnet/internal/entity"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 )
 
 // LearnedWordCreate is the builder for creating a LearnedWord entity.
@@ -59,6 +60,20 @@ func (lwc *LearnedWordCreate) SetLanguage(s string) *LearnedWordCreate {
 func (lwc *LearnedWordCreate) SetNillableLanguage(s *string) *LearnedWordCreate {
 	if s != nil {
 		lwc.SetLanguage(*s)
+	}
+	return lwc
+}
+
+// SetWordID sets the "word_id" field.
+func (lwc *LearnedWordCreate) SetWordID(i int) *LearnedWordCreate {
+	lwc.mutation.SetWordID(i)
+	return lwc
+}
+
+// SetNillableWordID sets the "word_id" field if the given value is not nil.
+func (lwc *LearnedWordCreate) SetNillableWordID(i *int) *LearnedWordCreate {
+	if i != nil {
+		lwc.SetWordID(*i)
 	}
 	return lwc
 }
@@ -275,6 +290,11 @@ func (lwc *LearnedWordCreate) SetNillableUpdatedAt(t *time.Time) *LearnedWordCre
 		lwc.SetUpdatedAt(*t)
 	}
 	return lwc
+}
+
+// SetWord sets the "word" edge to the Word entity.
+func (lwc *LearnedWordCreate) SetWord(w *Word) *LearnedWordCreate {
+	return lwc.SetWordID(w.ID)
 }
 
 // Mutation returns the LearnedWordMutation object of the builder.
@@ -550,6 +570,23 @@ func (lwc *LearnedWordCreate) createSpec() (*LearnedWord, *sqlgraph.CreateSpec) 
 		_spec.SetField(learnedword.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
+	if nodes := lwc.mutation.WordIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   learnedword.WordTable,
+			Columns: []string{learnedword.WordColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(word.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.WordID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -653,6 +690,24 @@ func (u *LearnedWordUpsert) SetLanguage(v string) *LearnedWordUpsert {
 // UpdateLanguage sets the "language" field to the value that was provided on create.
 func (u *LearnedWordUpsert) UpdateLanguage() *LearnedWordUpsert {
 	u.SetExcluded(learnedword.FieldLanguage)
+	return u
+}
+
+// SetWordID sets the "word_id" field.
+func (u *LearnedWordUpsert) SetWordID(v int) *LearnedWordUpsert {
+	u.Set(learnedword.FieldWordID, v)
+	return u
+}
+
+// UpdateWordID sets the "word_id" field to the value that was provided on create.
+func (u *LearnedWordUpsert) UpdateWordID() *LearnedWordUpsert {
+	u.SetExcluded(learnedword.FieldWordID)
+	return u
+}
+
+// ClearWordID clears the value of the "word_id" field.
+func (u *LearnedWordUpsert) ClearWordID() *LearnedWordUpsert {
+	u.SetNull(learnedword.FieldWordID)
 	return u
 }
 
@@ -1019,6 +1074,27 @@ func (u *LearnedWordUpsertOne) SetLanguage(v string) *LearnedWordUpsertOne {
 func (u *LearnedWordUpsertOne) UpdateLanguage() *LearnedWordUpsertOne {
 	return u.Update(func(s *LearnedWordUpsert) {
 		s.UpdateLanguage()
+	})
+}
+
+// SetWordID sets the "word_id" field.
+func (u *LearnedWordUpsertOne) SetWordID(v int) *LearnedWordUpsertOne {
+	return u.Update(func(s *LearnedWordUpsert) {
+		s.SetWordID(v)
+	})
+}
+
+// UpdateWordID sets the "word_id" field to the value that was provided on create.
+func (u *LearnedWordUpsertOne) UpdateWordID() *LearnedWordUpsertOne {
+	return u.Update(func(s *LearnedWordUpsert) {
+		s.UpdateWordID()
+	})
+}
+
+// ClearWordID clears the value of the "word_id" field.
+func (u *LearnedWordUpsertOne) ClearWordID() *LearnedWordUpsertOne {
+	return u.Update(func(s *LearnedWordUpsert) {
+		s.ClearWordID()
 	})
 }
 
@@ -1594,6 +1670,27 @@ func (u *LearnedWordUpsertBulk) SetLanguage(v string) *LearnedWordUpsertBulk {
 func (u *LearnedWordUpsertBulk) UpdateLanguage() *LearnedWordUpsertBulk {
 	return u.Update(func(s *LearnedWordUpsert) {
 		s.UpdateLanguage()
+	})
+}
+
+// SetWordID sets the "word_id" field.
+func (u *LearnedWordUpsertBulk) SetWordID(v int) *LearnedWordUpsertBulk {
+	return u.Update(func(s *LearnedWordUpsert) {
+		s.SetWordID(v)
+	})
+}
+
+// UpdateWordID sets the "word_id" field to the value that was provided on create.
+func (u *LearnedWordUpsertBulk) UpdateWordID() *LearnedWordUpsertBulk {
+	return u.Update(func(s *LearnedWordUpsert) {
+		s.UpdateWordID()
+	})
+}
+
+// ClearWordID clears the value of the "word_id" field.
+func (u *LearnedWordUpsertBulk) ClearWordID() *LearnedWordUpsertBulk {
+	return u.Update(func(s *LearnedWordUpsert) {
+		s.ClearWordID()
 	})
 }
 

@@ -30,59 +30,59 @@ func init() {
 	// learnedword.DefaultLanguage holds the default value on creation for the language field.
 	learnedword.DefaultLanguage = learnedwordDescLanguage.Default.(string)
 	// learnedwordDescMasteryListen is the schema descriptor for mastery_listen field.
-	learnedwordDescMasteryListen := learnedwordFields[4].Descriptor()
+	learnedwordDescMasteryListen := learnedwordFields[5].Descriptor()
 	// learnedword.DefaultMasteryListen holds the default value on creation for the mastery_listen field.
 	learnedword.DefaultMasteryListen = learnedwordDescMasteryListen.Default.(int16)
 	// learnedwordDescMasteryRead is the schema descriptor for mastery_read field.
-	learnedwordDescMasteryRead := learnedwordFields[5].Descriptor()
+	learnedwordDescMasteryRead := learnedwordFields[6].Descriptor()
 	// learnedword.DefaultMasteryRead holds the default value on creation for the mastery_read field.
 	learnedword.DefaultMasteryRead = learnedwordDescMasteryRead.Default.(int16)
 	// learnedwordDescMasterySpell is the schema descriptor for mastery_spell field.
-	learnedwordDescMasterySpell := learnedwordFields[6].Descriptor()
+	learnedwordDescMasterySpell := learnedwordFields[7].Descriptor()
 	// learnedword.DefaultMasterySpell holds the default value on creation for the mastery_spell field.
 	learnedword.DefaultMasterySpell = learnedwordDescMasterySpell.Default.(int16)
 	// learnedwordDescMasteryPronounce is the schema descriptor for mastery_pronounce field.
-	learnedwordDescMasteryPronounce := learnedwordFields[7].Descriptor()
+	learnedwordDescMasteryPronounce := learnedwordFields[8].Descriptor()
 	// learnedword.DefaultMasteryPronounce holds the default value on creation for the mastery_pronounce field.
 	learnedword.DefaultMasteryPronounce = learnedwordDescMasteryPronounce.Default.(int16)
 	// learnedwordDescMasteryOverall is the schema descriptor for mastery_overall field.
-	learnedwordDescMasteryOverall := learnedwordFields[8].Descriptor()
+	learnedwordDescMasteryOverall := learnedwordFields[9].Descriptor()
 	// learnedword.DefaultMasteryOverall holds the default value on creation for the mastery_overall field.
 	learnedword.DefaultMasteryOverall = learnedwordDescMasteryOverall.Default.(int32)
 	// learnedwordDescReviewIntervalDays is the schema descriptor for review_interval_days field.
-	learnedwordDescReviewIntervalDays := learnedwordFields[11].Descriptor()
+	learnedwordDescReviewIntervalDays := learnedwordFields[12].Descriptor()
 	// learnedword.DefaultReviewIntervalDays holds the default value on creation for the review_interval_days field.
 	learnedword.DefaultReviewIntervalDays = learnedwordDescReviewIntervalDays.Default.(int32)
 	// learnedwordDescReviewFailCount is the schema descriptor for review_fail_count field.
-	learnedwordDescReviewFailCount := learnedwordFields[12].Descriptor()
+	learnedwordDescReviewFailCount := learnedwordFields[13].Descriptor()
 	// learnedword.DefaultReviewFailCount holds the default value on creation for the review_fail_count field.
 	learnedword.DefaultReviewFailCount = learnedwordDescReviewFailCount.Default.(int32)
 	// learnedwordDescQueryCount is the schema descriptor for query_count field.
-	learnedwordDescQueryCount := learnedwordFields[13].Descriptor()
+	learnedwordDescQueryCount := learnedwordFields[14].Descriptor()
 	// learnedword.DefaultQueryCount holds the default value on creation for the query_count field.
 	learnedword.DefaultQueryCount = learnedwordDescQueryCount.Default.(int64)
 	// learnedwordDescSentences is the schema descriptor for sentences field.
-	learnedwordDescSentences := learnedwordFields[15].Descriptor()
+	learnedwordDescSentences := learnedwordFields[16].Descriptor()
 	// learnedword.DefaultSentences holds the default value on creation for the sentences field.
 	learnedword.DefaultSentences = learnedwordDescSentences.Default.([]entity.Sentence)
 	// learnedwordDescRelations is the schema descriptor for relations field.
-	learnedwordDescRelations := learnedwordFields[16].Descriptor()
+	learnedwordDescRelations := learnedwordFields[17].Descriptor()
 	// learnedword.DefaultRelations holds the default value on creation for the relations field.
 	learnedword.DefaultRelations = learnedwordDescRelations.Default.([]entity.LearnedWordRelation)
 	// learnedwordDescTags is the schema descriptor for tags field.
-	learnedwordDescTags := learnedwordFields[17].Descriptor()
+	learnedwordDescTags := learnedwordFields[18].Descriptor()
 	// learnedword.DefaultTags holds the default value on creation for the tags field.
 	learnedword.DefaultTags = learnedwordDescTags.Default.([]string)
 	// learnedwordDescCreatedBy is the schema descriptor for created_by field.
-	learnedwordDescCreatedBy := learnedwordFields[18].Descriptor()
+	learnedwordDescCreatedBy := learnedwordFields[19].Descriptor()
 	// learnedword.DefaultCreatedBy holds the default value on creation for the created_by field.
 	learnedword.DefaultCreatedBy = learnedwordDescCreatedBy.Default.(string)
 	// learnedwordDescCreatedAt is the schema descriptor for created_at field.
-	learnedwordDescCreatedAt := learnedwordFields[19].Descriptor()
+	learnedwordDescCreatedAt := learnedwordFields[20].Descriptor()
 	// learnedword.DefaultCreatedAt holds the default value on creation for the created_at field.
 	learnedword.DefaultCreatedAt = learnedwordDescCreatedAt.Default.(func() time.Time)
 	// learnedwordDescUpdatedAt is the schema descriptor for updated_at field.
-	learnedwordDescUpdatedAt := learnedwordFields[20].Descriptor()
+	learnedwordDescUpdatedAt := learnedwordFields[21].Descriptor()
 	// learnedword.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	learnedword.DefaultUpdatedAt = learnedwordDescUpdatedAt.Default.(func() time.Time)
 	// learnedword.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

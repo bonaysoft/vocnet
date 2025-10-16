@@ -47,6 +47,14 @@ var listLearnedWordsSchema = filterexpr.ResourceSchema{
 				filterexpr.OpIN: "Words",
 			},
 		},
+		"tag": {
+			Kind: filterexpr.KindString,
+			Ops:  map[filterexpr.Op]string{filterexpr.OpIN: "Tags"},
+		},
+		"category": {
+			Kind: filterexpr.KindString,
+			Ops:  map[filterexpr.Op]string{filterexpr.OpIN: "Categories"},
+		},
 	},
 	Order: filterexpr.OrderSchema{
 		DefaultPrimary:     "updated_at",
