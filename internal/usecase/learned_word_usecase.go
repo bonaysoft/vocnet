@@ -9,34 +9,34 @@ import (
 	"github.com/eslsoft/vocnet/internal/repository"
 )
 
-// UserWordUsecase encapsulates business logic for managing user vocabulary entries.
-type UserWordUsecase interface {
-	CollectWord(ctx context.Context, userID int64, word *entity.UserWord) (*entity.UserWord, error)
-	UpdateMastery(ctx context.Context, userID, id int64, mastery entity.MasteryBreakdown, review entity.ReviewTiming, notes string) (*entity.UserWord, error)
-	ListUserWords(ctx context.Context, filter *repository.ListUserWordQuery) ([]entity.UserWord, int64, error)
-	DeleteUserWord(ctx context.Context, userID, id int64) error
+// LearnedWordUsecase encapsulates business logic for managing user vocabulary entries.
+type LearnedWordUsecase interface {
+	CollectWord(ctx context.Context, userID int64, word *entity.LearnedWord) (*entity.LearnedWord, error)
+	UpdateMastery(ctx context.Context, userID, id int64, mastery entity.MasteryBreakdown, review entity.ReviewTiming, notes string) (*entity.LearnedWord, error)
+	ListLearnedWords(ctx context.Context, filter *repository.ListLearnedWordQuery) ([]entity.LearnedWord, int64, error)
+	DeleteLearnedWord(ctx context.Context, userID, id int64) error
 }
 
-// NewUserWordUsecase wires the repository with default behaviour.
-func NewUserWordUsecase(repo repository.UserWordRepository) UserWordUsecase {
-	return &userWordUsecase{
+// NewLearnedWordUsecase wires the repository with default behaviour.
+func NewLearnedWordUsecase(repo repository.LearnedWordRepository) LearnedWordUsecase {
+	return &learnedWordUsecase{
 		repo:  repo,
 		clock: time.Now,
 	}
 }
 
-type userWordUsecase struct {
-	repo  repository.UserWordRepository
+type learnedWordUsecase struct {
+	repo  repository.LearnedWordRepository
 	clock func() time.Time
 }
 
-func (u *userWordUsecase) CollectWord(ctx context.Context, userID int64, word *entity.UserWord) (*entity.UserWord, error) {
+func (u *learnedWordUsecase) CollectWord(ctx context.Context, userID int64, word *entity.LearnedWord) (*entity.LearnedWord, error) {
 	if word == nil {
-		return nil, entity.ErrInvalidUserWordText
+		return nil, entity.ErrInvalidLearnedWordText
 	}
-	text := strings.TrimSpace(word.Word)
+	text := strings.TrimSpace(word.Term)
 	if text == "" {
-		return nil, entity.ErrInvalidUserWordText
+		return nil, entity.ErrInvalidLearnedWordText
 	}
 
 	existing, err := u.repo.FindByWord(ctx, userID, text)
@@ -61,7 +61,7 @@ func (u *userWordUsecase) CollectWord(ctx context.Context, userID int64, word *e
 	}
 
 	copy := *word
-	copy.Word = text
+	copy.Term = text
 	copy.UserID = userID
 	if copy.QueryCount == 0 {
 		copy.QueryCount = 1
@@ -78,9 +78,9 @@ func (u *userWordUsecase) CollectWord(ctx context.Context, userID int64, word *e
 	return created, nil
 }
 
-func (u *userWordUsecase) UpdateMastery(ctx context.Context, userID, id int64, mastery entity.MasteryBreakdown, review entity.ReviewTiming, notes string) (*entity.UserWord, error) {
+func (u *learnedWordUsecase) UpdateMastery(ctx context.Context, userID, id int64, mastery entity.MasteryBreakdown, review entity.ReviewTiming, notes string) (*entity.LearnedWord, error) {
 	if id <= 0 {
-		return nil, entity.ErrUserWordNotFound
+		return nil, entity.ErrLearnedWordNotFound
 	}
 
 	existing, err := u.repo.GetByID(ctx, userID, id)
@@ -98,13 +98,13 @@ func (u *userWordUsecase) UpdateMastery(ctx context.Context, userID, id int64, m
 	return u.repo.Update(ctx, existing)
 }
 
-func (u *userWordUsecase) ListUserWords(ctx context.Context, query *repository.ListUserWordQuery) ([]entity.UserWord, int64, error) {
+func (u *learnedWordUsecase) ListLearnedWords(ctx context.Context, query *repository.ListLearnedWordQuery) ([]entity.LearnedWord, int64, error) {
 	return u.repo.List(ctx, query)
 }
 
-func (u *userWordUsecase) DeleteUserWord(ctx context.Context, userID, id int64) error {
+func (u *learnedWordUsecase) DeleteLearnedWord(ctx context.Context, userID, id int64) error {
 	if id <= 0 {
-		return entity.ErrUserWordNotFound
+		return entity.ErrLearnedWordNotFound
 	}
 	return u.repo.Delete(ctx, userID, id)
 }

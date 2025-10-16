@@ -12,16 +12,16 @@ import (
 	"entgo.io/ent/schema/index"
 )
 
-// UserWord holds the schema definition for the user_words table.
-type UserWord struct {
+// LearnedWord holds the schema definition for the user_words table.
+type LearnedWord struct {
 	ent.Schema
 }
 
-// Fields of the UserWord.
-func (UserWord) Fields() []ent.Field {
+// Fields of the LearnedWord.
+func (LearnedWord) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int64("user_id"),
-		field.String("word").NotEmpty(),
+		field.String("term").NotEmpty(),
 		field.String("normalized").Default(""),
 		field.String("language").Default("en"),
 		field.Int16("mastery_listen").Default(0),
@@ -38,8 +38,8 @@ func (UserWord) Fields() []ent.Field {
 		field.String("notes").Optional().Nillable(),
 		field.JSON("sentences", []entity.Sentence{}).
 			Default([]entity.Sentence{}),
-		field.JSON("relations", []entity.UserWordRelation{}).
-			Default([]entity.UserWordRelation{}),
+		field.JSON("relations", []entity.LearnedWordRelation{}).
+			Default([]entity.LearnedWordRelation{}),
 		field.String("created_by").Default(""),
 		field.Time("created_at").
 			Default(time.Now).
@@ -51,18 +51,18 @@ func (UserWord) Fields() []ent.Field {
 }
 
 // Indexes of the Word.
-func (UserWord) Indexes() []ent.Index {
+func (LearnedWord) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("user_id", "language", "word").Unique(),
+		index.Fields("user_id", "language", "term").Unique(),
 		index.Fields("language", "normalized"),
 	}
 }
 
-// Annotations of the UserWord.
-func (UserWord) Annotations() []schema.Annotation {
+// Annotations of the LearnedWord.
+func (LearnedWord) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entsql.Annotation{
-			Table: "user_words",
+			Table: "learned_words",
 		},
 	}
 }

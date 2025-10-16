@@ -5,18 +5,18 @@ import (
 	"time"
 )
 
-// UserWord represents a user's personalised vocabulary entry.
-type UserWord struct {
+// LearnedWord represents a user's personalised vocabulary entry.
+type LearnedWord struct {
 	ID         int64
 	UserID     int64
-	Word       string
+	Term       string
 	Language   Language
 	Mastery    MasteryBreakdown
 	Review     ReviewTiming
 	QueryCount int64
 	Notes      string
 	Sentences  []Sentence
-	Relations  []UserWordRelation
+	Relations  []LearnedWordRelation
 	CreatedBy  string
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
@@ -39,8 +39,8 @@ type ReviewTiming struct {
 	FailCount    int32
 }
 
-// UserWordRelation links a user word to another concept in their vocabulary graph.
-type UserWordRelation struct {
+// LearnedWordRelation links a user word to another concept in their vocabulary graph.
+type LearnedWordRelation struct {
 	Word         string    `json:"word"`
 	RelationType int32     `json:"relation_type"`
 	Note         string    `json:"note,omitempty"`
@@ -50,8 +50,8 @@ type UserWordRelation struct {
 }
 
 // Normalize ensures defaults & constraints before persistence.
-func (uw *UserWord) Normalize(now time.Time) {
-	uw.Word = strings.TrimSpace(uw.Word)
+func (uw *LearnedWord) Normalize(now time.Time) {
+	uw.Term = strings.TrimSpace(uw.Term)
 	if uw.CreatedAt.IsZero() {
 		uw.CreatedAt = now
 	}
@@ -63,6 +63,6 @@ func (uw *UserWord) Normalize(now time.Time) {
 		uw.Sentences = []Sentence{}
 	}
 	if uw.Relations == nil {
-		uw.Relations = []UserWordRelation{}
+		uw.Relations = []LearnedWordRelation{}
 	}
 }

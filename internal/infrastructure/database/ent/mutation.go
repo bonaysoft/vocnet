@@ -12,8 +12,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/eslsoft/vocnet/internal/entity"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/predicate"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/userword"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 )
 
@@ -26,19 +26,19 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeUserWord = "UserWord"
-	TypeWord     = "Word"
+	TypeLearnedWord = "LearnedWord"
+	TypeWord        = "Word"
 )
 
-// UserWordMutation represents an operation that mutates the UserWord nodes in the graph.
-type UserWordMutation struct {
+// LearnedWordMutation represents an operation that mutates the LearnedWord nodes in the graph.
+type LearnedWordMutation struct {
 	config
 	op                      Op
 	typ                     string
 	id                      *int
 	user_id                 *int64
 	adduser_id              *int64
-	word                    *string
+	term                    *string
 	normalized              *string
 	language                *string
 	mastery_listen          *int16
@@ -64,28 +64,28 @@ type UserWordMutation struct {
 	notes                   *string
 	sentences               *[]entity.Sentence
 	appendsentences         []entity.Sentence
-	relations               *[]entity.UserWordRelation
-	appendrelations         []entity.UserWordRelation
+	relations               *[]entity.LearnedWordRelation
+	appendrelations         []entity.LearnedWordRelation
 	created_by              *string
 	created_at              *time.Time
 	updated_at              *time.Time
 	clearedFields           map[string]struct{}
 	done                    bool
-	oldValue                func(context.Context) (*UserWord, error)
-	predicates              []predicate.UserWord
+	oldValue                func(context.Context) (*LearnedWord, error)
+	predicates              []predicate.LearnedWord
 }
 
-var _ ent.Mutation = (*UserWordMutation)(nil)
+var _ ent.Mutation = (*LearnedWordMutation)(nil)
 
-// userwordOption allows management of the mutation configuration using functional options.
-type userwordOption func(*UserWordMutation)
+// learnedwordOption allows management of the mutation configuration using functional options.
+type learnedwordOption func(*LearnedWordMutation)
 
-// newUserWordMutation creates new mutation for the UserWord entity.
-func newUserWordMutation(c config, op Op, opts ...userwordOption) *UserWordMutation {
-	m := &UserWordMutation{
+// newLearnedWordMutation creates new mutation for the LearnedWord entity.
+func newLearnedWordMutation(c config, op Op, opts ...learnedwordOption) *LearnedWordMutation {
+	m := &LearnedWordMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeUserWord,
+		typ:           TypeLearnedWord,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -94,20 +94,20 @@ func newUserWordMutation(c config, op Op, opts ...userwordOption) *UserWordMutat
 	return m
 }
 
-// withUserWordID sets the ID field of the mutation.
-func withUserWordID(id int) userwordOption {
-	return func(m *UserWordMutation) {
+// withLearnedWordID sets the ID field of the mutation.
+func withLearnedWordID(id int) learnedwordOption {
+	return func(m *LearnedWordMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *UserWord
+			value *LearnedWord
 		)
-		m.oldValue = func(ctx context.Context) (*UserWord, error) {
+		m.oldValue = func(ctx context.Context) (*LearnedWord, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().UserWord.Get(ctx, id)
+					value, err = m.Client().LearnedWord.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -116,10 +116,10 @@ func withUserWordID(id int) userwordOption {
 	}
 }
 
-// withUserWord sets the old UserWord of the mutation.
-func withUserWord(node *UserWord) userwordOption {
-	return func(m *UserWordMutation) {
-		m.oldValue = func(context.Context) (*UserWord, error) {
+// withLearnedWord sets the old LearnedWord of the mutation.
+func withLearnedWord(node *LearnedWord) learnedwordOption {
+	return func(m *LearnedWordMutation) {
+		m.oldValue = func(context.Context) (*LearnedWord, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -128,7 +128,7 @@ func withUserWord(node *UserWord) userwordOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m UserWordMutation) Client() *Client {
+func (m LearnedWordMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -136,7 +136,7 @@ func (m UserWordMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m UserWordMutation) Tx() (*Tx, error) {
+func (m LearnedWordMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -147,7 +147,7 @@ func (m UserWordMutation) Tx() (*Tx, error) {
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *UserWordMutation) ID() (id int, exists bool) {
+func (m *LearnedWordMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -158,7 +158,7 @@ func (m *UserWordMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *UserWordMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *LearnedWordMutation) IDs(ctx context.Context) ([]int, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -167,20 +167,20 @@ func (m *UserWordMutation) IDs(ctx context.Context) ([]int, error) {
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().UserWord.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().LearnedWord.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetUserID sets the "user_id" field.
-func (m *UserWordMutation) SetUserID(i int64) {
+func (m *LearnedWordMutation) SetUserID(i int64) {
 	m.user_id = &i
 	m.adduser_id = nil
 }
 
 // UserID returns the value of the "user_id" field in the mutation.
-func (m *UserWordMutation) UserID() (r int64, exists bool) {
+func (m *LearnedWordMutation) UserID() (r int64, exists bool) {
 	v := m.user_id
 	if v == nil {
 		return
@@ -188,10 +188,10 @@ func (m *UserWordMutation) UserID() (r int64, exists bool) {
 	return *v, true
 }
 
-// OldUserID returns the old "user_id" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldUserID returns the old "user_id" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldUserID(ctx context.Context) (v int64, err error) {
+func (m *LearnedWordMutation) OldUserID(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
 	}
@@ -206,7 +206,7 @@ func (m *UserWordMutation) OldUserID(ctx context.Context) (v int64, err error) {
 }
 
 // AddUserID adds i to the "user_id" field.
-func (m *UserWordMutation) AddUserID(i int64) {
+func (m *LearnedWordMutation) AddUserID(i int64) {
 	if m.adduser_id != nil {
 		*m.adduser_id += i
 	} else {
@@ -215,7 +215,7 @@ func (m *UserWordMutation) AddUserID(i int64) {
 }
 
 // AddedUserID returns the value that was added to the "user_id" field in this mutation.
-func (m *UserWordMutation) AddedUserID() (r int64, exists bool) {
+func (m *LearnedWordMutation) AddedUserID() (r int64, exists bool) {
 	v := m.adduser_id
 	if v == nil {
 		return
@@ -224,54 +224,54 @@ func (m *UserWordMutation) AddedUserID() (r int64, exists bool) {
 }
 
 // ResetUserID resets all changes to the "user_id" field.
-func (m *UserWordMutation) ResetUserID() {
+func (m *LearnedWordMutation) ResetUserID() {
 	m.user_id = nil
 	m.adduser_id = nil
 }
 
-// SetWord sets the "word" field.
-func (m *UserWordMutation) SetWord(s string) {
-	m.word = &s
+// SetTerm sets the "term" field.
+func (m *LearnedWordMutation) SetTerm(s string) {
+	m.term = &s
 }
 
-// Word returns the value of the "word" field in the mutation.
-func (m *UserWordMutation) Word() (r string, exists bool) {
-	v := m.word
+// Term returns the value of the "term" field in the mutation.
+func (m *LearnedWordMutation) Term() (r string, exists bool) {
+	v := m.term
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldWord returns the old "word" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldTerm returns the old "term" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldWord(ctx context.Context) (v string, err error) {
+func (m *LearnedWordMutation) OldTerm(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWord is only allowed on UpdateOne operations")
+		return v, errors.New("OldTerm is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWord requires an ID field in the mutation")
+		return v, errors.New("OldTerm requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWord: %w", err)
+		return v, fmt.Errorf("querying old value for OldTerm: %w", err)
 	}
-	return oldValue.Word, nil
+	return oldValue.Term, nil
 }
 
-// ResetWord resets all changes to the "word" field.
-func (m *UserWordMutation) ResetWord() {
-	m.word = nil
+// ResetTerm resets all changes to the "term" field.
+func (m *LearnedWordMutation) ResetTerm() {
+	m.term = nil
 }
 
 // SetNormalized sets the "normalized" field.
-func (m *UserWordMutation) SetNormalized(s string) {
+func (m *LearnedWordMutation) SetNormalized(s string) {
 	m.normalized = &s
 }
 
 // Normalized returns the value of the "normalized" field in the mutation.
-func (m *UserWordMutation) Normalized() (r string, exists bool) {
+func (m *LearnedWordMutation) Normalized() (r string, exists bool) {
 	v := m.normalized
 	if v == nil {
 		return
@@ -279,10 +279,10 @@ func (m *UserWordMutation) Normalized() (r string, exists bool) {
 	return *v, true
 }
 
-// OldNormalized returns the old "normalized" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldNormalized returns the old "normalized" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldNormalized(ctx context.Context) (v string, err error) {
+func (m *LearnedWordMutation) OldNormalized(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldNormalized is only allowed on UpdateOne operations")
 	}
@@ -297,17 +297,17 @@ func (m *UserWordMutation) OldNormalized(ctx context.Context) (v string, err err
 }
 
 // ResetNormalized resets all changes to the "normalized" field.
-func (m *UserWordMutation) ResetNormalized() {
+func (m *LearnedWordMutation) ResetNormalized() {
 	m.normalized = nil
 }
 
 // SetLanguage sets the "language" field.
-func (m *UserWordMutation) SetLanguage(s string) {
+func (m *LearnedWordMutation) SetLanguage(s string) {
 	m.language = &s
 }
 
 // Language returns the value of the "language" field in the mutation.
-func (m *UserWordMutation) Language() (r string, exists bool) {
+func (m *LearnedWordMutation) Language() (r string, exists bool) {
 	v := m.language
 	if v == nil {
 		return
@@ -315,10 +315,10 @@ func (m *UserWordMutation) Language() (r string, exists bool) {
 	return *v, true
 }
 
-// OldLanguage returns the old "language" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldLanguage returns the old "language" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldLanguage(ctx context.Context) (v string, err error) {
+func (m *LearnedWordMutation) OldLanguage(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldLanguage is only allowed on UpdateOne operations")
 	}
@@ -333,18 +333,18 @@ func (m *UserWordMutation) OldLanguage(ctx context.Context) (v string, err error
 }
 
 // ResetLanguage resets all changes to the "language" field.
-func (m *UserWordMutation) ResetLanguage() {
+func (m *LearnedWordMutation) ResetLanguage() {
 	m.language = nil
 }
 
 // SetMasteryListen sets the "mastery_listen" field.
-func (m *UserWordMutation) SetMasteryListen(i int16) {
+func (m *LearnedWordMutation) SetMasteryListen(i int16) {
 	m.mastery_listen = &i
 	m.addmastery_listen = nil
 }
 
 // MasteryListen returns the value of the "mastery_listen" field in the mutation.
-func (m *UserWordMutation) MasteryListen() (r int16, exists bool) {
+func (m *LearnedWordMutation) MasteryListen() (r int16, exists bool) {
 	v := m.mastery_listen
 	if v == nil {
 		return
@@ -352,10 +352,10 @@ func (m *UserWordMutation) MasteryListen() (r int16, exists bool) {
 	return *v, true
 }
 
-// OldMasteryListen returns the old "mastery_listen" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldMasteryListen returns the old "mastery_listen" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldMasteryListen(ctx context.Context) (v int16, err error) {
+func (m *LearnedWordMutation) OldMasteryListen(ctx context.Context) (v int16, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMasteryListen is only allowed on UpdateOne operations")
 	}
@@ -370,7 +370,7 @@ func (m *UserWordMutation) OldMasteryListen(ctx context.Context) (v int16, err e
 }
 
 // AddMasteryListen adds i to the "mastery_listen" field.
-func (m *UserWordMutation) AddMasteryListen(i int16) {
+func (m *LearnedWordMutation) AddMasteryListen(i int16) {
 	if m.addmastery_listen != nil {
 		*m.addmastery_listen += i
 	} else {
@@ -379,7 +379,7 @@ func (m *UserWordMutation) AddMasteryListen(i int16) {
 }
 
 // AddedMasteryListen returns the value that was added to the "mastery_listen" field in this mutation.
-func (m *UserWordMutation) AddedMasteryListen() (r int16, exists bool) {
+func (m *LearnedWordMutation) AddedMasteryListen() (r int16, exists bool) {
 	v := m.addmastery_listen
 	if v == nil {
 		return
@@ -388,19 +388,19 @@ func (m *UserWordMutation) AddedMasteryListen() (r int16, exists bool) {
 }
 
 // ResetMasteryListen resets all changes to the "mastery_listen" field.
-func (m *UserWordMutation) ResetMasteryListen() {
+func (m *LearnedWordMutation) ResetMasteryListen() {
 	m.mastery_listen = nil
 	m.addmastery_listen = nil
 }
 
 // SetMasteryRead sets the "mastery_read" field.
-func (m *UserWordMutation) SetMasteryRead(i int16) {
+func (m *LearnedWordMutation) SetMasteryRead(i int16) {
 	m.mastery_read = &i
 	m.addmastery_read = nil
 }
 
 // MasteryRead returns the value of the "mastery_read" field in the mutation.
-func (m *UserWordMutation) MasteryRead() (r int16, exists bool) {
+func (m *LearnedWordMutation) MasteryRead() (r int16, exists bool) {
 	v := m.mastery_read
 	if v == nil {
 		return
@@ -408,10 +408,10 @@ func (m *UserWordMutation) MasteryRead() (r int16, exists bool) {
 	return *v, true
 }
 
-// OldMasteryRead returns the old "mastery_read" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldMasteryRead returns the old "mastery_read" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldMasteryRead(ctx context.Context) (v int16, err error) {
+func (m *LearnedWordMutation) OldMasteryRead(ctx context.Context) (v int16, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMasteryRead is only allowed on UpdateOne operations")
 	}
@@ -426,7 +426,7 @@ func (m *UserWordMutation) OldMasteryRead(ctx context.Context) (v int16, err err
 }
 
 // AddMasteryRead adds i to the "mastery_read" field.
-func (m *UserWordMutation) AddMasteryRead(i int16) {
+func (m *LearnedWordMutation) AddMasteryRead(i int16) {
 	if m.addmastery_read != nil {
 		*m.addmastery_read += i
 	} else {
@@ -435,7 +435,7 @@ func (m *UserWordMutation) AddMasteryRead(i int16) {
 }
 
 // AddedMasteryRead returns the value that was added to the "mastery_read" field in this mutation.
-func (m *UserWordMutation) AddedMasteryRead() (r int16, exists bool) {
+func (m *LearnedWordMutation) AddedMasteryRead() (r int16, exists bool) {
 	v := m.addmastery_read
 	if v == nil {
 		return
@@ -444,19 +444,19 @@ func (m *UserWordMutation) AddedMasteryRead() (r int16, exists bool) {
 }
 
 // ResetMasteryRead resets all changes to the "mastery_read" field.
-func (m *UserWordMutation) ResetMasteryRead() {
+func (m *LearnedWordMutation) ResetMasteryRead() {
 	m.mastery_read = nil
 	m.addmastery_read = nil
 }
 
 // SetMasterySpell sets the "mastery_spell" field.
-func (m *UserWordMutation) SetMasterySpell(i int16) {
+func (m *LearnedWordMutation) SetMasterySpell(i int16) {
 	m.mastery_spell = &i
 	m.addmastery_spell = nil
 }
 
 // MasterySpell returns the value of the "mastery_spell" field in the mutation.
-func (m *UserWordMutation) MasterySpell() (r int16, exists bool) {
+func (m *LearnedWordMutation) MasterySpell() (r int16, exists bool) {
 	v := m.mastery_spell
 	if v == nil {
 		return
@@ -464,10 +464,10 @@ func (m *UserWordMutation) MasterySpell() (r int16, exists bool) {
 	return *v, true
 }
 
-// OldMasterySpell returns the old "mastery_spell" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldMasterySpell returns the old "mastery_spell" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldMasterySpell(ctx context.Context) (v int16, err error) {
+func (m *LearnedWordMutation) OldMasterySpell(ctx context.Context) (v int16, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMasterySpell is only allowed on UpdateOne operations")
 	}
@@ -482,7 +482,7 @@ func (m *UserWordMutation) OldMasterySpell(ctx context.Context) (v int16, err er
 }
 
 // AddMasterySpell adds i to the "mastery_spell" field.
-func (m *UserWordMutation) AddMasterySpell(i int16) {
+func (m *LearnedWordMutation) AddMasterySpell(i int16) {
 	if m.addmastery_spell != nil {
 		*m.addmastery_spell += i
 	} else {
@@ -491,7 +491,7 @@ func (m *UserWordMutation) AddMasterySpell(i int16) {
 }
 
 // AddedMasterySpell returns the value that was added to the "mastery_spell" field in this mutation.
-func (m *UserWordMutation) AddedMasterySpell() (r int16, exists bool) {
+func (m *LearnedWordMutation) AddedMasterySpell() (r int16, exists bool) {
 	v := m.addmastery_spell
 	if v == nil {
 		return
@@ -500,19 +500,19 @@ func (m *UserWordMutation) AddedMasterySpell() (r int16, exists bool) {
 }
 
 // ResetMasterySpell resets all changes to the "mastery_spell" field.
-func (m *UserWordMutation) ResetMasterySpell() {
+func (m *LearnedWordMutation) ResetMasterySpell() {
 	m.mastery_spell = nil
 	m.addmastery_spell = nil
 }
 
 // SetMasteryPronounce sets the "mastery_pronounce" field.
-func (m *UserWordMutation) SetMasteryPronounce(i int16) {
+func (m *LearnedWordMutation) SetMasteryPronounce(i int16) {
 	m.mastery_pronounce = &i
 	m.addmastery_pronounce = nil
 }
 
 // MasteryPronounce returns the value of the "mastery_pronounce" field in the mutation.
-func (m *UserWordMutation) MasteryPronounce() (r int16, exists bool) {
+func (m *LearnedWordMutation) MasteryPronounce() (r int16, exists bool) {
 	v := m.mastery_pronounce
 	if v == nil {
 		return
@@ -520,10 +520,10 @@ func (m *UserWordMutation) MasteryPronounce() (r int16, exists bool) {
 	return *v, true
 }
 
-// OldMasteryPronounce returns the old "mastery_pronounce" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldMasteryPronounce returns the old "mastery_pronounce" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldMasteryPronounce(ctx context.Context) (v int16, err error) {
+func (m *LearnedWordMutation) OldMasteryPronounce(ctx context.Context) (v int16, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMasteryPronounce is only allowed on UpdateOne operations")
 	}
@@ -538,7 +538,7 @@ func (m *UserWordMutation) OldMasteryPronounce(ctx context.Context) (v int16, er
 }
 
 // AddMasteryPronounce adds i to the "mastery_pronounce" field.
-func (m *UserWordMutation) AddMasteryPronounce(i int16) {
+func (m *LearnedWordMutation) AddMasteryPronounce(i int16) {
 	if m.addmastery_pronounce != nil {
 		*m.addmastery_pronounce += i
 	} else {
@@ -547,7 +547,7 @@ func (m *UserWordMutation) AddMasteryPronounce(i int16) {
 }
 
 // AddedMasteryPronounce returns the value that was added to the "mastery_pronounce" field in this mutation.
-func (m *UserWordMutation) AddedMasteryPronounce() (r int16, exists bool) {
+func (m *LearnedWordMutation) AddedMasteryPronounce() (r int16, exists bool) {
 	v := m.addmastery_pronounce
 	if v == nil {
 		return
@@ -556,19 +556,19 @@ func (m *UserWordMutation) AddedMasteryPronounce() (r int16, exists bool) {
 }
 
 // ResetMasteryPronounce resets all changes to the "mastery_pronounce" field.
-func (m *UserWordMutation) ResetMasteryPronounce() {
+func (m *LearnedWordMutation) ResetMasteryPronounce() {
 	m.mastery_pronounce = nil
 	m.addmastery_pronounce = nil
 }
 
 // SetMasteryUse sets the "mastery_use" field.
-func (m *UserWordMutation) SetMasteryUse(i int16) {
+func (m *LearnedWordMutation) SetMasteryUse(i int16) {
 	m.mastery_use = &i
 	m.addmastery_use = nil
 }
 
 // MasteryUse returns the value of the "mastery_use" field in the mutation.
-func (m *UserWordMutation) MasteryUse() (r int16, exists bool) {
+func (m *LearnedWordMutation) MasteryUse() (r int16, exists bool) {
 	v := m.mastery_use
 	if v == nil {
 		return
@@ -576,10 +576,10 @@ func (m *UserWordMutation) MasteryUse() (r int16, exists bool) {
 	return *v, true
 }
 
-// OldMasteryUse returns the old "mastery_use" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldMasteryUse returns the old "mastery_use" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldMasteryUse(ctx context.Context) (v int16, err error) {
+func (m *LearnedWordMutation) OldMasteryUse(ctx context.Context) (v int16, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMasteryUse is only allowed on UpdateOne operations")
 	}
@@ -594,7 +594,7 @@ func (m *UserWordMutation) OldMasteryUse(ctx context.Context) (v int16, err erro
 }
 
 // AddMasteryUse adds i to the "mastery_use" field.
-func (m *UserWordMutation) AddMasteryUse(i int16) {
+func (m *LearnedWordMutation) AddMasteryUse(i int16) {
 	if m.addmastery_use != nil {
 		*m.addmastery_use += i
 	} else {
@@ -603,7 +603,7 @@ func (m *UserWordMutation) AddMasteryUse(i int16) {
 }
 
 // AddedMasteryUse returns the value that was added to the "mastery_use" field in this mutation.
-func (m *UserWordMutation) AddedMasteryUse() (r int16, exists bool) {
+func (m *LearnedWordMutation) AddedMasteryUse() (r int16, exists bool) {
 	v := m.addmastery_use
 	if v == nil {
 		return
@@ -612,19 +612,19 @@ func (m *UserWordMutation) AddedMasteryUse() (r int16, exists bool) {
 }
 
 // ResetMasteryUse resets all changes to the "mastery_use" field.
-func (m *UserWordMutation) ResetMasteryUse() {
+func (m *LearnedWordMutation) ResetMasteryUse() {
 	m.mastery_use = nil
 	m.addmastery_use = nil
 }
 
 // SetMasteryOverall sets the "mastery_overall" field.
-func (m *UserWordMutation) SetMasteryOverall(i int32) {
+func (m *LearnedWordMutation) SetMasteryOverall(i int32) {
 	m.mastery_overall = &i
 	m.addmastery_overall = nil
 }
 
 // MasteryOverall returns the value of the "mastery_overall" field in the mutation.
-func (m *UserWordMutation) MasteryOverall() (r int32, exists bool) {
+func (m *LearnedWordMutation) MasteryOverall() (r int32, exists bool) {
 	v := m.mastery_overall
 	if v == nil {
 		return
@@ -632,10 +632,10 @@ func (m *UserWordMutation) MasteryOverall() (r int32, exists bool) {
 	return *v, true
 }
 
-// OldMasteryOverall returns the old "mastery_overall" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldMasteryOverall returns the old "mastery_overall" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldMasteryOverall(ctx context.Context) (v int32, err error) {
+func (m *LearnedWordMutation) OldMasteryOverall(ctx context.Context) (v int32, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMasteryOverall is only allowed on UpdateOne operations")
 	}
@@ -650,7 +650,7 @@ func (m *UserWordMutation) OldMasteryOverall(ctx context.Context) (v int32, err 
 }
 
 // AddMasteryOverall adds i to the "mastery_overall" field.
-func (m *UserWordMutation) AddMasteryOverall(i int32) {
+func (m *LearnedWordMutation) AddMasteryOverall(i int32) {
 	if m.addmastery_overall != nil {
 		*m.addmastery_overall += i
 	} else {
@@ -659,7 +659,7 @@ func (m *UserWordMutation) AddMasteryOverall(i int32) {
 }
 
 // AddedMasteryOverall returns the value that was added to the "mastery_overall" field in this mutation.
-func (m *UserWordMutation) AddedMasteryOverall() (r int32, exists bool) {
+func (m *LearnedWordMutation) AddedMasteryOverall() (r int32, exists bool) {
 	v := m.addmastery_overall
 	if v == nil {
 		return
@@ -668,18 +668,18 @@ func (m *UserWordMutation) AddedMasteryOverall() (r int32, exists bool) {
 }
 
 // ResetMasteryOverall resets all changes to the "mastery_overall" field.
-func (m *UserWordMutation) ResetMasteryOverall() {
+func (m *LearnedWordMutation) ResetMasteryOverall() {
 	m.mastery_overall = nil
 	m.addmastery_overall = nil
 }
 
 // SetReviewLastReviewAt sets the "review_last_review_at" field.
-func (m *UserWordMutation) SetReviewLastReviewAt(t time.Time) {
+func (m *LearnedWordMutation) SetReviewLastReviewAt(t time.Time) {
 	m.review_last_review_at = &t
 }
 
 // ReviewLastReviewAt returns the value of the "review_last_review_at" field in the mutation.
-func (m *UserWordMutation) ReviewLastReviewAt() (r time.Time, exists bool) {
+func (m *LearnedWordMutation) ReviewLastReviewAt() (r time.Time, exists bool) {
 	v := m.review_last_review_at
 	if v == nil {
 		return
@@ -687,10 +687,10 @@ func (m *UserWordMutation) ReviewLastReviewAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldReviewLastReviewAt returns the old "review_last_review_at" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldReviewLastReviewAt returns the old "review_last_review_at" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldReviewLastReviewAt(ctx context.Context) (v *time.Time, err error) {
+func (m *LearnedWordMutation) OldReviewLastReviewAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldReviewLastReviewAt is only allowed on UpdateOne operations")
 	}
@@ -705,30 +705,30 @@ func (m *UserWordMutation) OldReviewLastReviewAt(ctx context.Context) (v *time.T
 }
 
 // ClearReviewLastReviewAt clears the value of the "review_last_review_at" field.
-func (m *UserWordMutation) ClearReviewLastReviewAt() {
+func (m *LearnedWordMutation) ClearReviewLastReviewAt() {
 	m.review_last_review_at = nil
-	m.clearedFields[userword.FieldReviewLastReviewAt] = struct{}{}
+	m.clearedFields[learnedword.FieldReviewLastReviewAt] = struct{}{}
 }
 
 // ReviewLastReviewAtCleared returns if the "review_last_review_at" field was cleared in this mutation.
-func (m *UserWordMutation) ReviewLastReviewAtCleared() bool {
-	_, ok := m.clearedFields[userword.FieldReviewLastReviewAt]
+func (m *LearnedWordMutation) ReviewLastReviewAtCleared() bool {
+	_, ok := m.clearedFields[learnedword.FieldReviewLastReviewAt]
 	return ok
 }
 
 // ResetReviewLastReviewAt resets all changes to the "review_last_review_at" field.
-func (m *UserWordMutation) ResetReviewLastReviewAt() {
+func (m *LearnedWordMutation) ResetReviewLastReviewAt() {
 	m.review_last_review_at = nil
-	delete(m.clearedFields, userword.FieldReviewLastReviewAt)
+	delete(m.clearedFields, learnedword.FieldReviewLastReviewAt)
 }
 
 // SetReviewNextReviewAt sets the "review_next_review_at" field.
-func (m *UserWordMutation) SetReviewNextReviewAt(t time.Time) {
+func (m *LearnedWordMutation) SetReviewNextReviewAt(t time.Time) {
 	m.review_next_review_at = &t
 }
 
 // ReviewNextReviewAt returns the value of the "review_next_review_at" field in the mutation.
-func (m *UserWordMutation) ReviewNextReviewAt() (r time.Time, exists bool) {
+func (m *LearnedWordMutation) ReviewNextReviewAt() (r time.Time, exists bool) {
 	v := m.review_next_review_at
 	if v == nil {
 		return
@@ -736,10 +736,10 @@ func (m *UserWordMutation) ReviewNextReviewAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldReviewNextReviewAt returns the old "review_next_review_at" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldReviewNextReviewAt returns the old "review_next_review_at" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldReviewNextReviewAt(ctx context.Context) (v *time.Time, err error) {
+func (m *LearnedWordMutation) OldReviewNextReviewAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldReviewNextReviewAt is only allowed on UpdateOne operations")
 	}
@@ -754,31 +754,31 @@ func (m *UserWordMutation) OldReviewNextReviewAt(ctx context.Context) (v *time.T
 }
 
 // ClearReviewNextReviewAt clears the value of the "review_next_review_at" field.
-func (m *UserWordMutation) ClearReviewNextReviewAt() {
+func (m *LearnedWordMutation) ClearReviewNextReviewAt() {
 	m.review_next_review_at = nil
-	m.clearedFields[userword.FieldReviewNextReviewAt] = struct{}{}
+	m.clearedFields[learnedword.FieldReviewNextReviewAt] = struct{}{}
 }
 
 // ReviewNextReviewAtCleared returns if the "review_next_review_at" field was cleared in this mutation.
-func (m *UserWordMutation) ReviewNextReviewAtCleared() bool {
-	_, ok := m.clearedFields[userword.FieldReviewNextReviewAt]
+func (m *LearnedWordMutation) ReviewNextReviewAtCleared() bool {
+	_, ok := m.clearedFields[learnedword.FieldReviewNextReviewAt]
 	return ok
 }
 
 // ResetReviewNextReviewAt resets all changes to the "review_next_review_at" field.
-func (m *UserWordMutation) ResetReviewNextReviewAt() {
+func (m *LearnedWordMutation) ResetReviewNextReviewAt() {
 	m.review_next_review_at = nil
-	delete(m.clearedFields, userword.FieldReviewNextReviewAt)
+	delete(m.clearedFields, learnedword.FieldReviewNextReviewAt)
 }
 
 // SetReviewIntervalDays sets the "review_interval_days" field.
-func (m *UserWordMutation) SetReviewIntervalDays(i int32) {
+func (m *LearnedWordMutation) SetReviewIntervalDays(i int32) {
 	m.review_interval_days = &i
 	m.addreview_interval_days = nil
 }
 
 // ReviewIntervalDays returns the value of the "review_interval_days" field in the mutation.
-func (m *UserWordMutation) ReviewIntervalDays() (r int32, exists bool) {
+func (m *LearnedWordMutation) ReviewIntervalDays() (r int32, exists bool) {
 	v := m.review_interval_days
 	if v == nil {
 		return
@@ -786,10 +786,10 @@ func (m *UserWordMutation) ReviewIntervalDays() (r int32, exists bool) {
 	return *v, true
 }
 
-// OldReviewIntervalDays returns the old "review_interval_days" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldReviewIntervalDays returns the old "review_interval_days" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldReviewIntervalDays(ctx context.Context) (v int32, err error) {
+func (m *LearnedWordMutation) OldReviewIntervalDays(ctx context.Context) (v int32, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldReviewIntervalDays is only allowed on UpdateOne operations")
 	}
@@ -804,7 +804,7 @@ func (m *UserWordMutation) OldReviewIntervalDays(ctx context.Context) (v int32, 
 }
 
 // AddReviewIntervalDays adds i to the "review_interval_days" field.
-func (m *UserWordMutation) AddReviewIntervalDays(i int32) {
+func (m *LearnedWordMutation) AddReviewIntervalDays(i int32) {
 	if m.addreview_interval_days != nil {
 		*m.addreview_interval_days += i
 	} else {
@@ -813,7 +813,7 @@ func (m *UserWordMutation) AddReviewIntervalDays(i int32) {
 }
 
 // AddedReviewIntervalDays returns the value that was added to the "review_interval_days" field in this mutation.
-func (m *UserWordMutation) AddedReviewIntervalDays() (r int32, exists bool) {
+func (m *LearnedWordMutation) AddedReviewIntervalDays() (r int32, exists bool) {
 	v := m.addreview_interval_days
 	if v == nil {
 		return
@@ -822,19 +822,19 @@ func (m *UserWordMutation) AddedReviewIntervalDays() (r int32, exists bool) {
 }
 
 // ResetReviewIntervalDays resets all changes to the "review_interval_days" field.
-func (m *UserWordMutation) ResetReviewIntervalDays() {
+func (m *LearnedWordMutation) ResetReviewIntervalDays() {
 	m.review_interval_days = nil
 	m.addreview_interval_days = nil
 }
 
 // SetReviewFailCount sets the "review_fail_count" field.
-func (m *UserWordMutation) SetReviewFailCount(i int32) {
+func (m *LearnedWordMutation) SetReviewFailCount(i int32) {
 	m.review_fail_count = &i
 	m.addreview_fail_count = nil
 }
 
 // ReviewFailCount returns the value of the "review_fail_count" field in the mutation.
-func (m *UserWordMutation) ReviewFailCount() (r int32, exists bool) {
+func (m *LearnedWordMutation) ReviewFailCount() (r int32, exists bool) {
 	v := m.review_fail_count
 	if v == nil {
 		return
@@ -842,10 +842,10 @@ func (m *UserWordMutation) ReviewFailCount() (r int32, exists bool) {
 	return *v, true
 }
 
-// OldReviewFailCount returns the old "review_fail_count" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldReviewFailCount returns the old "review_fail_count" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldReviewFailCount(ctx context.Context) (v int32, err error) {
+func (m *LearnedWordMutation) OldReviewFailCount(ctx context.Context) (v int32, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldReviewFailCount is only allowed on UpdateOne operations")
 	}
@@ -860,7 +860,7 @@ func (m *UserWordMutation) OldReviewFailCount(ctx context.Context) (v int32, err
 }
 
 // AddReviewFailCount adds i to the "review_fail_count" field.
-func (m *UserWordMutation) AddReviewFailCount(i int32) {
+func (m *LearnedWordMutation) AddReviewFailCount(i int32) {
 	if m.addreview_fail_count != nil {
 		*m.addreview_fail_count += i
 	} else {
@@ -869,7 +869,7 @@ func (m *UserWordMutation) AddReviewFailCount(i int32) {
 }
 
 // AddedReviewFailCount returns the value that was added to the "review_fail_count" field in this mutation.
-func (m *UserWordMutation) AddedReviewFailCount() (r int32, exists bool) {
+func (m *LearnedWordMutation) AddedReviewFailCount() (r int32, exists bool) {
 	v := m.addreview_fail_count
 	if v == nil {
 		return
@@ -878,19 +878,19 @@ func (m *UserWordMutation) AddedReviewFailCount() (r int32, exists bool) {
 }
 
 // ResetReviewFailCount resets all changes to the "review_fail_count" field.
-func (m *UserWordMutation) ResetReviewFailCount() {
+func (m *LearnedWordMutation) ResetReviewFailCount() {
 	m.review_fail_count = nil
 	m.addreview_fail_count = nil
 }
 
 // SetQueryCount sets the "query_count" field.
-func (m *UserWordMutation) SetQueryCount(i int64) {
+func (m *LearnedWordMutation) SetQueryCount(i int64) {
 	m.query_count = &i
 	m.addquery_count = nil
 }
 
 // QueryCount returns the value of the "query_count" field in the mutation.
-func (m *UserWordMutation) QueryCount() (r int64, exists bool) {
+func (m *LearnedWordMutation) QueryCount() (r int64, exists bool) {
 	v := m.query_count
 	if v == nil {
 		return
@@ -898,10 +898,10 @@ func (m *UserWordMutation) QueryCount() (r int64, exists bool) {
 	return *v, true
 }
 
-// OldQueryCount returns the old "query_count" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldQueryCount returns the old "query_count" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldQueryCount(ctx context.Context) (v int64, err error) {
+func (m *LearnedWordMutation) OldQueryCount(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldQueryCount is only allowed on UpdateOne operations")
 	}
@@ -916,7 +916,7 @@ func (m *UserWordMutation) OldQueryCount(ctx context.Context) (v int64, err erro
 }
 
 // AddQueryCount adds i to the "query_count" field.
-func (m *UserWordMutation) AddQueryCount(i int64) {
+func (m *LearnedWordMutation) AddQueryCount(i int64) {
 	if m.addquery_count != nil {
 		*m.addquery_count += i
 	} else {
@@ -925,7 +925,7 @@ func (m *UserWordMutation) AddQueryCount(i int64) {
 }
 
 // AddedQueryCount returns the value that was added to the "query_count" field in this mutation.
-func (m *UserWordMutation) AddedQueryCount() (r int64, exists bool) {
+func (m *LearnedWordMutation) AddedQueryCount() (r int64, exists bool) {
 	v := m.addquery_count
 	if v == nil {
 		return
@@ -934,18 +934,18 @@ func (m *UserWordMutation) AddedQueryCount() (r int64, exists bool) {
 }
 
 // ResetQueryCount resets all changes to the "query_count" field.
-func (m *UserWordMutation) ResetQueryCount() {
+func (m *LearnedWordMutation) ResetQueryCount() {
 	m.query_count = nil
 	m.addquery_count = nil
 }
 
 // SetNotes sets the "notes" field.
-func (m *UserWordMutation) SetNotes(s string) {
+func (m *LearnedWordMutation) SetNotes(s string) {
 	m.notes = &s
 }
 
 // Notes returns the value of the "notes" field in the mutation.
-func (m *UserWordMutation) Notes() (r string, exists bool) {
+func (m *LearnedWordMutation) Notes() (r string, exists bool) {
 	v := m.notes
 	if v == nil {
 		return
@@ -953,10 +953,10 @@ func (m *UserWordMutation) Notes() (r string, exists bool) {
 	return *v, true
 }
 
-// OldNotes returns the old "notes" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldNotes returns the old "notes" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldNotes(ctx context.Context) (v *string, err error) {
+func (m *LearnedWordMutation) OldNotes(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
 	}
@@ -971,31 +971,31 @@ func (m *UserWordMutation) OldNotes(ctx context.Context) (v *string, err error) 
 }
 
 // ClearNotes clears the value of the "notes" field.
-func (m *UserWordMutation) ClearNotes() {
+func (m *LearnedWordMutation) ClearNotes() {
 	m.notes = nil
-	m.clearedFields[userword.FieldNotes] = struct{}{}
+	m.clearedFields[learnedword.FieldNotes] = struct{}{}
 }
 
 // NotesCleared returns if the "notes" field was cleared in this mutation.
-func (m *UserWordMutation) NotesCleared() bool {
-	_, ok := m.clearedFields[userword.FieldNotes]
+func (m *LearnedWordMutation) NotesCleared() bool {
+	_, ok := m.clearedFields[learnedword.FieldNotes]
 	return ok
 }
 
 // ResetNotes resets all changes to the "notes" field.
-func (m *UserWordMutation) ResetNotes() {
+func (m *LearnedWordMutation) ResetNotes() {
 	m.notes = nil
-	delete(m.clearedFields, userword.FieldNotes)
+	delete(m.clearedFields, learnedword.FieldNotes)
 }
 
 // SetSentences sets the "sentences" field.
-func (m *UserWordMutation) SetSentences(e []entity.Sentence) {
+func (m *LearnedWordMutation) SetSentences(e []entity.Sentence) {
 	m.sentences = &e
 	m.appendsentences = nil
 }
 
 // Sentences returns the value of the "sentences" field in the mutation.
-func (m *UserWordMutation) Sentences() (r []entity.Sentence, exists bool) {
+func (m *LearnedWordMutation) Sentences() (r []entity.Sentence, exists bool) {
 	v := m.sentences
 	if v == nil {
 		return
@@ -1003,10 +1003,10 @@ func (m *UserWordMutation) Sentences() (r []entity.Sentence, exists bool) {
 	return *v, true
 }
 
-// OldSentences returns the old "sentences" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldSentences returns the old "sentences" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldSentences(ctx context.Context) (v []entity.Sentence, err error) {
+func (m *LearnedWordMutation) OldSentences(ctx context.Context) (v []entity.Sentence, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSentences is only allowed on UpdateOne operations")
 	}
@@ -1021,12 +1021,12 @@ func (m *UserWordMutation) OldSentences(ctx context.Context) (v []entity.Sentenc
 }
 
 // AppendSentences adds e to the "sentences" field.
-func (m *UserWordMutation) AppendSentences(e []entity.Sentence) {
+func (m *LearnedWordMutation) AppendSentences(e []entity.Sentence) {
 	m.appendsentences = append(m.appendsentences, e...)
 }
 
 // AppendedSentences returns the list of values that were appended to the "sentences" field in this mutation.
-func (m *UserWordMutation) AppendedSentences() ([]entity.Sentence, bool) {
+func (m *LearnedWordMutation) AppendedSentences() ([]entity.Sentence, bool) {
 	if len(m.appendsentences) == 0 {
 		return nil, false
 	}
@@ -1034,19 +1034,19 @@ func (m *UserWordMutation) AppendedSentences() ([]entity.Sentence, bool) {
 }
 
 // ResetSentences resets all changes to the "sentences" field.
-func (m *UserWordMutation) ResetSentences() {
+func (m *LearnedWordMutation) ResetSentences() {
 	m.sentences = nil
 	m.appendsentences = nil
 }
 
 // SetRelations sets the "relations" field.
-func (m *UserWordMutation) SetRelations(ewr []entity.UserWordRelation) {
+func (m *LearnedWordMutation) SetRelations(ewr []entity.LearnedWordRelation) {
 	m.relations = &ewr
 	m.appendrelations = nil
 }
 
 // Relations returns the value of the "relations" field in the mutation.
-func (m *UserWordMutation) Relations() (r []entity.UserWordRelation, exists bool) {
+func (m *LearnedWordMutation) Relations() (r []entity.LearnedWordRelation, exists bool) {
 	v := m.relations
 	if v == nil {
 		return
@@ -1054,10 +1054,10 @@ func (m *UserWordMutation) Relations() (r []entity.UserWordRelation, exists bool
 	return *v, true
 }
 
-// OldRelations returns the old "relations" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldRelations returns the old "relations" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldRelations(ctx context.Context) (v []entity.UserWordRelation, err error) {
+func (m *LearnedWordMutation) OldRelations(ctx context.Context) (v []entity.LearnedWordRelation, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldRelations is only allowed on UpdateOne operations")
 	}
@@ -1072,12 +1072,12 @@ func (m *UserWordMutation) OldRelations(ctx context.Context) (v []entity.UserWor
 }
 
 // AppendRelations adds ewr to the "relations" field.
-func (m *UserWordMutation) AppendRelations(ewr []entity.UserWordRelation) {
+func (m *LearnedWordMutation) AppendRelations(ewr []entity.LearnedWordRelation) {
 	m.appendrelations = append(m.appendrelations, ewr...)
 }
 
 // AppendedRelations returns the list of values that were appended to the "relations" field in this mutation.
-func (m *UserWordMutation) AppendedRelations() ([]entity.UserWordRelation, bool) {
+func (m *LearnedWordMutation) AppendedRelations() ([]entity.LearnedWordRelation, bool) {
 	if len(m.appendrelations) == 0 {
 		return nil, false
 	}
@@ -1085,18 +1085,18 @@ func (m *UserWordMutation) AppendedRelations() ([]entity.UserWordRelation, bool)
 }
 
 // ResetRelations resets all changes to the "relations" field.
-func (m *UserWordMutation) ResetRelations() {
+func (m *LearnedWordMutation) ResetRelations() {
 	m.relations = nil
 	m.appendrelations = nil
 }
 
 // SetCreatedBy sets the "created_by" field.
-func (m *UserWordMutation) SetCreatedBy(s string) {
+func (m *LearnedWordMutation) SetCreatedBy(s string) {
 	m.created_by = &s
 }
 
 // CreatedBy returns the value of the "created_by" field in the mutation.
-func (m *UserWordMutation) CreatedBy() (r string, exists bool) {
+func (m *LearnedWordMutation) CreatedBy() (r string, exists bool) {
 	v := m.created_by
 	if v == nil {
 		return
@@ -1104,10 +1104,10 @@ func (m *UserWordMutation) CreatedBy() (r string, exists bool) {
 	return *v, true
 }
 
-// OldCreatedBy returns the old "created_by" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldCreatedBy returns the old "created_by" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
+func (m *LearnedWordMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
 	}
@@ -1122,17 +1122,17 @@ func (m *UserWordMutation) OldCreatedBy(ctx context.Context) (v string, err erro
 }
 
 // ResetCreatedBy resets all changes to the "created_by" field.
-func (m *UserWordMutation) ResetCreatedBy() {
+func (m *LearnedWordMutation) ResetCreatedBy() {
 	m.created_by = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (m *UserWordMutation) SetCreatedAt(t time.Time) {
+func (m *LearnedWordMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
 }
 
 // CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *UserWordMutation) CreatedAt() (r time.Time, exists bool) {
+func (m *LearnedWordMutation) CreatedAt() (r time.Time, exists bool) {
 	v := m.created_at
 	if v == nil {
 		return
@@ -1140,10 +1140,10 @@ func (m *UserWordMutation) CreatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldCreatedAt returns the old "created_at" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *LearnedWordMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
 	}
@@ -1158,17 +1158,17 @@ func (m *UserWordMutation) OldCreatedAt(ctx context.Context) (v time.Time, err e
 }
 
 // ResetCreatedAt resets all changes to the "created_at" field.
-func (m *UserWordMutation) ResetCreatedAt() {
+func (m *LearnedWordMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (m *UserWordMutation) SetUpdatedAt(t time.Time) {
+func (m *LearnedWordMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
 }
 
 // UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *UserWordMutation) UpdatedAt() (r time.Time, exists bool) {
+func (m *LearnedWordMutation) UpdatedAt() (r time.Time, exists bool) {
 	v := m.updated_at
 	if v == nil {
 		return
@@ -1176,10 +1176,10 @@ func (m *UserWordMutation) UpdatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldUpdatedAt returns the old "updated_at" field's value of the UserWord entity.
-// If the UserWord object wasn't provided to the builder, the object is fetched from the database.
+// OldUpdatedAt returns the old "updated_at" field's value of the LearnedWord entity.
+// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserWordMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *LearnedWordMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
 	}
@@ -1194,19 +1194,19 @@ func (m *UserWordMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err e
 }
 
 // ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *UserWordMutation) ResetUpdatedAt() {
+func (m *LearnedWordMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// Where appends a list predicates to the UserWordMutation builder.
-func (m *UserWordMutation) Where(ps ...predicate.UserWord) {
+// Where appends a list predicates to the LearnedWordMutation builder.
+func (m *LearnedWordMutation) Where(ps ...predicate.LearnedWord) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the UserWordMutation builder. Using this method,
+// WhereP appends storage-level predicates to the LearnedWordMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *UserWordMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.UserWord, len(ps))
+func (m *LearnedWordMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.LearnedWord, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -1214,87 +1214,87 @@ func (m *UserWordMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *UserWordMutation) Op() Op {
+func (m *LearnedWordMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *UserWordMutation) SetOp(op Op) {
+func (m *LearnedWordMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (UserWord).
-func (m *UserWordMutation) Type() string {
+// Type returns the node type of this mutation (LearnedWord).
+func (m *LearnedWordMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *UserWordMutation) Fields() []string {
+func (m *LearnedWordMutation) Fields() []string {
 	fields := make([]string, 0, 21)
 	if m.user_id != nil {
-		fields = append(fields, userword.FieldUserID)
+		fields = append(fields, learnedword.FieldUserID)
 	}
-	if m.word != nil {
-		fields = append(fields, userword.FieldWord)
+	if m.term != nil {
+		fields = append(fields, learnedword.FieldTerm)
 	}
 	if m.normalized != nil {
-		fields = append(fields, userword.FieldNormalized)
+		fields = append(fields, learnedword.FieldNormalized)
 	}
 	if m.language != nil {
-		fields = append(fields, userword.FieldLanguage)
+		fields = append(fields, learnedword.FieldLanguage)
 	}
 	if m.mastery_listen != nil {
-		fields = append(fields, userword.FieldMasteryListen)
+		fields = append(fields, learnedword.FieldMasteryListen)
 	}
 	if m.mastery_read != nil {
-		fields = append(fields, userword.FieldMasteryRead)
+		fields = append(fields, learnedword.FieldMasteryRead)
 	}
 	if m.mastery_spell != nil {
-		fields = append(fields, userword.FieldMasterySpell)
+		fields = append(fields, learnedword.FieldMasterySpell)
 	}
 	if m.mastery_pronounce != nil {
-		fields = append(fields, userword.FieldMasteryPronounce)
+		fields = append(fields, learnedword.FieldMasteryPronounce)
 	}
 	if m.mastery_use != nil {
-		fields = append(fields, userword.FieldMasteryUse)
+		fields = append(fields, learnedword.FieldMasteryUse)
 	}
 	if m.mastery_overall != nil {
-		fields = append(fields, userword.FieldMasteryOverall)
+		fields = append(fields, learnedword.FieldMasteryOverall)
 	}
 	if m.review_last_review_at != nil {
-		fields = append(fields, userword.FieldReviewLastReviewAt)
+		fields = append(fields, learnedword.FieldReviewLastReviewAt)
 	}
 	if m.review_next_review_at != nil {
-		fields = append(fields, userword.FieldReviewNextReviewAt)
+		fields = append(fields, learnedword.FieldReviewNextReviewAt)
 	}
 	if m.review_interval_days != nil {
-		fields = append(fields, userword.FieldReviewIntervalDays)
+		fields = append(fields, learnedword.FieldReviewIntervalDays)
 	}
 	if m.review_fail_count != nil {
-		fields = append(fields, userword.FieldReviewFailCount)
+		fields = append(fields, learnedword.FieldReviewFailCount)
 	}
 	if m.query_count != nil {
-		fields = append(fields, userword.FieldQueryCount)
+		fields = append(fields, learnedword.FieldQueryCount)
 	}
 	if m.notes != nil {
-		fields = append(fields, userword.FieldNotes)
+		fields = append(fields, learnedword.FieldNotes)
 	}
 	if m.sentences != nil {
-		fields = append(fields, userword.FieldSentences)
+		fields = append(fields, learnedword.FieldSentences)
 	}
 	if m.relations != nil {
-		fields = append(fields, userword.FieldRelations)
+		fields = append(fields, learnedword.FieldRelations)
 	}
 	if m.created_by != nil {
-		fields = append(fields, userword.FieldCreatedBy)
+		fields = append(fields, learnedword.FieldCreatedBy)
 	}
 	if m.created_at != nil {
-		fields = append(fields, userword.FieldCreatedAt)
+		fields = append(fields, learnedword.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
-		fields = append(fields, userword.FieldUpdatedAt)
+		fields = append(fields, learnedword.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -1302,49 +1302,49 @@ func (m *UserWordMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *UserWordMutation) Field(name string) (ent.Value, bool) {
+func (m *LearnedWordMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case userword.FieldUserID:
+	case learnedword.FieldUserID:
 		return m.UserID()
-	case userword.FieldWord:
-		return m.Word()
-	case userword.FieldNormalized:
+	case learnedword.FieldTerm:
+		return m.Term()
+	case learnedword.FieldNormalized:
 		return m.Normalized()
-	case userword.FieldLanguage:
+	case learnedword.FieldLanguage:
 		return m.Language()
-	case userword.FieldMasteryListen:
+	case learnedword.FieldMasteryListen:
 		return m.MasteryListen()
-	case userword.FieldMasteryRead:
+	case learnedword.FieldMasteryRead:
 		return m.MasteryRead()
-	case userword.FieldMasterySpell:
+	case learnedword.FieldMasterySpell:
 		return m.MasterySpell()
-	case userword.FieldMasteryPronounce:
+	case learnedword.FieldMasteryPronounce:
 		return m.MasteryPronounce()
-	case userword.FieldMasteryUse:
+	case learnedword.FieldMasteryUse:
 		return m.MasteryUse()
-	case userword.FieldMasteryOverall:
+	case learnedword.FieldMasteryOverall:
 		return m.MasteryOverall()
-	case userword.FieldReviewLastReviewAt:
+	case learnedword.FieldReviewLastReviewAt:
 		return m.ReviewLastReviewAt()
-	case userword.FieldReviewNextReviewAt:
+	case learnedword.FieldReviewNextReviewAt:
 		return m.ReviewNextReviewAt()
-	case userword.FieldReviewIntervalDays:
+	case learnedword.FieldReviewIntervalDays:
 		return m.ReviewIntervalDays()
-	case userword.FieldReviewFailCount:
+	case learnedword.FieldReviewFailCount:
 		return m.ReviewFailCount()
-	case userword.FieldQueryCount:
+	case learnedword.FieldQueryCount:
 		return m.QueryCount()
-	case userword.FieldNotes:
+	case learnedword.FieldNotes:
 		return m.Notes()
-	case userword.FieldSentences:
+	case learnedword.FieldSentences:
 		return m.Sentences()
-	case userword.FieldRelations:
+	case learnedword.FieldRelations:
 		return m.Relations()
-	case userword.FieldCreatedBy:
+	case learnedword.FieldCreatedBy:
 		return m.CreatedBy()
-	case userword.FieldCreatedAt:
+	case learnedword.FieldCreatedAt:
 		return m.CreatedAt()
-	case userword.FieldUpdatedAt:
+	case learnedword.FieldUpdatedAt:
 		return m.UpdatedAt()
 	}
 	return nil, false
@@ -1353,200 +1353,200 @@ func (m *UserWordMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *UserWordMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *LearnedWordMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case userword.FieldUserID:
+	case learnedword.FieldUserID:
 		return m.OldUserID(ctx)
-	case userword.FieldWord:
-		return m.OldWord(ctx)
-	case userword.FieldNormalized:
+	case learnedword.FieldTerm:
+		return m.OldTerm(ctx)
+	case learnedword.FieldNormalized:
 		return m.OldNormalized(ctx)
-	case userword.FieldLanguage:
+	case learnedword.FieldLanguage:
 		return m.OldLanguage(ctx)
-	case userword.FieldMasteryListen:
+	case learnedword.FieldMasteryListen:
 		return m.OldMasteryListen(ctx)
-	case userword.FieldMasteryRead:
+	case learnedword.FieldMasteryRead:
 		return m.OldMasteryRead(ctx)
-	case userword.FieldMasterySpell:
+	case learnedword.FieldMasterySpell:
 		return m.OldMasterySpell(ctx)
-	case userword.FieldMasteryPronounce:
+	case learnedword.FieldMasteryPronounce:
 		return m.OldMasteryPronounce(ctx)
-	case userword.FieldMasteryUse:
+	case learnedword.FieldMasteryUse:
 		return m.OldMasteryUse(ctx)
-	case userword.FieldMasteryOverall:
+	case learnedword.FieldMasteryOverall:
 		return m.OldMasteryOverall(ctx)
-	case userword.FieldReviewLastReviewAt:
+	case learnedword.FieldReviewLastReviewAt:
 		return m.OldReviewLastReviewAt(ctx)
-	case userword.FieldReviewNextReviewAt:
+	case learnedword.FieldReviewNextReviewAt:
 		return m.OldReviewNextReviewAt(ctx)
-	case userword.FieldReviewIntervalDays:
+	case learnedword.FieldReviewIntervalDays:
 		return m.OldReviewIntervalDays(ctx)
-	case userword.FieldReviewFailCount:
+	case learnedword.FieldReviewFailCount:
 		return m.OldReviewFailCount(ctx)
-	case userword.FieldQueryCount:
+	case learnedword.FieldQueryCount:
 		return m.OldQueryCount(ctx)
-	case userword.FieldNotes:
+	case learnedword.FieldNotes:
 		return m.OldNotes(ctx)
-	case userword.FieldSentences:
+	case learnedword.FieldSentences:
 		return m.OldSentences(ctx)
-	case userword.FieldRelations:
+	case learnedword.FieldRelations:
 		return m.OldRelations(ctx)
-	case userword.FieldCreatedBy:
+	case learnedword.FieldCreatedBy:
 		return m.OldCreatedBy(ctx)
-	case userword.FieldCreatedAt:
+	case learnedword.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
-	case userword.FieldUpdatedAt:
+	case learnedword.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	}
-	return nil, fmt.Errorf("unknown UserWord field %s", name)
+	return nil, fmt.Errorf("unknown LearnedWord field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *UserWordMutation) SetField(name string, value ent.Value) error {
+func (m *LearnedWordMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case userword.FieldUserID:
+	case learnedword.FieldUserID:
 		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUserID(v)
 		return nil
-	case userword.FieldWord:
+	case learnedword.FieldTerm:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetWord(v)
+		m.SetTerm(v)
 		return nil
-	case userword.FieldNormalized:
+	case learnedword.FieldNormalized:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetNormalized(v)
 		return nil
-	case userword.FieldLanguage:
+	case learnedword.FieldLanguage:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLanguage(v)
 		return nil
-	case userword.FieldMasteryListen:
+	case learnedword.FieldMasteryListen:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMasteryListen(v)
 		return nil
-	case userword.FieldMasteryRead:
+	case learnedword.FieldMasteryRead:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMasteryRead(v)
 		return nil
-	case userword.FieldMasterySpell:
+	case learnedword.FieldMasterySpell:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMasterySpell(v)
 		return nil
-	case userword.FieldMasteryPronounce:
+	case learnedword.FieldMasteryPronounce:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMasteryPronounce(v)
 		return nil
-	case userword.FieldMasteryUse:
+	case learnedword.FieldMasteryUse:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMasteryUse(v)
 		return nil
-	case userword.FieldMasteryOverall:
+	case learnedword.FieldMasteryOverall:
 		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMasteryOverall(v)
 		return nil
-	case userword.FieldReviewLastReviewAt:
+	case learnedword.FieldReviewLastReviewAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetReviewLastReviewAt(v)
 		return nil
-	case userword.FieldReviewNextReviewAt:
+	case learnedword.FieldReviewNextReviewAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetReviewNextReviewAt(v)
 		return nil
-	case userword.FieldReviewIntervalDays:
+	case learnedword.FieldReviewIntervalDays:
 		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetReviewIntervalDays(v)
 		return nil
-	case userword.FieldReviewFailCount:
+	case learnedword.FieldReviewFailCount:
 		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetReviewFailCount(v)
 		return nil
-	case userword.FieldQueryCount:
+	case learnedword.FieldQueryCount:
 		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetQueryCount(v)
 		return nil
-	case userword.FieldNotes:
+	case learnedword.FieldNotes:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetNotes(v)
 		return nil
-	case userword.FieldSentences:
+	case learnedword.FieldSentences:
 		v, ok := value.([]entity.Sentence)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSentences(v)
 		return nil
-	case userword.FieldRelations:
-		v, ok := value.([]entity.UserWordRelation)
+	case learnedword.FieldRelations:
+		v, ok := value.([]entity.LearnedWordRelation)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRelations(v)
 		return nil
-	case userword.FieldCreatedBy:
+	case learnedword.FieldCreatedBy:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedBy(v)
 		return nil
-	case userword.FieldCreatedAt:
+	case learnedword.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
 		return nil
-	case userword.FieldUpdatedAt:
+	case learnedword.FieldUpdatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -1554,42 +1554,42 @@ func (m *UserWordMutation) SetField(name string, value ent.Value) error {
 		m.SetUpdatedAt(v)
 		return nil
 	}
-	return fmt.Errorf("unknown UserWord field %s", name)
+	return fmt.Errorf("unknown LearnedWord field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *UserWordMutation) AddedFields() []string {
+func (m *LearnedWordMutation) AddedFields() []string {
 	var fields []string
 	if m.adduser_id != nil {
-		fields = append(fields, userword.FieldUserID)
+		fields = append(fields, learnedword.FieldUserID)
 	}
 	if m.addmastery_listen != nil {
-		fields = append(fields, userword.FieldMasteryListen)
+		fields = append(fields, learnedword.FieldMasteryListen)
 	}
 	if m.addmastery_read != nil {
-		fields = append(fields, userword.FieldMasteryRead)
+		fields = append(fields, learnedword.FieldMasteryRead)
 	}
 	if m.addmastery_spell != nil {
-		fields = append(fields, userword.FieldMasterySpell)
+		fields = append(fields, learnedword.FieldMasterySpell)
 	}
 	if m.addmastery_pronounce != nil {
-		fields = append(fields, userword.FieldMasteryPronounce)
+		fields = append(fields, learnedword.FieldMasteryPronounce)
 	}
 	if m.addmastery_use != nil {
-		fields = append(fields, userword.FieldMasteryUse)
+		fields = append(fields, learnedword.FieldMasteryUse)
 	}
 	if m.addmastery_overall != nil {
-		fields = append(fields, userword.FieldMasteryOverall)
+		fields = append(fields, learnedword.FieldMasteryOverall)
 	}
 	if m.addreview_interval_days != nil {
-		fields = append(fields, userword.FieldReviewIntervalDays)
+		fields = append(fields, learnedword.FieldReviewIntervalDays)
 	}
 	if m.addreview_fail_count != nil {
-		fields = append(fields, userword.FieldReviewFailCount)
+		fields = append(fields, learnedword.FieldReviewFailCount)
 	}
 	if m.addquery_count != nil {
-		fields = append(fields, userword.FieldQueryCount)
+		fields = append(fields, learnedword.FieldQueryCount)
 	}
 	return fields
 }
@@ -1597,27 +1597,27 @@ func (m *UserWordMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *UserWordMutation) AddedField(name string) (ent.Value, bool) {
+func (m *LearnedWordMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case userword.FieldUserID:
+	case learnedword.FieldUserID:
 		return m.AddedUserID()
-	case userword.FieldMasteryListen:
+	case learnedword.FieldMasteryListen:
 		return m.AddedMasteryListen()
-	case userword.FieldMasteryRead:
+	case learnedword.FieldMasteryRead:
 		return m.AddedMasteryRead()
-	case userword.FieldMasterySpell:
+	case learnedword.FieldMasterySpell:
 		return m.AddedMasterySpell()
-	case userword.FieldMasteryPronounce:
+	case learnedword.FieldMasteryPronounce:
 		return m.AddedMasteryPronounce()
-	case userword.FieldMasteryUse:
+	case learnedword.FieldMasteryUse:
 		return m.AddedMasteryUse()
-	case userword.FieldMasteryOverall:
+	case learnedword.FieldMasteryOverall:
 		return m.AddedMasteryOverall()
-	case userword.FieldReviewIntervalDays:
+	case learnedword.FieldReviewIntervalDays:
 		return m.AddedReviewIntervalDays()
-	case userword.FieldReviewFailCount:
+	case learnedword.FieldReviewFailCount:
 		return m.AddedReviewFailCount()
-	case userword.FieldQueryCount:
+	case learnedword.FieldQueryCount:
 		return m.AddedQueryCount()
 	}
 	return nil, false
@@ -1626,72 +1626,72 @@ func (m *UserWordMutation) AddedField(name string) (ent.Value, bool) {
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *UserWordMutation) AddField(name string, value ent.Value) error {
+func (m *LearnedWordMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case userword.FieldUserID:
+	case learnedword.FieldUserID:
 		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddUserID(v)
 		return nil
-	case userword.FieldMasteryListen:
+	case learnedword.FieldMasteryListen:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddMasteryListen(v)
 		return nil
-	case userword.FieldMasteryRead:
+	case learnedword.FieldMasteryRead:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddMasteryRead(v)
 		return nil
-	case userword.FieldMasterySpell:
+	case learnedword.FieldMasterySpell:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddMasterySpell(v)
 		return nil
-	case userword.FieldMasteryPronounce:
+	case learnedword.FieldMasteryPronounce:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddMasteryPronounce(v)
 		return nil
-	case userword.FieldMasteryUse:
+	case learnedword.FieldMasteryUse:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddMasteryUse(v)
 		return nil
-	case userword.FieldMasteryOverall:
+	case learnedword.FieldMasteryOverall:
 		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddMasteryOverall(v)
 		return nil
-	case userword.FieldReviewIntervalDays:
+	case learnedword.FieldReviewIntervalDays:
 		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddReviewIntervalDays(v)
 		return nil
-	case userword.FieldReviewFailCount:
+	case learnedword.FieldReviewFailCount:
 		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddReviewFailCount(v)
 		return nil
-	case userword.FieldQueryCount:
+	case learnedword.FieldQueryCount:
 		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -1699,166 +1699,166 @@ func (m *UserWordMutation) AddField(name string, value ent.Value) error {
 		m.AddQueryCount(v)
 		return nil
 	}
-	return fmt.Errorf("unknown UserWord numeric field %s", name)
+	return fmt.Errorf("unknown LearnedWord numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *UserWordMutation) ClearedFields() []string {
+func (m *LearnedWordMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(userword.FieldReviewLastReviewAt) {
-		fields = append(fields, userword.FieldReviewLastReviewAt)
+	if m.FieldCleared(learnedword.FieldReviewLastReviewAt) {
+		fields = append(fields, learnedword.FieldReviewLastReviewAt)
 	}
-	if m.FieldCleared(userword.FieldReviewNextReviewAt) {
-		fields = append(fields, userword.FieldReviewNextReviewAt)
+	if m.FieldCleared(learnedword.FieldReviewNextReviewAt) {
+		fields = append(fields, learnedword.FieldReviewNextReviewAt)
 	}
-	if m.FieldCleared(userword.FieldNotes) {
-		fields = append(fields, userword.FieldNotes)
+	if m.FieldCleared(learnedword.FieldNotes) {
+		fields = append(fields, learnedword.FieldNotes)
 	}
 	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *UserWordMutation) FieldCleared(name string) bool {
+func (m *LearnedWordMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *UserWordMutation) ClearField(name string) error {
+func (m *LearnedWordMutation) ClearField(name string) error {
 	switch name {
-	case userword.FieldReviewLastReviewAt:
+	case learnedword.FieldReviewLastReviewAt:
 		m.ClearReviewLastReviewAt()
 		return nil
-	case userword.FieldReviewNextReviewAt:
+	case learnedword.FieldReviewNextReviewAt:
 		m.ClearReviewNextReviewAt()
 		return nil
-	case userword.FieldNotes:
+	case learnedword.FieldNotes:
 		m.ClearNotes()
 		return nil
 	}
-	return fmt.Errorf("unknown UserWord nullable field %s", name)
+	return fmt.Errorf("unknown LearnedWord nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *UserWordMutation) ResetField(name string) error {
+func (m *LearnedWordMutation) ResetField(name string) error {
 	switch name {
-	case userword.FieldUserID:
+	case learnedword.FieldUserID:
 		m.ResetUserID()
 		return nil
-	case userword.FieldWord:
-		m.ResetWord()
+	case learnedword.FieldTerm:
+		m.ResetTerm()
 		return nil
-	case userword.FieldNormalized:
+	case learnedword.FieldNormalized:
 		m.ResetNormalized()
 		return nil
-	case userword.FieldLanguage:
+	case learnedword.FieldLanguage:
 		m.ResetLanguage()
 		return nil
-	case userword.FieldMasteryListen:
+	case learnedword.FieldMasteryListen:
 		m.ResetMasteryListen()
 		return nil
-	case userword.FieldMasteryRead:
+	case learnedword.FieldMasteryRead:
 		m.ResetMasteryRead()
 		return nil
-	case userword.FieldMasterySpell:
+	case learnedword.FieldMasterySpell:
 		m.ResetMasterySpell()
 		return nil
-	case userword.FieldMasteryPronounce:
+	case learnedword.FieldMasteryPronounce:
 		m.ResetMasteryPronounce()
 		return nil
-	case userword.FieldMasteryUse:
+	case learnedword.FieldMasteryUse:
 		m.ResetMasteryUse()
 		return nil
-	case userword.FieldMasteryOverall:
+	case learnedword.FieldMasteryOverall:
 		m.ResetMasteryOverall()
 		return nil
-	case userword.FieldReviewLastReviewAt:
+	case learnedword.FieldReviewLastReviewAt:
 		m.ResetReviewLastReviewAt()
 		return nil
-	case userword.FieldReviewNextReviewAt:
+	case learnedword.FieldReviewNextReviewAt:
 		m.ResetReviewNextReviewAt()
 		return nil
-	case userword.FieldReviewIntervalDays:
+	case learnedword.FieldReviewIntervalDays:
 		m.ResetReviewIntervalDays()
 		return nil
-	case userword.FieldReviewFailCount:
+	case learnedword.FieldReviewFailCount:
 		m.ResetReviewFailCount()
 		return nil
-	case userword.FieldQueryCount:
+	case learnedword.FieldQueryCount:
 		m.ResetQueryCount()
 		return nil
-	case userword.FieldNotes:
+	case learnedword.FieldNotes:
 		m.ResetNotes()
 		return nil
-	case userword.FieldSentences:
+	case learnedword.FieldSentences:
 		m.ResetSentences()
 		return nil
-	case userword.FieldRelations:
+	case learnedword.FieldRelations:
 		m.ResetRelations()
 		return nil
-	case userword.FieldCreatedBy:
+	case learnedword.FieldCreatedBy:
 		m.ResetCreatedBy()
 		return nil
-	case userword.FieldCreatedAt:
+	case learnedword.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
-	case userword.FieldUpdatedAt:
+	case learnedword.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
 	}
-	return fmt.Errorf("unknown UserWord field %s", name)
+	return fmt.Errorf("unknown LearnedWord field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *UserWordMutation) AddedEdges() []string {
+func (m *LearnedWordMutation) AddedEdges() []string {
 	edges := make([]string, 0, 0)
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *UserWordMutation) AddedIDs(name string) []ent.Value {
+func (m *LearnedWordMutation) AddedIDs(name string) []ent.Value {
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *UserWordMutation) RemovedEdges() []string {
+func (m *LearnedWordMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 0)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *UserWordMutation) RemovedIDs(name string) []ent.Value {
+func (m *LearnedWordMutation) RemovedIDs(name string) []ent.Value {
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *UserWordMutation) ClearedEdges() []string {
+func (m *LearnedWordMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 0)
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *UserWordMutation) EdgeCleared(name string) bool {
+func (m *LearnedWordMutation) EdgeCleared(name string) bool {
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *UserWordMutation) ClearEdge(name string) error {
-	return fmt.Errorf("unknown UserWord unique edge %s", name)
+func (m *LearnedWordMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown LearnedWord unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *UserWordMutation) ResetEdge(name string) error {
-	return fmt.Errorf("unknown UserWord edge %s", name)
+func (m *LearnedWordMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown LearnedWord edge %s", name)
 }
 
 // WordMutation represents an operation that mutates the Word nodes in the graph.

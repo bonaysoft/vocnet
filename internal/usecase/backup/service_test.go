@@ -12,7 +12,7 @@ import (
 	"github.com/eslsoft/vocnet/internal/entity"
 	entdb "github.com/eslsoft/vocnet/internal/infrastructure/database/ent"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/enttest"
-	entuserword "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/userword"
+	entlearnedword "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
 	entword "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 
 	"entgo.io/ent/dialect"
@@ -28,7 +28,7 @@ func TestServiceExportImportRoundTrip(t *testing.T) {
 	srcClient := enttest.Open(t, dialect.SQLite, srcDSN)
 	t.Cleanup(func() { srcClient.Close() })
 
-	srcWords, srcUserWords := seedData(t, ctx, srcClient)
+	srcWords, srcLearnedWords := seedData(t, ctx, srcClient)
 
 	exporter, err := NewService("sqlite3", srcDSN)
 	if err != nil {
@@ -63,14 +63,14 @@ func TestServiceExportImportRoundTrip(t *testing.T) {
 		t.Fatalf("words mismatch after import:\nwant %#v\ngot  %#v", srcWords, snapDstWords)
 	}
 
-	snapSrcUserWords := snapshotUserWords(t, ctx, srcClient)
-	if !reflect.DeepEqual(snapSrcUserWords, srcUserWords) {
-		t.Fatalf("source user words snapshot mutated: want %#v got %#v", srcUserWords, snapSrcUserWords)
+	snapSrcLearnedWords := snapshotLearnedWords(t, ctx, srcClient)
+	if !reflect.DeepEqual(snapSrcLearnedWords, srcLearnedWords) {
+		t.Fatalf("source user words snapshot mutated: want %#v got %#v", srcLearnedWords, snapSrcLearnedWords)
 	}
 
-	snapDstUserWords := snapshotUserWords(t, ctx, dstClient)
-	if !reflect.DeepEqual(srcUserWords, snapDstUserWords) {
-		t.Fatalf("user words mismatch after import:\nwant %#v\ngot  %#v", srcUserWords, snapDstUserWords)
+	snapDstLearnedWords := snapshotLearnedWords(t, ctx, dstClient)
+	if !reflect.DeepEqual(srcLearnedWords, snapDstLearnedWords) {
+		t.Fatalf("user words mismatch after import:\nwant %#v\ngot  %#v", srcLearnedWords, snapDstLearnedWords)
 	}
 }
 
@@ -114,13 +114,13 @@ func TestServiceExportTablesFilter(t *testing.T) {
 		t.Fatalf("words mismatch after filtered import")
 	}
 
-	dstUserWords := snapshotUserWords(t, ctx, dstClient)
-	if len(dstUserWords) != 0 {
-		t.Fatalf("expected no user words, got %#v", dstUserWords)
+	dstLearnedWords := snapshotLearnedWords(t, ctx, dstClient)
+	if len(dstLearnedWords) != 0 {
+		t.Fatalf("expected no user words, got %#v", dstLearnedWords)
 	}
 }
 
-func seedData(t *testing.T, ctx context.Context, client *entdb.Client) ([]wordSnapshot, []userWordSnapshot) {
+func seedData(t *testing.T, ctx context.Context, client *entdb.Client) ([]wordSnapshot, []LearnedWordSnapshot) {
 	t.Helper()
 	createdAt := time.Date(2025, 1, 1, 8, 0, 0, 0, time.UTC)
 	updatedAt := createdAt.Add(90 * time.Minute)
@@ -153,9 +153,9 @@ func seedData(t *testing.T, ctx context.Context, client *entdb.Client) ([]wordSn
 		t.Fatalf("create word2: %v", err)
 	}
 
-	_, err = client.UserWord.Create().
+	_, err = client.LearnedWord.Create().
 		SetUserID(42).
-		SetWord(word1.Text).
+		SetTerm(word1.Text).
 		SetLanguage("en").
 		SetMasteryListen(3).
 		SetMasteryRead(4).
@@ -170,7 +170,7 @@ func seedData(t *testing.T, ctx context.Context, client *entdb.Client) ([]wordSn
 		SetQueryCount(5).
 		SetNotes("daily review").
 		SetSentences([]entity.Sentence{{Text: "An apple a day...", Source: 1}}).
-		SetRelations([]entity.UserWordRelation{{Word: "apple", RelationType: 2, CreatedBy: "tester", CreatedAt: createdAt.Add(24 * time.Hour), UpdatedAt: createdAt.Add(36 * time.Hour)}}).
+		SetRelations([]entity.LearnedWordRelation{{Word: "apple", RelationType: 2, CreatedBy: "tester", CreatedAt: createdAt.Add(24 * time.Hour), UpdatedAt: createdAt.Add(36 * time.Hour)}}).
 		SetCreatedBy("tester").
 		SetCreatedAt(createdAt.Add(24 * time.Hour)).
 		SetUpdatedAt(createdAt.Add(48 * time.Hour)).
@@ -179,7 +179,7 @@ func seedData(t *testing.T, ctx context.Context, client *entdb.Client) ([]wordSn
 		t.Fatalf("create user word: %v", err)
 	}
 
-	return snapshotWords(t, ctx, client), snapshotUserWords(t, ctx, client)
+	return snapshotWords(t, ctx, client), snapshotLearnedWords(t, ctx, client)
 }
 
 type wordSnapshot struct {
@@ -198,10 +198,10 @@ type wordSnapshot struct {
 	UpdatedAt time.Time
 }
 
-type userWordSnapshot struct {
+type LearnedWordSnapshot struct {
 	ID                 int
 	UserID             int64
-	Word               string
+	Term               string
 	Language           string
 	MasteryListen      int16
 	MasteryRead        int16
@@ -216,7 +216,7 @@ type userWordSnapshot struct {
 	QueryCount         int64
 	Notes              *string
 	Sentences          []entity.Sentence
-	Relations          []entity.UserWordRelation
+	Relations          []entity.LearnedWordRelation
 	CreatedBy          string
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
@@ -249,18 +249,18 @@ func snapshotWords(t *testing.T, ctx context.Context, client *entdb.Client) []wo
 	return result
 }
 
-func snapshotUserWords(t *testing.T, ctx context.Context, client *entdb.Client) []userWordSnapshot {
+func snapshotLearnedWords(t *testing.T, ctx context.Context, client *entdb.Client) []LearnedWordSnapshot {
 	t.Helper()
-	rows, err := client.UserWord.Query().Order(entuserword.ByID()).All(ctx)
+	rows, err := client.LearnedWord.Query().Order(entlearnedword.ByID()).All(ctx)
 	if err != nil {
 		t.Fatalf("list user words: %v", err)
 	}
-	result := make([]userWordSnapshot, 0, len(rows))
+	result := make([]LearnedWordSnapshot, 0, len(rows))
 	for _, row := range rows {
-		result = append(result, userWordSnapshot{
+		result = append(result, LearnedWordSnapshot{
 			ID:                 row.ID,
 			UserID:             row.UserID,
-			Word:               row.Word,
+			Term:               row.Term,
 			Language:           row.Language,
 			MasteryListen:      row.MasteryListen,
 			MasteryRead:        row.MasteryRead,
@@ -275,7 +275,7 @@ func snapshotUserWords(t *testing.T, ctx context.Context, client *entdb.Client) 
 			QueryCount:         row.QueryCount,
 			Notes:              copyStringPointer(row.Notes),
 			Sentences:          append([]entity.Sentence{}, row.Sentences...),
-			Relations:          append([]entity.UserWordRelation{}, row.Relations...),
+			Relations:          append([]entity.LearnedWordRelation{}, row.Relations...),
 			CreatedBy:          row.CreatedBy,
 			CreatedAt:          row.CreatedAt.UTC(),
 			UpdatedAt:          row.UpdatedAt.UTC(),

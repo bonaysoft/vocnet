@@ -9,7 +9,7 @@ import "validate/validate.proto";
 
 // User word management service for personal vocabulary learning
 service LearningService {
-  // Collect/add a word to user's vocabulary (creates global word if needed)
+  // CollectWord collect a term to user's vocabulary (creates global word if needed)
   rpc CollectWord(CollectWordRequest) returns (LearnedWord) {}
 
   // UncollectWord removes a word from user's vocabulary

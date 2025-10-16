@@ -9,11 +9,11 @@ import (
 )
 
 var (
-	// UserWordsColumns holds the columns for the "user_words" table.
-	UserWordsColumns = []*schema.Column{
+	// LearnedWordsColumns holds the columns for the "learned_words" table.
+	LearnedWordsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "user_id", Type: field.TypeInt64},
-		{Name: "word", Type: field.TypeString},
+		{Name: "term", Type: field.TypeString},
 		{Name: "normalized", Type: field.TypeString, Default: ""},
 		{Name: "language", Type: field.TypeString, Default: "en"},
 		{Name: "mastery_listen", Type: field.TypeInt16, Default: 0},
@@ -34,21 +34,21 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
-	// UserWordsTable holds the schema information for the "user_words" table.
-	UserWordsTable = &schema.Table{
-		Name:       "user_words",
-		Columns:    UserWordsColumns,
-		PrimaryKey: []*schema.Column{UserWordsColumns[0]},
+	// LearnedWordsTable holds the schema information for the "learned_words" table.
+	LearnedWordsTable = &schema.Table{
+		Name:       "learned_words",
+		Columns:    LearnedWordsColumns,
+		PrimaryKey: []*schema.Column{LearnedWordsColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "userword_user_id_language_word",
+				Name:    "learnedword_user_id_language_term",
 				Unique:  true,
-				Columns: []*schema.Column{UserWordsColumns[1], UserWordsColumns[4], UserWordsColumns[2]},
+				Columns: []*schema.Column{LearnedWordsColumns[1], LearnedWordsColumns[4], LearnedWordsColumns[2]},
 			},
 			{
-				Name:    "userword_language_normalized",
+				Name:    "learnedword_language_normalized",
 				Unique:  false,
-				Columns: []*schema.Column{UserWordsColumns[4], UserWordsColumns[3]},
+				Columns: []*schema.Column{LearnedWordsColumns[4], LearnedWordsColumns[3]},
 			},
 		},
 	}
@@ -89,14 +89,14 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		UserWordsTable,
+		LearnedWordsTable,
 		WordsTable,
 	}
 )
 
 func init() {
-	UserWordsTable.Annotation = &entsql.Annotation{
-		Table: "user_words",
+	LearnedWordsTable.Annotation = &entsql.Annotation{
+		Table: "learned_words",
 	}
 	WordsTable.Annotation = &entsql.Annotation{
 		Table: "words",

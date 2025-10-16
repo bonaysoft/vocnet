@@ -12,8 +12,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
-	// UserWord is the client for interacting with the UserWord builders.
-	UserWord *UserWordClient
+	// LearnedWord is the client for interacting with the LearnedWord builders.
+	LearnedWord *LearnedWordClient
 	// Word is the client for interacting with the Word builders.
 	Word *WordClient
 
@@ -147,7 +147,7 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
-	tx.UserWord = NewUserWordClient(tx.config)
+	tx.LearnedWord = NewLearnedWordClient(tx.config)
 	tx.Word = NewWordClient(tx.config)
 }
 
@@ -158,7 +158,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: UserWord.QueryXXX(), the query will be executed
+// applies a query, for example: LearnedWord.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

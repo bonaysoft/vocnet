@@ -13,33 +13,33 @@ import (
 	"github.com/eslsoft/vocnet/internal/repository"
 )
 
-type fakeUserWordRepo struct {
+type fakeLearnedWordRepo struct {
 	mu    sync.RWMutex
 	seq   int64
-	items map[int64]*entity.UserWord
+	items map[int64]*entity.LearnedWord
 }
 
-func newFakeUserWordRepo() *fakeUserWordRepo {
-	return &fakeUserWordRepo{items: make(map[int64]*entity.UserWord)}
+func newFakeLearnedWordRepo() *fakeLearnedWordRepo {
+	return &fakeLearnedWordRepo{items: make(map[int64]*entity.LearnedWord)}
 }
 
-func (r *fakeUserWordRepo) Create(ctx context.Context, uw *entity.UserWord) (*entity.UserWord, error) {
+func (r *fakeLearnedWordRepo) Create(ctx context.Context, uw *entity.LearnedWord) (*entity.LearnedWord, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if _, ok := r.lookupLocked(uw.UserID, uw.Word); ok {
-		return nil, entity.ErrDuplicateUserWord
+	if _, ok := r.lookupLocked(uw.UserID, uw.Term); ok {
+		return nil, entity.ErrDuplicateLearnedWord
 	}
 	r.seq++
-	copy := cloneUserWord(uw)
+	copy := cloneLearnedWord(uw)
 	copy.ID = r.seq
 	r.items[copy.ID] = copy
-	return cloneUserWord(copy), nil
+	return cloneLearnedWord(copy), nil
 }
 
-func (r *fakeUserWordRepo) Update(ctx context.Context, uw *entity.UserWord) (*entity.UserWord, error) {
+func (r *fakeLearnedWordRepo) Update(ctx context.Context, uw *entity.LearnedWord) (*entity.LearnedWord, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -47,17 +47,17 @@ func (r *fakeUserWordRepo) Update(ctx context.Context, uw *entity.UserWord) (*en
 	defer r.mu.Unlock()
 	existing, ok := r.items[uw.ID]
 	if !ok || existing.UserID != uw.UserID {
-		return nil, entity.ErrUserWordNotFound
+		return nil, entity.ErrLearnedWordNotFound
 	}
-	if other, ok := r.lookupLocked(uw.UserID, uw.Word); ok && other.ID != uw.ID {
-		return nil, entity.ErrDuplicateUserWord
+	if other, ok := r.lookupLocked(uw.UserID, uw.Term); ok && other.ID != uw.ID {
+		return nil, entity.ErrDuplicateLearnedWord
 	}
-	copy := cloneUserWord(uw)
+	copy := cloneLearnedWord(uw)
 	r.items[copy.ID] = copy
-	return cloneUserWord(copy), nil
+	return cloneLearnedWord(copy), nil
 }
 
-func (r *fakeUserWordRepo) GetByID(ctx context.Context, userID, id int64) (*entity.UserWord, error) {
+func (r *fakeLearnedWordRepo) GetByID(ctx context.Context, userID, id int64) (*entity.LearnedWord, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -65,24 +65,24 @@ func (r *fakeUserWordRepo) GetByID(ctx context.Context, userID, id int64) (*enti
 	defer r.mu.RUnlock()
 	item, ok := r.items[id]
 	if !ok || item.UserID != userID {
-		return nil, entity.ErrUserWordNotFound
+		return nil, entity.ErrLearnedWordNotFound
 	}
-	return cloneUserWord(item), nil
+	return cloneLearnedWord(item), nil
 }
 
-func (r *fakeUserWordRepo) FindByWord(ctx context.Context, userID int64, word string) (*entity.UserWord, error) {
+func (r *fakeLearnedWordRepo) FindByWord(ctx context.Context, userID int64, word string) (*entity.LearnedWord, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	if item, ok := r.lookupLocked(userID, word); ok {
-		return cloneUserWord(item), nil
+		return cloneLearnedWord(item), nil
 	}
 	return nil, nil
 }
 
-func (r *fakeUserWordRepo) List(ctx context.Context, query *repository.ListUserWordQuery) ([]entity.UserWord, int64, error) {
+func (r *fakeLearnedWordRepo) List(ctx context.Context, query *repository.ListLearnedWordQuery) ([]entity.LearnedWord, int64, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, 0, err
 	}
@@ -93,17 +93,17 @@ func (r *fakeUserWordRepo) List(ctx context.Context, query *repository.ListUserW
 	defer r.mu.RUnlock()
 
 	keyword := strings.ToLower(strings.TrimSpace(extractKeyword(query.Filter)))
-	var filtered []*entity.UserWord
+	var filtered []*entity.LearnedWord
 	for _, item := range r.items {
 		if item.UserID != query.UserID {
 			continue
 		}
 		if keyword != "" {
-			if !strings.Contains(strings.ToLower(item.Word), keyword) && !strings.Contains(strings.ToLower(item.Notes), keyword) {
+			if !strings.Contains(strings.ToLower(item.Term), keyword) && !strings.Contains(strings.ToLower(item.Notes), keyword) {
 				continue
 			}
 		}
-		filtered = append(filtered, cloneUserWord(item))
+		filtered = append(filtered, cloneLearnedWord(item))
 	}
 
 	sort.Slice(filtered, func(i, j int) bool {
@@ -124,7 +124,7 @@ func (r *fakeUserWordRepo) List(ctx context.Context, query *repository.ListUserW
 	}
 	start := int((pageNo - 1) * pageSize)
 	if start >= len(filtered) {
-		return []entity.UserWord{}, total, nil
+		return []entity.LearnedWord{}, total, nil
 	}
 	if start < 0 {
 		start = 0
@@ -133,16 +133,16 @@ func (r *fakeUserWordRepo) List(ctx context.Context, query *repository.ListUserW
 	if end > len(filtered) {
 		end = len(filtered)
 	}
-	result := make([]entity.UserWord, 0, end-start)
+	result := make([]entity.LearnedWord, 0, end-start)
 	for _, item := range filtered[start:end] {
-		if clone := cloneUserWord(item); clone != nil {
+		if clone := cloneLearnedWord(item); clone != nil {
 			result = append(result, *clone)
 		}
 	}
 	return result, total, nil
 }
 
-func (r *fakeUserWordRepo) Delete(ctx context.Context, userID, id int64) error {
+func (r *fakeLearnedWordRepo) Delete(ctx context.Context, userID, id int64) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -150,26 +150,26 @@ func (r *fakeUserWordRepo) Delete(ctx context.Context, userID, id int64) error {
 	defer r.mu.Unlock()
 	item, ok := r.items[id]
 	if !ok || item.UserID != userID {
-		return entity.ErrUserWordNotFound
+		return entity.ErrLearnedWordNotFound
 	}
 	delete(r.items, id)
 	return nil
 }
 
-func (r *fakeUserWordRepo) lookupLocked(userID int64, word string) (*entity.UserWord, bool) {
+func (r *fakeLearnedWordRepo) lookupLocked(userID int64, word string) (*entity.LearnedWord, bool) {
 	if word == "" {
 		return nil, false
 	}
 	needle := strings.ToLower(word)
 	for _, item := range r.items {
-		if item.UserID == userID && strings.ToLower(item.Word) == needle {
+		if item.UserID == userID && strings.ToLower(item.Term) == needle {
 			return item, true
 		}
 	}
 	return nil, false
 }
 
-func cloneUserWord(src *entity.UserWord) *entity.UserWord {
+func cloneLearnedWord(src *entity.LearnedWord) *entity.LearnedWord {
 	if src == nil {
 		return nil
 	}
@@ -178,19 +178,19 @@ func cloneUserWord(src *entity.UserWord) *entity.UserWord {
 		copy.Sentences = append([]entity.Sentence(nil), src.Sentences...)
 	}
 	if src.Relations != nil {
-		copy.Relations = append([]entity.UserWordRelation(nil), src.Relations...)
+		copy.Relations = append([]entity.LearnedWordRelation(nil), src.Relations...)
 	}
 	return &copy
 }
 
 func TestCollectWordCreatesNewEntry(t *testing.T) {
-	repo := newFakeUserWordRepo()
-	uc := NewUserWordUsecase(repo)
-	impl := uc.(*userWordUsecase)
+	repo := newFakeLearnedWordRepo()
+	uc := NewLearnedWordUsecase(repo)
+	impl := uc.(*learnedWordUsecase)
 	fixed := time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC)
 	impl.clock = func() time.Time { return fixed }
 
-	got, err := uc.CollectWord(context.Background(), 42, &entity.UserWord{Word: "Hello", CreatedBy: "tester"})
+	got, err := uc.CollectWord(context.Background(), 42, &entity.LearnedWord{Term: "Hello", CreatedBy: "tester"})
 	if err != nil {
 		t.Fatalf("CollectWord returned error: %v", err)
 	}
@@ -200,8 +200,8 @@ func TestCollectWordCreatesNewEntry(t *testing.T) {
 	if got.ID == 0 {
 		t.Errorf("expected ID to be set, got %d", got.ID)
 	}
-	if got.Word != "Hello" {
-		t.Errorf("expected word to be 'Hello', got %q", got.Word)
+	if got.Term != "Hello" {
+		t.Errorf("expected word to be 'Hello', got %q", got.Term)
 	}
 	if got.QueryCount != 1 {
 		t.Errorf("expected query count to default to 1, got %d", got.QueryCount)
@@ -215,13 +215,13 @@ func TestCollectWordCreatesNewEntry(t *testing.T) {
 }
 
 func TestCollectWordDuplicateUpdatesExisting(t *testing.T) {
-	repo := newFakeUserWordRepo()
-	uc := NewUserWordUsecase(repo)
-	impl := uc.(*userWordUsecase)
+	repo := newFakeLearnedWordRepo()
+	uc := NewLearnedWordUsecase(repo)
+	impl := uc.(*learnedWordUsecase)
 	first := time.Date(2024, 1, 2, 8, 0, 0, 0, time.UTC)
 	impl.clock = func() time.Time { return first }
 
-	_, err := uc.CollectWord(context.Background(), 1, &entity.UserWord{Word: "Apple"})
+	_, err := uc.CollectWord(context.Background(), 1, &entity.LearnedWord{Term: "Apple"})
 	if err != nil {
 		t.Fatalf("CollectWord initial call failed: %v", err)
 	}
@@ -229,7 +229,7 @@ func TestCollectWordDuplicateUpdatesExisting(t *testing.T) {
 	second := time.Date(2024, 1, 3, 9, 0, 0, 0, time.UTC)
 	impl.clock = func() time.Time { return second }
 	updatedMastery := entity.MasteryBreakdown{Overall: 250}
-	res, err := uc.CollectWord(context.Background(), 1, &entity.UserWord{Word: "Apple", Notes: "updated", Mastery: updatedMastery, Language: "fr"})
+	res, err := uc.CollectWord(context.Background(), 1, &entity.LearnedWord{Term: "Apple", Notes: "updated", Mastery: updatedMastery, Language: "fr"})
 	if err != nil {
 		t.Fatalf("CollectWord duplicate failed: %v", err)
 	}
@@ -251,12 +251,12 @@ func TestCollectWordDuplicateUpdatesExisting(t *testing.T) {
 }
 
 func TestUpdateMastery(t *testing.T) {
-	repo := newFakeUserWordRepo()
-	uc := NewUserWordUsecase(repo)
-	impl := uc.(*userWordUsecase)
+	repo := newFakeLearnedWordRepo()
+	uc := NewLearnedWordUsecase(repo)
+	impl := uc.(*learnedWordUsecase)
 	impl.clock = func() time.Time { return time.Date(2024, 1, 4, 10, 0, 0, 0, time.UTC) }
 
-	created, err := uc.CollectWord(context.Background(), 9, &entity.UserWord{Word: "Bridge"})
+	created, err := uc.CollectWord(context.Background(), 9, &entity.LearnedWord{Term: "Bridge"})
 	if err != nil {
 		t.Fatalf("CollectWord failed: %v", err)
 	}
@@ -279,28 +279,28 @@ func TestUpdateMastery(t *testing.T) {
 	}
 }
 
-func TestListUserWordsFiltersByKeyword(t *testing.T) {
-	repo := newFakeUserWordRepo()
-	uc := NewUserWordUsecase(repo)
-	impl := uc.(*userWordUsecase)
+func TestListLearnedWordsFiltersByKeyword(t *testing.T) {
+	repo := newFakeLearnedWordRepo()
+	uc := NewLearnedWordUsecase(repo)
+	impl := uc.(*learnedWordUsecase)
 	impl.clock = time.Now
 
-	_, _ = uc.CollectWord(context.Background(), 5, &entity.UserWord{Word: "Comet", Notes: "space"})
-	_, _ = uc.CollectWord(context.Background(), 5, &entity.UserWord{Word: "Forest", Notes: "trees"})
+	_, _ = uc.CollectWord(context.Background(), 5, &entity.LearnedWord{Term: "Comet", Notes: "space"})
+	_, _ = uc.CollectWord(context.Background(), 5, &entity.LearnedWord{Term: "Forest", Notes: "trees"})
 
-	query := &repository.ListUserWordQuery{
+	query := &repository.ListLearnedWordQuery{
 		Pagination:  repository.Pagination{PageNo: 1, PageSize: 10},
 		FilterOrder: repository.FilterOrder{Filter: "keyword == \"tre\""},
 		UserID:      5,
 	}
-	items, total, err := uc.ListUserWords(context.Background(), query)
+	items, total, err := uc.ListLearnedWords(context.Background(), query)
 	if err != nil {
-		t.Fatalf("ListUserWords returned error: %v", err)
+		t.Fatalf("ListLearnedWords returned error: %v", err)
 	}
 	if total != 1 {
 		t.Fatalf("expected total 1, got %d", total)
 	}
-	if len(items) != 1 || items[0].Word != "Forest" {
+	if len(items) != 1 || items[0].Term != "Forest" {
 		t.Fatalf("expected to retrieve Forest entry, got %+v", items)
 	}
 }

@@ -29,12 +29,12 @@ type Server struct {
 }
 
 // NewServer creates a new server instance from pre-wired dependencies.
-func NewServer(cfg *config.Config, logger *logrus.Logger, wordSvc dictv1connect.WordServiceHandler, userWordSvc learningv1connect.LearningServiceHandler) *Server {
+func NewServer(cfg *config.Config, logger *logrus.Logger, wordSvc dictv1connect.WordServiceHandler, learningSvc learningv1connect.LearningServiceHandler) *Server {
 	interceptors := connect.WithInterceptors(Logger())
 
 	mux := http.NewServeMux()
 	mux.Handle(dictv1connect.NewWordServiceHandler(wordSvc, interceptors))
-	mux.Handle(learningv1connect.NewLearningServiceHandler(userWordSvc, interceptors))
+	mux.Handle(learningv1connect.NewLearningServiceHandler(learningSvc, interceptors))
 
 	return &Server{
 		config: cfg,

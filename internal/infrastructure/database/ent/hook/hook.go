@@ -9,16 +9,16 @@ import (
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent"
 )
 
-// The UserWordFunc type is an adapter to allow the use of ordinary
-// function as UserWord mutator.
-type UserWordFunc func(context.Context, *ent.UserWordMutation) (ent.Value, error)
+// The LearnedWordFunc type is an adapter to allow the use of ordinary
+// function as LearnedWord mutator.
+type LearnedWordFunc func(context.Context, *ent.LearnedWordMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f UserWordFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.UserWordMutation); ok {
+func (f LearnedWordFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LearnedWordMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserWordMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LearnedWordMutation", m)
 }
 
 // The WordFunc type is an adapter to allow the use of ordinary

@@ -6,8 +6,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// UserWord is the predicate function for userword builders.
-type UserWord func(*sql.Selector)
+// LearnedWord is the predicate function for learnedword builders.
+type LearnedWord func(*sql.Selector)
 
 // Word is the predicate function for word builders.
 type Word func(*sql.Selector)

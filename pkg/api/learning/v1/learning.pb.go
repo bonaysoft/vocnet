@@ -28,8 +28,8 @@ const (
 type LearnedWord struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Spec          *UserWordSpec          `protobuf:"bytes,2,opt,name=spec,proto3" json:"spec,omitempty"`
-	Status        *UserWordStatus        `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
+	Spec          *LearnedWordSpec       `protobuf:"bytes,2,opt,name=spec,proto3" json:"spec,omitempty"`
+	Status        *LearnedWordStatus     `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -71,14 +71,14 @@ func (x *LearnedWord) GetId() int64 {
 	return 0
 }
 
-func (x *LearnedWord) GetSpec() *UserWordSpec {
+func (x *LearnedWord) GetSpec() *LearnedWordSpec {
 	if x != nil {
 		return x.Spec
 	}
 	return nil
 }
 
-func (x *LearnedWord) GetStatus() *UserWordStatus {
+func (x *LearnedWord) GetStatus() *LearnedWordStatus {
 	if x != nil {
 		return x.Status
 	}
@@ -86,12 +86,12 @@ func (x *LearnedWord) GetStatus() *UserWordStatus {
 }
 
 // Spec is user-provided data for the word
-type UserWordSpec struct {
+type LearnedWordSpec struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Word          string                 `protobuf:"bytes,1,opt,name=word,proto3" json:"word,omitempty"`
+	Term          string                 `protobuf:"bytes,1,opt,name=term,proto3" json:"term,omitempty"`
 	Language      v1.Language            `protobuf:"varint,2,opt,name=language,proto3,enum=common.v1.Language" json:"language,omitempty"`     // Language of the word
 	MasteryLevel  int32                  `protobuf:"varint,3,opt,name=mastery_level,json=masteryLevel,proto3" json:"mastery_level,omitempty"` // Mastery level (0-5), self-assessed by user
-	Relations     []*UserWordRelation    `protobuf:"bytes,5,rep,name=relations,proto3" json:"relations,omitempty"`                            // Relationships to other words
+	Relations     []*LearnedWordRelation `protobuf:"bytes,5,rep,name=relations,proto3" json:"relations,omitempty"`                            // Relationships to other words
 	Sentences     []*v11.Sentence        `protobuf:"bytes,6,rep,name=sentences,proto3" json:"sentences,omitempty"`                            // Contextual example sentences
 	Tags          []string               `protobuf:"bytes,7,rep,name=tags,proto3" json:"tags,omitempty"`                                      // User-defined tags
 	Notes         []string               `protobuf:"bytes,8,rep,name=notes,proto3" json:"notes,omitempty"`                                    // User's personal notes
@@ -99,20 +99,20 @@ type UserWordSpec struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *UserWordSpec) Reset() {
-	*x = UserWordSpec{}
+func (x *LearnedWordSpec) Reset() {
+	*x = LearnedWordSpec{}
 	mi := &file_learning_v1_learning_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UserWordSpec) String() string {
+func (x *LearnedWordSpec) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UserWordSpec) ProtoMessage() {}
+func (*LearnedWordSpec) ProtoMessage() {}
 
-func (x *UserWordSpec) ProtoReflect() protoreflect.Message {
+func (x *LearnedWordSpec) ProtoReflect() protoreflect.Message {
 	mi := &file_learning_v1_learning_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -124,54 +124,54 @@ func (x *UserWordSpec) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UserWordSpec.ProtoReflect.Descriptor instead.
-func (*UserWordSpec) Descriptor() ([]byte, []int) {
+// Deprecated: Use LearnedWordSpec.ProtoReflect.Descriptor instead.
+func (*LearnedWordSpec) Descriptor() ([]byte, []int) {
 	return file_learning_v1_learning_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *UserWordSpec) GetWord() string {
+func (x *LearnedWordSpec) GetTerm() string {
 	if x != nil {
-		return x.Word
+		return x.Term
 	}
 	return ""
 }
 
-func (x *UserWordSpec) GetLanguage() v1.Language {
+func (x *LearnedWordSpec) GetLanguage() v1.Language {
 	if x != nil {
 		return x.Language
 	}
 	return v1.Language(0)
 }
 
-func (x *UserWordSpec) GetMasteryLevel() int32 {
+func (x *LearnedWordSpec) GetMasteryLevel() int32 {
 	if x != nil {
 		return x.MasteryLevel
 	}
 	return 0
 }
 
-func (x *UserWordSpec) GetRelations() []*UserWordRelation {
+func (x *LearnedWordSpec) GetRelations() []*LearnedWordRelation {
 	if x != nil {
 		return x.Relations
 	}
 	return nil
 }
 
-func (x *UserWordSpec) GetSentences() []*v11.Sentence {
+func (x *LearnedWordSpec) GetSentences() []*v11.Sentence {
 	if x != nil {
 		return x.Sentences
 	}
 	return nil
 }
 
-func (x *UserWordSpec) GetTags() []string {
+func (x *LearnedWordSpec) GetTags() []string {
 	if x != nil {
 		return x.Tags
 	}
 	return nil
 }
 
-func (x *UserWordSpec) GetNotes() []string {
+func (x *LearnedWordSpec) GetNotes() []string {
 	if x != nil {
 		return x.Notes
 	}
@@ -179,7 +179,7 @@ func (x *UserWordSpec) GetNotes() []string {
 }
 
 // Status is read-only, maintained by the system
-type UserWordStatus struct {
+type LearnedWordStatus struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Mastery       *MasteryBreakdown      `protobuf:"bytes,3,opt,name=mastery,proto3" json:"mastery,omitempty"`                               // Detailed mastery scores
 	ReviewTiming  *ReviewTiming          `protobuf:"bytes,4,opt,name=review_timing,json=reviewTiming,proto3" json:"review_timing,omitempty"` // Review scheduling info
@@ -191,20 +191,20 @@ type UserWordStatus struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *UserWordStatus) Reset() {
-	*x = UserWordStatus{}
+func (x *LearnedWordStatus) Reset() {
+	*x = LearnedWordStatus{}
 	mi := &file_learning_v1_learning_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UserWordStatus) String() string {
+func (x *LearnedWordStatus) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UserWordStatus) ProtoMessage() {}
+func (*LearnedWordStatus) ProtoMessage() {}
 
-func (x *UserWordStatus) ProtoReflect() protoreflect.Message {
+func (x *LearnedWordStatus) ProtoReflect() protoreflect.Message {
 	mi := &file_learning_v1_learning_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -216,47 +216,47 @@ func (x *UserWordStatus) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UserWordStatus.ProtoReflect.Descriptor instead.
-func (*UserWordStatus) Descriptor() ([]byte, []int) {
+// Deprecated: Use LearnedWordStatus.ProtoReflect.Descriptor instead.
+func (*LearnedWordStatus) Descriptor() ([]byte, []int) {
 	return file_learning_v1_learning_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *UserWordStatus) GetMastery() *MasteryBreakdown {
+func (x *LearnedWordStatus) GetMastery() *MasteryBreakdown {
 	if x != nil {
 		return x.Mastery
 	}
 	return nil
 }
 
-func (x *UserWordStatus) GetReviewTiming() *ReviewTiming {
+func (x *LearnedWordStatus) GetReviewTiming() *ReviewTiming {
 	if x != nil {
 		return x.ReviewTiming
 	}
 	return nil
 }
 
-func (x *UserWordStatus) GetQueryCount() int64 {
+func (x *LearnedWordStatus) GetQueryCount() int64 {
 	if x != nil {
 		return x.QueryCount
 	}
 	return 0
 }
 
-func (x *UserWordStatus) GetCreatedBy() string {
+func (x *LearnedWordStatus) GetCreatedBy() string {
 	if x != nil {
 		return x.CreatedBy
 	}
 	return ""
 }
 
-func (x *UserWordStatus) GetCreatedAt() *timestamppb.Timestamp {
+func (x *LearnedWordStatus) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
 	return nil
 }
 
-func (x *UserWordStatus) GetUpdatedAt() *timestamppb.Timestamp {
+func (x *LearnedWordStatus) GetUpdatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.UpdatedAt
 	}
@@ -410,7 +410,7 @@ func (x *ReviewTiming) GetFailCount() int32 {
 }
 
 // Word-to-word relationship for building vocabulary networks
-type UserWordRelation struct {
+type LearnedWordRelation struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Word          string                 `protobuf:"bytes,1,opt,name=word,proto3" json:"word,omitempty"`
 	RelationType  v1.RelationType        `protobuf:"varint,2,opt,name=relation_type,json=relationType,proto3,enum=common.v1.RelationType" json:"relation_type,omitempty"` // Type of relationship
@@ -421,20 +421,20 @@ type UserWordRelation struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *UserWordRelation) Reset() {
-	*x = UserWordRelation{}
+func (x *LearnedWordRelation) Reset() {
+	*x = LearnedWordRelation{}
 	mi := &file_learning_v1_learning_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UserWordRelation) String() string {
+func (x *LearnedWordRelation) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UserWordRelation) ProtoMessage() {}
+func (*LearnedWordRelation) ProtoMessage() {}
 
-func (x *UserWordRelation) ProtoReflect() protoreflect.Message {
+func (x *LearnedWordRelation) ProtoReflect() protoreflect.Message {
 	mi := &file_learning_v1_learning_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -446,40 +446,40 @@ func (x *UserWordRelation) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UserWordRelation.ProtoReflect.Descriptor instead.
-func (*UserWordRelation) Descriptor() ([]byte, []int) {
+// Deprecated: Use LearnedWordRelation.ProtoReflect.Descriptor instead.
+func (*LearnedWordRelation) Descriptor() ([]byte, []int) {
 	return file_learning_v1_learning_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *UserWordRelation) GetWord() string {
+func (x *LearnedWordRelation) GetWord() string {
 	if x != nil {
 		return x.Word
 	}
 	return ""
 }
 
-func (x *UserWordRelation) GetRelationType() v1.RelationType {
+func (x *LearnedWordRelation) GetRelationType() v1.RelationType {
 	if x != nil {
 		return x.RelationType
 	}
 	return v1.RelationType(0)
 }
 
-func (x *UserWordRelation) GetNote() string {
+func (x *LearnedWordRelation) GetNote() string {
 	if x != nil {
 		return x.Note
 	}
 	return ""
 }
 
-func (x *UserWordRelation) GetCreatedAt() *timestamppb.Timestamp {
+func (x *LearnedWordRelation) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
 	return nil
 }
 
-func (x *UserWordRelation) GetUpdatedAt() *timestamppb.Timestamp {
+func (x *LearnedWordRelation) GetUpdatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.UpdatedAt
 	}
@@ -490,20 +490,20 @@ var File_learning_v1_learning_proto protoreflect.FileDescriptor
 
 const file_learning_v1_learning_proto_rawDesc = "" +
 	"\n" +
-	"\x1alearning/v1/learning.proto\x12\vlearning.v1\x1a\x15common/v1/types.proto\x1a\x12dict/v1/word.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x81\x01\n" +
+	"\x1alearning/v1/learning.proto\x12\vlearning.v1\x1a\x15common/v1/types.proto\x1a\x12dict/v1/word.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x87\x01\n" +
 	"\vLearnedWord\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12-\n" +
-	"\x04spec\x18\x02 \x01(\v2\x19.learning.v1.UserWordSpecR\x04spec\x123\n" +
-	"\x06status\x18\x03 \x01(\v2\x1b.learning.v1.UserWordStatusR\x06status\"\x90\x02\n" +
-	"\fUserWordSpec\x12\x12\n" +
-	"\x04word\x18\x01 \x01(\tR\x04word\x12/\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x120\n" +
+	"\x04spec\x18\x02 \x01(\v2\x1c.learning.v1.LearnedWordSpecR\x04spec\x126\n" +
+	"\x06status\x18\x03 \x01(\v2\x1e.learning.v1.LearnedWordStatusR\x06status\"\x96\x02\n" +
+	"\x0fLearnedWordSpec\x12\x12\n" +
+	"\x04term\x18\x01 \x01(\tR\x04term\x12/\n" +
 	"\blanguage\x18\x02 \x01(\x0e2\x13.common.v1.LanguageR\blanguage\x12#\n" +
-	"\rmastery_level\x18\x03 \x01(\x05R\fmasteryLevel\x12;\n" +
-	"\trelations\x18\x05 \x03(\v2\x1d.learning.v1.UserWordRelationR\trelations\x12/\n" +
+	"\rmastery_level\x18\x03 \x01(\x05R\fmasteryLevel\x12>\n" +
+	"\trelations\x18\x05 \x03(\v2 .learning.v1.LearnedWordRelationR\trelations\x12/\n" +
 	"\tsentences\x18\x06 \x03(\v2\x11.dict.v1.SentenceR\tsentences\x12\x12\n" +
 	"\x04tags\x18\a \x03(\tR\x04tags\x12\x14\n" +
-	"\x05notes\x18\b \x03(\tR\x05notes\"\xbf\x02\n" +
-	"\x0eUserWordStatus\x127\n" +
+	"\x05notes\x18\b \x03(\tR\x05notes\"\xc2\x02\n" +
+	"\x11LearnedWordStatus\x127\n" +
 	"\amastery\x18\x03 \x01(\v2\x1d.learning.v1.MasteryBreakdownR\amastery\x12>\n" +
 	"\rreview_timing\x18\x04 \x01(\v2\x19.learning.v1.ReviewTimingR\freviewTiming\x12\x1f\n" +
 	"\vquery_count\x18\x05 \x01(\x03R\n" +
@@ -525,8 +525,8 @@ const file_learning_v1_learning_proto_rawDesc = "" +
 	"\x0enext_review_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\fnextReviewAt\x12#\n" +
 	"\rinterval_days\x18\x03 \x01(\x05R\fintervalDays\x12\x1d\n" +
 	"\n" +
-	"fail_count\x18\x04 \x01(\x05R\tfailCount\"\xee\x01\n" +
-	"\x10UserWordRelation\x12\x12\n" +
+	"fail_count\x18\x04 \x01(\x05R\tfailCount\"\xf1\x01\n" +
+	"\x13LearnedWordRelation\x12\x12\n" +
 	"\x04word\x18\x01 \x01(\tR\x04word\x12<\n" +
 	"\rrelation_type\x18\x02 \x01(\x0e2\x17.common.v1.RelationTypeR\frelationType\x12\x12\n" +
 	"\x04note\x18\x03 \x01(\tR\x04note\x129\n" +
@@ -551,31 +551,31 @@ func file_learning_v1_learning_proto_rawDescGZIP() []byte {
 var file_learning_v1_learning_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_learning_v1_learning_proto_goTypes = []any{
 	(*LearnedWord)(nil),           // 0: learning.v1.LearnedWord
-	(*UserWordSpec)(nil),          // 1: learning.v1.UserWordSpec
-	(*UserWordStatus)(nil),        // 2: learning.v1.UserWordStatus
+	(*LearnedWordSpec)(nil),       // 1: learning.v1.LearnedWordSpec
+	(*LearnedWordStatus)(nil),     // 2: learning.v1.LearnedWordStatus
 	(*MasteryBreakdown)(nil),      // 3: learning.v1.MasteryBreakdown
 	(*ReviewTiming)(nil),          // 4: learning.v1.ReviewTiming
-	(*UserWordRelation)(nil),      // 5: learning.v1.UserWordRelation
+	(*LearnedWordRelation)(nil),   // 5: learning.v1.LearnedWordRelation
 	(v1.Language)(0),              // 6: common.v1.Language
 	(*v11.Sentence)(nil),          // 7: dict.v1.Sentence
 	(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
 	(v1.RelationType)(0),          // 9: common.v1.RelationType
 }
 var file_learning_v1_learning_proto_depIdxs = []int32{
-	1,  // 0: learning.v1.LearnedWord.spec:type_name -> learning.v1.UserWordSpec
-	2,  // 1: learning.v1.LearnedWord.status:type_name -> learning.v1.UserWordStatus
-	6,  // 2: learning.v1.UserWordSpec.language:type_name -> common.v1.Language
-	5,  // 3: learning.v1.UserWordSpec.relations:type_name -> learning.v1.UserWordRelation
-	7,  // 4: learning.v1.UserWordSpec.sentences:type_name -> dict.v1.Sentence
-	3,  // 5: learning.v1.UserWordStatus.mastery:type_name -> learning.v1.MasteryBreakdown
-	4,  // 6: learning.v1.UserWordStatus.review_timing:type_name -> learning.v1.ReviewTiming
-	8,  // 7: learning.v1.UserWordStatus.created_at:type_name -> google.protobuf.Timestamp
-	8,  // 8: learning.v1.UserWordStatus.updated_at:type_name -> google.protobuf.Timestamp
+	1,  // 0: learning.v1.LearnedWord.spec:type_name -> learning.v1.LearnedWordSpec
+	2,  // 1: learning.v1.LearnedWord.status:type_name -> learning.v1.LearnedWordStatus
+	6,  // 2: learning.v1.LearnedWordSpec.language:type_name -> common.v1.Language
+	5,  // 3: learning.v1.LearnedWordSpec.relations:type_name -> learning.v1.LearnedWordRelation
+	7,  // 4: learning.v1.LearnedWordSpec.sentences:type_name -> dict.v1.Sentence
+	3,  // 5: learning.v1.LearnedWordStatus.mastery:type_name -> learning.v1.MasteryBreakdown
+	4,  // 6: learning.v1.LearnedWordStatus.review_timing:type_name -> learning.v1.ReviewTiming
+	8,  // 7: learning.v1.LearnedWordStatus.created_at:type_name -> google.protobuf.Timestamp
+	8,  // 8: learning.v1.LearnedWordStatus.updated_at:type_name -> google.protobuf.Timestamp
 	8,  // 9: learning.v1.ReviewTiming.last_review_at:type_name -> google.protobuf.Timestamp
 	8,  // 10: learning.v1.ReviewTiming.next_review_at:type_name -> google.protobuf.Timestamp
-	9,  // 11: learning.v1.UserWordRelation.relation_type:type_name -> common.v1.RelationType
-	8,  // 12: learning.v1.UserWordRelation.created_at:type_name -> google.protobuf.Timestamp
-	8,  // 13: learning.v1.UserWordRelation.updated_at:type_name -> google.protobuf.Timestamp
+	9,  // 11: learning.v1.LearnedWordRelation.relation_type:type_name -> common.v1.RelationType
+	8,  // 12: learning.v1.LearnedWordRelation.created_at:type_name -> google.protobuf.Timestamp
+	8,  // 13: learning.v1.LearnedWordRelation.updated_at:type_name -> google.protobuf.Timestamp
 	14, // [14:14] is the sub-list for method output_type
 	14, // [14:14] is the sub-list for method input_type
 	14, // [14:14] is the sub-list for extension type_name

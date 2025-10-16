@@ -14,7 +14,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/userword"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 )
 
@@ -23,8 +23,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// UserWord is the client for interacting with the UserWord builders.
-	UserWord *UserWordClient
+	// LearnedWord is the client for interacting with the LearnedWord builders.
+	LearnedWord *LearnedWordClient
 	// Word is the client for interacting with the Word builders.
 	Word *WordClient
 }
@@ -38,7 +38,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.UserWord = NewUserWordClient(c.config)
+	c.LearnedWord = NewLearnedWordClient(c.config)
 	c.Word = NewWordClient(c.config)
 }
 
@@ -130,10 +130,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:      ctx,
-		config:   cfg,
-		UserWord: NewUserWordClient(cfg),
-		Word:     NewWordClient(cfg),
+		ctx:         ctx,
+		config:      cfg,
+		LearnedWord: NewLearnedWordClient(cfg),
+		Word:        NewWordClient(cfg),
 	}, nil
 }
 
@@ -151,17 +151,17 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:      ctx,
-		config:   cfg,
-		UserWord: NewUserWordClient(cfg),
-		Word:     NewWordClient(cfg),
+		ctx:         ctx,
+		config:      cfg,
+		LearnedWord: NewLearnedWordClient(cfg),
+		Word:        NewWordClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		UserWord.
+//		LearnedWord.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -183,22 +183,22 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.UserWord.Use(hooks...)
+	c.LearnedWord.Use(hooks...)
 	c.Word.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.UserWord.Intercept(interceptors...)
+	c.LearnedWord.Intercept(interceptors...)
 	c.Word.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
-	case *UserWordMutation:
-		return c.UserWord.mutate(ctx, m)
+	case *LearnedWordMutation:
+		return c.LearnedWord.mutate(ctx, m)
 	case *WordMutation:
 		return c.Word.mutate(ctx, m)
 	default:
@@ -206,107 +206,107 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	}
 }
 
-// UserWordClient is a client for the UserWord schema.
-type UserWordClient struct {
+// LearnedWordClient is a client for the LearnedWord schema.
+type LearnedWordClient struct {
 	config
 }
 
-// NewUserWordClient returns a client for the UserWord from the given config.
-func NewUserWordClient(c config) *UserWordClient {
-	return &UserWordClient{config: c}
+// NewLearnedWordClient returns a client for the LearnedWord from the given config.
+func NewLearnedWordClient(c config) *LearnedWordClient {
+	return &LearnedWordClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `userword.Hooks(f(g(h())))`.
-func (c *UserWordClient) Use(hooks ...Hook) {
-	c.hooks.UserWord = append(c.hooks.UserWord, hooks...)
+// A call to `Use(f, g, h)` equals to `learnedword.Hooks(f(g(h())))`.
+func (c *LearnedWordClient) Use(hooks ...Hook) {
+	c.hooks.LearnedWord = append(c.hooks.LearnedWord, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `userword.Intercept(f(g(h())))`.
-func (c *UserWordClient) Intercept(interceptors ...Interceptor) {
-	c.inters.UserWord = append(c.inters.UserWord, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `learnedword.Intercept(f(g(h())))`.
+func (c *LearnedWordClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LearnedWord = append(c.inters.LearnedWord, interceptors...)
 }
 
-// Create returns a builder for creating a UserWord entity.
-func (c *UserWordClient) Create() *UserWordCreate {
-	mutation := newUserWordMutation(c.config, OpCreate)
-	return &UserWordCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a LearnedWord entity.
+func (c *LearnedWordClient) Create() *LearnedWordCreate {
+	mutation := newLearnedWordMutation(c.config, OpCreate)
+	return &LearnedWordCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of UserWord entities.
-func (c *UserWordClient) CreateBulk(builders ...*UserWordCreate) *UserWordCreateBulk {
-	return &UserWordCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of LearnedWord entities.
+func (c *LearnedWordClient) CreateBulk(builders ...*LearnedWordCreate) *LearnedWordCreateBulk {
+	return &LearnedWordCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *UserWordClient) MapCreateBulk(slice any, setFunc func(*UserWordCreate, int)) *UserWordCreateBulk {
+func (c *LearnedWordClient) MapCreateBulk(slice any, setFunc func(*LearnedWordCreate, int)) *LearnedWordCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &UserWordCreateBulk{err: fmt.Errorf("calling to UserWordClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &LearnedWordCreateBulk{err: fmt.Errorf("calling to LearnedWordClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*UserWordCreate, rv.Len())
+	builders := make([]*LearnedWordCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &UserWordCreateBulk{config: c.config, builders: builders}
+	return &LearnedWordCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for UserWord.
-func (c *UserWordClient) Update() *UserWordUpdate {
-	mutation := newUserWordMutation(c.config, OpUpdate)
-	return &UserWordUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for LearnedWord.
+func (c *LearnedWordClient) Update() *LearnedWordUpdate {
+	mutation := newLearnedWordMutation(c.config, OpUpdate)
+	return &LearnedWordUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *UserWordClient) UpdateOne(uw *UserWord) *UserWordUpdateOne {
-	mutation := newUserWordMutation(c.config, OpUpdateOne, withUserWord(uw))
-	return &UserWordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *LearnedWordClient) UpdateOne(lw *LearnedWord) *LearnedWordUpdateOne {
+	mutation := newLearnedWordMutation(c.config, OpUpdateOne, withLearnedWord(lw))
+	return &LearnedWordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *UserWordClient) UpdateOneID(id int) *UserWordUpdateOne {
-	mutation := newUserWordMutation(c.config, OpUpdateOne, withUserWordID(id))
-	return &UserWordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *LearnedWordClient) UpdateOneID(id int) *LearnedWordUpdateOne {
+	mutation := newLearnedWordMutation(c.config, OpUpdateOne, withLearnedWordID(id))
+	return &LearnedWordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for UserWord.
-func (c *UserWordClient) Delete() *UserWordDelete {
-	mutation := newUserWordMutation(c.config, OpDelete)
-	return &UserWordDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for LearnedWord.
+func (c *LearnedWordClient) Delete() *LearnedWordDelete {
+	mutation := newLearnedWordMutation(c.config, OpDelete)
+	return &LearnedWordDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *UserWordClient) DeleteOne(uw *UserWord) *UserWordDeleteOne {
-	return c.DeleteOneID(uw.ID)
+func (c *LearnedWordClient) DeleteOne(lw *LearnedWord) *LearnedWordDeleteOne {
+	return c.DeleteOneID(lw.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *UserWordClient) DeleteOneID(id int) *UserWordDeleteOne {
-	builder := c.Delete().Where(userword.ID(id))
+func (c *LearnedWordClient) DeleteOneID(id int) *LearnedWordDeleteOne {
+	builder := c.Delete().Where(learnedword.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &UserWordDeleteOne{builder}
+	return &LearnedWordDeleteOne{builder}
 }
 
-// Query returns a query builder for UserWord.
-func (c *UserWordClient) Query() *UserWordQuery {
-	return &UserWordQuery{
+// Query returns a query builder for LearnedWord.
+func (c *LearnedWordClient) Query() *LearnedWordQuery {
+	return &LearnedWordQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeUserWord},
+		ctx:    &QueryContext{Type: TypeLearnedWord},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a UserWord entity by its id.
-func (c *UserWordClient) Get(ctx context.Context, id int) (*UserWord, error) {
-	return c.Query().Where(userword.ID(id)).Only(ctx)
+// Get returns a LearnedWord entity by its id.
+func (c *LearnedWordClient) Get(ctx context.Context, id int) (*LearnedWord, error) {
+	return c.Query().Where(learnedword.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *UserWordClient) GetX(ctx context.Context, id int) *UserWord {
+func (c *LearnedWordClient) GetX(ctx context.Context, id int) *LearnedWord {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -315,27 +315,27 @@ func (c *UserWordClient) GetX(ctx context.Context, id int) *UserWord {
 }
 
 // Hooks returns the client hooks.
-func (c *UserWordClient) Hooks() []Hook {
-	return c.hooks.UserWord
+func (c *LearnedWordClient) Hooks() []Hook {
+	return c.hooks.LearnedWord
 }
 
 // Interceptors returns the client interceptors.
-func (c *UserWordClient) Interceptors() []Interceptor {
-	return c.inters.UserWord
+func (c *LearnedWordClient) Interceptors() []Interceptor {
+	return c.inters.LearnedWord
 }
 
-func (c *UserWordClient) mutate(ctx context.Context, m *UserWordMutation) (Value, error) {
+func (c *LearnedWordClient) mutate(ctx context.Context, m *LearnedWordMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&UserWordCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&LearnedWordCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&UserWordUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&LearnedWordUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&UserWordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&LearnedWordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&UserWordDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&LearnedWordDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown UserWord mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown LearnedWord mutation op: %q", m.Op())
 	}
 }
 
@@ -475,9 +475,9 @@ func (c *WordClient) mutate(ctx context.Context, m *WordMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		UserWord, Word []ent.Hook
+		LearnedWord, Word []ent.Hook
 	}
 	inters struct {
-		UserWord, Word []ent.Interceptor
+		LearnedWord, Word []ent.Interceptor
 	}
 )

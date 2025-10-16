@@ -9,24 +9,24 @@ import "google/protobuf/timestamp.proto";
 // User's personal word record with learning context
 message LearnedWord {
   int64 id = 1;
-  UserWordSpec spec = 2;
-  UserWordStatus status = 3;
+  LearnedWordSpec spec = 2;
+  LearnedWordStatus status = 3;
 }
 
 // Spec is user-provided data for the word
-message UserWordSpec {
-  string word = 1;
+message LearnedWordSpec {
+  string term = 1;
   common.v1.Language language = 2; // Language of the word
   int32 mastery_level = 3; // Mastery level (0-5), self-assessed by user
 
-  repeated UserWordRelation relations = 5; // Relationships to other words
+  repeated LearnedWordRelation relations = 5; // Relationships to other words
   repeated dict.v1.Sentence sentences = 6; // Contextual example sentences
   repeated string tags = 7; // User-defined tags
   repeated string notes = 8; // User's personal notes
 }
 
 // Status is read-only, maintained by the system
-message UserWordStatus {
+message LearnedWordStatus {
   MasteryBreakdown mastery = 3; // Detailed mastery scores
   ReviewTiming review_timing = 4; // Review scheduling info
   int64 query_count = 5; // How many times user looked up this word
@@ -54,7 +54,7 @@ message ReviewTiming {
 }
 
 // Word-to-word relationship for building vocabulary networks
-message UserWordRelation {
+message LearnedWordRelation {
   string word = 1;
   common.v1.RelationType relation_type = 2; // Type of relationship
   string note = 3; // User's note about this relation

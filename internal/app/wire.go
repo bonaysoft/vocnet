@@ -27,17 +27,17 @@ var databaseSet = wire.NewSet(
 
 var repositorySet = wire.NewSet(
 	repository.NewWordRepository,
-	repository.NewUserWordRepository,
+	repository.NewLearnedWordRepository,
 )
 
 var usecaseSet = wire.NewSet(
 	usecase.NewWordUsecase,
-	usecase.NewUserWordUsecase,
+	usecase.NewLearnedWordUsecase,
 )
 
 var serviceSet = wire.NewSet(
 	adaptergrpc.NewWordServiceServer,
-	adaptergrpc.NewUserWordServiceServer,
+	adaptergrpc.NewLearnedWordServiceServer,
 	wire.Bind(new(learningv1connect.LearningServiceHandler), new(*adaptergrpc.LearningServiceServer)),
 	wire.Bind(new(dictv1connect.WordServiceHandler), new(*adaptergrpc.WordServiceServer)),
 )

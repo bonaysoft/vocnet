@@ -51,7 +51,7 @@ const (
 
 // LearningServiceClient is a client for the learning.v1.LearningService service.
 type LearningServiceClient interface {
-	// Collect/add a word to user's vocabulary (creates global word if needed)
+	// CollectWord collect a term to user's vocabulary (creates global word if needed)
 	CollectWord(context.Context, *connect.Request[v1.CollectWordRequest]) (*connect.Response[v1.LearnedWord], error)
 	// UncollectWord removes a word from user's vocabulary
 	UncollectWord(context.Context, *connect.Request[v11.IDRequest]) (*connect.Response[emptypb.Empty], error)
@@ -129,7 +129,7 @@ func (c *learningServiceClient) UpdateMastery(ctx context.Context, req *connect.
 
 // LearningServiceHandler is an implementation of the learning.v1.LearningService service.
 type LearningServiceHandler interface {
-	// Collect/add a word to user's vocabulary (creates global word if needed)
+	// CollectWord collect a term to user's vocabulary (creates global word if needed)
 	CollectWord(context.Context, *connect.Request[v1.CollectWordRequest]) (*connect.Response[v1.LearnedWord], error)
 	// UncollectWord removes a word from user's vocabulary
 	UncollectWord(context.Context, *connect.Request[v11.IDRequest]) (*connect.Response[emptypb.Empty], error)

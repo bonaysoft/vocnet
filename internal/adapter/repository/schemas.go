@@ -34,7 +34,7 @@ var listWordsSchema = filterexpr.ResourceSchema{
 	},
 }
 
-var listUserWordsSchema = filterexpr.ResourceSchema{
+var listLearnedWordsSchema = filterexpr.ResourceSchema{
 	Filter: map[string]filterexpr.FilterField{
 		"keyword": {
 			Kind: filterexpr.KindString,

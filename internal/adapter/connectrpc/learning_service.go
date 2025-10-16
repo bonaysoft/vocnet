@@ -22,10 +22,10 @@ var _ learningv1connect.LearningServiceHandler = (*LearningServiceServer)(nil)
 type LearningServiceServer struct {
 	learningv1connect.UnimplementedLearningServiceHandler
 
-	uc usecase.UserWordUsecase
+	uc usecase.LearnedWordUsecase
 }
 
-func NewUserWordServiceServer(uc usecase.UserWordUsecase) *LearningServiceServer {
+func NewLearnedWordServiceServer(uc usecase.LearnedWordUsecase) *LearningServiceServer {
 	return &LearningServiceServer{uc: uc}
 }
 
@@ -35,19 +35,19 @@ func (s *LearningServiceServer) CollectWord(ctx context.Context, req *connect.Re
 	}
 
 	userID := int64(1000)
-	entityWord := mapping.FromPbUserWord(req.Msg.Word)
+	entityWord := mapping.FromPbLearnedWord(req.Msg.Word)
 	result, err := s.uc.CollectWord(ctx, userID, entityWord)
 	if err != nil {
 		return nil, err
 	}
 
-	return connect.NewResponse(mapping.ToPbUserWord(result)), nil
+	return connect.NewResponse(mapping.ToPbLearnedWord(result)), nil
 }
 
 func (s *LearningServiceServer) UncollectWord(ctx context.Context, req *connect.Request[commonv1.IDRequest]) (*connect.Response[emptypb.Empty], error) {
 	msg := req.Msg
 	userID := int64(1000)
-	if err := s.uc.DeleteUserWord(ctx, userID, msg.GetId()); err != nil {
+	if err := s.uc.DeleteLearnedWord(ctx, userID, msg.GetId()); err != nil {
 		return nil, err
 	}
 
@@ -59,7 +59,7 @@ func (s *LearningServiceServer) ListLearnedWords(ctx context.Context, req *conne
 		return nil, status.Error(codes.InvalidArgument, "request required")
 	}
 	msg := req.Msg
-	query := &repository.ListUserWordQuery{
+	query := &repository.ListLearnedWordQuery{
 		Pagination: convertPagination(msg.GetPagination()),
 		FilterOrder: repository.FilterOrder{
 			Filter:  msg.GetFilter(),
@@ -67,7 +67,7 @@ func (s *LearningServiceServer) ListLearnedWords(ctx context.Context, req *conne
 		},
 		UserID: int64(1000),
 	}
-	items, total, err := s.uc.ListUserWords(ctx, query)
+	items, total, err := s.uc.ListLearnedWords(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func (s *LearningServiceServer) ListLearnedWords(ctx context.Context, req *conne
 		},
 	}
 	for _, item := range items {
-		resp.Words = append(resp.Words, mapping.ToPbUserWord(&item))
+		resp.Words = append(resp.Words, mapping.ToPbLearnedWord(&item))
 	}
 
 	return connect.NewResponse(resp), nil
@@ -102,5 +102,5 @@ func (s *LearningServiceServer) UpdateMastery(ctx context.Context, req *connect.
 		return nil, err
 	}
 
-	return connect.NewResponse(mapping.ToPbUserWord(result)), nil
+	return connect.NewResponse(mapping.ToPbLearnedWord(result)), nil
 }
