@@ -37,10 +37,6 @@ type listWordsParams struct {
 }
 
 func (r *wordRepository) Create(ctx context.Context, word *entity.Word) (*entity.Word, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-
 	builder := r.client.Word.Create().
 		SetText(word.Text).
 		SetNormalized(entity.NormalizeWordToken(word.Text)).
@@ -68,10 +64,6 @@ func (r *wordRepository) Create(ctx context.Context, word *entity.Word) (*entity
 }
 
 func (r *wordRepository) Update(ctx context.Context, word *entity.Word) (*entity.Word, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-
 	mutation := r.client.Word.UpdateOneID(int(word.ID)).
 		SetText(word.Text).
 		SetNormalized(entity.NormalizeWordToken(word.Text)).
@@ -107,10 +99,6 @@ func (r *wordRepository) Update(ctx context.Context, word *entity.Word) (*entity
 }
 
 func (r *wordRepository) GetByID(ctx context.Context, id int64) (*entity.Word, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-
 	rec, err := r.client.Word.Get(ctx, int(id))
 	if err != nil {
 		if entdb.IsNotFound(err) {
@@ -134,7 +122,13 @@ func (r *wordRepository) Lookup(ctx context.Context, text string, language entit
 			entword.LanguageEQ(normalizedLang),
 		).
 		Order(func(s *sql.Selector) {
-			s.OrderExpr(sql.Expr("CASE WHEN word_type = 'lemma' THEN 0 ELSE 1 END"))
+			s.OrderExpr(sql.ExprFunc(func(b *sql.Builder) {
+				b.WriteString("CASE WHEN ")
+				b.WriteString(s.C(entword.FieldWordType))
+				b.WriteString(" = ")
+				b.Arg(entity.WordTypeLemma)
+				b.WriteString(" THEN 0 ELSE 1 END")
+			}))
 			s.OrderBy(s.C(entword.FieldID))
 		}).
 		First(ctx)
@@ -149,10 +143,6 @@ func (r *wordRepository) Lookup(ctx context.Context, text string, language entit
 }
 
 func (r *wordRepository) List(ctx context.Context, query *repository.ListWordQuery) ([]*entity.Word, int64, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, 0, err
-	}
-
 	var params listWordsParams
 	if err := filterexpr.Bind(query, &params, listWordsSchema); err != nil {
 		return nil, 0, err
@@ -190,10 +180,6 @@ func (r *wordRepository) List(ctx context.Context, query *repository.ListWordQue
 }
 
 func (r *wordRepository) Delete(ctx context.Context, id int64) error {
-	if err := ctx.Err(); err != nil {
-		return err
-	}
-
 	err := r.client.Word.DeleteOneID(int(id)).Exec(ctx)
 	if err != nil {
 		if entdb.IsNotFound(err) {
@@ -206,9 +192,6 @@ func (r *wordRepository) Delete(ctx context.Context, id int64) error {
 
 // ListFormsByLemma returns all non-lemma forms (text + voc_type) for a lemma.
 func (r *wordRepository) ListFormsByLemma(ctx context.Context, lemma string, language entity.Language) ([]entity.WordFormRef, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
 	if strings.TrimSpace(lemma) == "" {
 		return []entity.WordFormRef{}, nil
 	}
@@ -256,7 +239,13 @@ func applyListFilters(q *entdb.WordQuery, params listWordsParams) {
 func applyListOrdering(q *entdb.WordQuery, params listWordsParams) {
 	if params.Keyword != "" {
 		q.Order(func(s *sql.Selector) {
-			s.OrderExpr(sql.Expr("CASE WHEN text = ? THEN 0 ELSE 1 END", params.Keyword))
+			s.OrderExpr(sql.ExprFunc(func(b *sql.Builder) {
+				b.WriteString("CASE WHEN ")
+				b.WriteString(s.C(entword.FieldText))
+				b.WriteString(" = ")
+				b.Arg(params.Keyword)
+				b.WriteString(" THEN 0 ELSE 1 END")
+			}))
 		})
 	}
 

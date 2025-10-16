@@ -43,10 +43,6 @@ type listUserWordsParams struct {
 }
 
 func (r *userWordRepository) Create(ctx context.Context, userWord *entity.UserWord) (*entity.UserWord, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-
 	listen, err := int32ToInt16(userWord.Mastery.Listen, "mastery.listen")
 	if err != nil {
 		return nil, err
@@ -101,10 +97,6 @@ func (r *userWordRepository) Create(ctx context.Context, userWord *entity.UserWo
 }
 
 func (r *userWordRepository) Update(ctx context.Context, userWord *entity.UserWord) (*entity.UserWord, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-
 	listen, err := int32ToInt16(userWord.Mastery.Listen, "mastery.listen")
 	if err != nil {
 		return nil, err
@@ -169,10 +161,6 @@ func (r *userWordRepository) Update(ctx context.Context, userWord *entity.UserWo
 }
 
 func (r *userWordRepository) GetByID(ctx context.Context, userID, id int64) (*entity.UserWord, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-
 	rec, err := r.client.UserWord.Query().
 		Where(
 			entuserword.IDEQ(int(id)),
@@ -189,9 +177,6 @@ func (r *userWordRepository) GetByID(ctx context.Context, userID, id int64) (*en
 }
 
 func (r *userWordRepository) FindByWord(ctx context.Context, userID int64, word string) (*entity.UserWord, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
 	if word == "" {
 		return nil, nil
 	}
@@ -212,10 +197,6 @@ func (r *userWordRepository) FindByWord(ctx context.Context, userID int64, word 
 }
 
 func (r *userWordRepository) List(ctx context.Context, query *repository.ListUserWordQuery) ([]entity.UserWord, int64, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, 0, err
-	}
-
 	var params listUserWordsParams
 	if err := filterexpr.Bind(query, &params, listUserWordsSchema); err != nil {
 		return nil, 0, err
@@ -257,10 +238,6 @@ func (r *userWordRepository) List(ctx context.Context, query *repository.ListUse
 }
 
 func (r *userWordRepository) Delete(ctx context.Context, userID, id int64) error {
-	if err := ctx.Err(); err != nil {
-		return err
-	}
-
 	affected, err := r.client.UserWord.Delete().
 		Where(
 			entuserword.IDEQ(int(id)),
