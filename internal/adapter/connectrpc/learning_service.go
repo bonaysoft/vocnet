@@ -22,44 +22,44 @@ var _ learningv1connect.LearningServiceHandler = (*LearningServiceServer)(nil)
 type LearningServiceServer struct {
 	learningv1connect.UnimplementedLearningServiceHandler
 
-	uc usecase.LearnedWordUsecase
+	uc usecase.LearnedLexemeUsecase
 }
 
-func NewLearnedWordServiceServer(uc usecase.LearnedWordUsecase) *LearningServiceServer {
+func NewLearningServiceServer(uc usecase.LearnedLexemeUsecase) *LearningServiceServer {
 	return &LearningServiceServer{uc: uc}
 }
 
-func (s *LearningServiceServer) CollectWord(ctx context.Context, req *connect.Request[learningv1.CollectWordRequest]) (*connect.Response[learningv1.LearnedWord], error) {
-	if req.Msg == nil || req.Msg.Word == nil {
-		return nil, status.Error(codes.InvalidArgument, "word payload required")
+func (s *LearningServiceServer) CollectLexeme(ctx context.Context, req *connect.Request[learningv1.CollectLexemeRequest]) (*connect.Response[learningv1.LearnedLexeme], error) {
+	if req.Msg == nil || req.Msg.Lexeme == nil {
+		return nil, status.Error(codes.InvalidArgument, "lexeme payload required")
 	}
 
 	userID := int64(1000)
-	entityWord := mapping.FromPbLearnedWord(req.Msg.Word)
-	result, err := s.uc.CollectWord(ctx, userID, entityWord)
+	entityLexeme := mapping.FromPbLearnedLexeme(req.Msg.Lexeme)
+	result, err := s.uc.CollectLexeme(ctx, userID, entityLexeme)
 	if err != nil {
 		return nil, err
 	}
 
-	return connect.NewResponse(mapping.ToPbLearnedWord(result)), nil
+	return connect.NewResponse(mapping.ToPbLearnedLexeme(result)), nil
 }
 
-func (s *LearningServiceServer) UncollectWord(ctx context.Context, req *connect.Request[commonv1.IDRequest]) (*connect.Response[emptypb.Empty], error) {
+func (s *LearningServiceServer) UncollectLexeme(ctx context.Context, req *connect.Request[commonv1.IDRequest]) (*connect.Response[emptypb.Empty], error) {
 	msg := req.Msg
 	userID := int64(1000)
-	if err := s.uc.DeleteLearnedWord(ctx, userID, msg.GetId()); err != nil {
+	if err := s.uc.DeleteLearnedLexeme(ctx, userID, msg.GetId()); err != nil {
 		return nil, err
 	}
 
 	return connect.NewResponse(&emptypb.Empty{}), nil
 }
 
-func (s *LearningServiceServer) ListLearnedWords(ctx context.Context, req *connect.Request[learningv1.ListLearnedWordsRequest]) (*connect.Response[learningv1.ListLearnedWordsResponse], error) {
+func (s *LearningServiceServer) ListLearnedLexemes(ctx context.Context, req *connect.Request[learningv1.ListLearnedLexemesRequest]) (*connect.Response[learningv1.ListLearnedLexemesResponse], error) {
 	if req == nil || req.Msg == nil {
 		return nil, status.Error(codes.InvalidArgument, "request required")
 	}
 	msg := req.Msg
-	query := &repository.ListLearnedWordQuery{
+	query := &repository.ListLearnedLexemeQuery{
 		Pagination: convertPagination(msg.GetPagination()),
 		FilterOrder: repository.FilterOrder{
 			Filter:  msg.GetFilter(),
@@ -67,40 +67,40 @@ func (s *LearningServiceServer) ListLearnedWords(ctx context.Context, req *conne
 		},
 		UserID: int64(1000),
 	}
-	items, total, err := s.uc.ListLearnedWords(ctx, query)
+	items, total, err := s.uc.ListLearnedLexemes(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 
-	total32, err := safeInt32("total user words", total)
+	total32, err := safeInt32("total user lexemes", total)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	resp := &learningv1.ListLearnedWordsResponse{
+	resp := &learningv1.ListLearnedLexemesResponse{
 		Pagination: &commonv1.PaginationResponse{
 			Total:  total32,
 			PageNo: query.PageNo,
 		},
 	}
 	for _, item := range items {
-		resp.Words = append(resp.Words, mapping.ToPbLearnedWord(&item))
+		resp.Lexemes = append(resp.Lexemes, mapping.ToPbLearnedLexeme(&item))
 	}
 
 	return connect.NewResponse(resp), nil
 }
 
-func (s *LearningServiceServer) UpdateMastery(ctx context.Context, req *connect.Request[learningv1.UpdateMasteryRequest]) (*connect.Response[learningv1.LearnedWord], error) {
+func (s *LearningServiceServer) UpdateMastery(ctx context.Context, req *connect.Request[learningv1.UpdateMasteryRequest]) (*connect.Response[learningv1.LearnedLexeme], error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request required")
 	}
 
 	msg := req.Msg
 	userID := int64(1000)
-	result, err := s.uc.UpdateMastery(ctx, userID, msg.GetWordId(), mapping.FromPbMastery(msg.GetMastery()), entity.ReviewTiming{}, msg.GetNotes())
+	result, err := s.uc.UpdateMastery(ctx, userID, msg.GetLexemeId(), mapping.FromPbMastery(msg.GetMastery()), entity.ReviewTiming{}, msg.GetNotes())
 	if err != nil {
 		return nil, err
 	}
 
-	return connect.NewResponse(mapping.ToPbLearnedWord(result)), nil
+	return connect.NewResponse(mapping.ToPbLearnedLexeme(result)), nil
 }

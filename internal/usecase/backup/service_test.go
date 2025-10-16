@@ -12,7 +12,7 @@ import (
 	"github.com/eslsoft/vocnet/internal/entity"
 	entdb "github.com/eslsoft/vocnet/internal/infrastructure/database/ent"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/enttest"
-	entlearnedword "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
+	entlearnedlexeme "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedlexeme"
 	entword "github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 
 	"entgo.io/ent/dialect"
@@ -153,7 +153,7 @@ func seedData(t *testing.T, ctx context.Context, client *entdb.Client) ([]wordSn
 		t.Fatalf("create word2: %v", err)
 	}
 
-	_, err = client.LearnedWord.Create().
+	_, err = client.LearnedLexeme.Create().
 		SetUserID(42).
 		SetTerm(word1.Text).
 		SetLanguage("en").
@@ -169,7 +169,7 @@ func seedData(t *testing.T, ctx context.Context, client *entdb.Client) ([]wordSn
 		SetQueryCount(5).
 		SetNotes("daily review").
 		SetSentences([]entity.Sentence{{Text: "An apple a day...", Source: 1}}).
-		SetRelations([]entity.LearnedWordRelation{{Word: "apple", RelationType: 2, CreatedBy: "tester", CreatedAt: createdAt.Add(24 * time.Hour), UpdatedAt: createdAt.Add(36 * time.Hour)}}).
+		SetRelations([]entity.LearnedLexemeRelation{{Word: "apple", RelationType: 2, CreatedBy: "tester", CreatedAt: createdAt.Add(24 * time.Hour), UpdatedAt: createdAt.Add(36 * time.Hour)}}).
 		SetCreatedBy("tester").
 		SetCreatedAt(createdAt.Add(24 * time.Hour)).
 		SetUpdatedAt(createdAt.Add(48 * time.Hour)).
@@ -215,7 +215,7 @@ type LearnedWordSnapshot struct {
 	QueryCount         int64
 	Notes              *string
 	Sentences          []entity.Sentence
-	Relations          []entity.LearnedWordRelation
+	Relations          []entity.LearnedLexemeRelation
 	CreatedBy          string
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
@@ -250,7 +250,7 @@ func snapshotWords(t *testing.T, ctx context.Context, client *entdb.Client) []wo
 
 func snapshotLearnedWords(t *testing.T, ctx context.Context, client *entdb.Client) []LearnedWordSnapshot {
 	t.Helper()
-	rows, err := client.LearnedWord.Query().Order(entlearnedword.ByID()).All(ctx)
+	rows, err := client.LearnedLexeme.Query().Order(entlearnedlexeme.ByID()).All(ctx)
 	if err != nil {
 		t.Fatalf("list user words: %v", err)
 	}
@@ -273,7 +273,7 @@ func snapshotLearnedWords(t *testing.T, ctx context.Context, client *entdb.Clien
 			QueryCount:         row.QueryCount,
 			Notes:              copyStringPointer(row.Notes),
 			Sentences:          append([]entity.Sentence{}, row.Sentences...),
-			Relations:          append([]entity.LearnedWordRelation{}, row.Relations...),
+			Relations:          append([]entity.LearnedLexemeRelation{}, row.Relations...),
 			CreatedBy:          row.CreatedBy,
 			CreatedAt:          row.CreatedAt.UTC(),
 			UpdatedAt:          row.UpdatedAt.UTC(),

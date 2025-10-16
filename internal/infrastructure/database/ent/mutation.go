@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/eslsoft/vocnet/internal/entity"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedlexeme"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/predicate"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 )
@@ -26,12 +26,12 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeLearnedWord = "LearnedWord"
-	TypeWord        = "Word"
+	TypeLearnedLexeme = "LearnedLexeme"
+	TypeWord          = "Word"
 )
 
-// LearnedWordMutation represents an operation that mutates the LearnedWord nodes in the graph.
-type LearnedWordMutation struct {
+// LearnedLexemeMutation represents an operation that mutates the LearnedLexeme nodes in the graph.
+type LearnedLexemeMutation struct {
 	config
 	op                      Op
 	typ                     string
@@ -62,8 +62,8 @@ type LearnedWordMutation struct {
 	notes                   *string
 	sentences               *[]entity.Sentence
 	appendsentences         []entity.Sentence
-	relations               *[]entity.LearnedWordRelation
-	appendrelations         []entity.LearnedWordRelation
+	relations               *[]entity.LearnedLexemeRelation
+	appendrelations         []entity.LearnedLexemeRelation
 	tags                    *[]string
 	appendtags              []string
 	created_by              *string
@@ -73,21 +73,21 @@ type LearnedWordMutation struct {
 	word                    *int
 	clearedword             bool
 	done                    bool
-	oldValue                func(context.Context) (*LearnedWord, error)
-	predicates              []predicate.LearnedWord
+	oldValue                func(context.Context) (*LearnedLexeme, error)
+	predicates              []predicate.LearnedLexeme
 }
 
-var _ ent.Mutation = (*LearnedWordMutation)(nil)
+var _ ent.Mutation = (*LearnedLexemeMutation)(nil)
 
-// learnedwordOption allows management of the mutation configuration using functional options.
-type learnedwordOption func(*LearnedWordMutation)
+// learnedlexemeOption allows management of the mutation configuration using functional options.
+type learnedlexemeOption func(*LearnedLexemeMutation)
 
-// newLearnedWordMutation creates new mutation for the LearnedWord entity.
-func newLearnedWordMutation(c config, op Op, opts ...learnedwordOption) *LearnedWordMutation {
-	m := &LearnedWordMutation{
+// newLearnedLexemeMutation creates new mutation for the LearnedLexeme entity.
+func newLearnedLexemeMutation(c config, op Op, opts ...learnedlexemeOption) *LearnedLexemeMutation {
+	m := &LearnedLexemeMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeLearnedWord,
+		typ:           TypeLearnedLexeme,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -96,20 +96,20 @@ func newLearnedWordMutation(c config, op Op, opts ...learnedwordOption) *Learned
 	return m
 }
 
-// withLearnedWordID sets the ID field of the mutation.
-func withLearnedWordID(id int) learnedwordOption {
-	return func(m *LearnedWordMutation) {
+// withLearnedLexemeID sets the ID field of the mutation.
+func withLearnedLexemeID(id int) learnedlexemeOption {
+	return func(m *LearnedLexemeMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *LearnedWord
+			value *LearnedLexeme
 		)
-		m.oldValue = func(ctx context.Context) (*LearnedWord, error) {
+		m.oldValue = func(ctx context.Context) (*LearnedLexeme, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().LearnedWord.Get(ctx, id)
+					value, err = m.Client().LearnedLexeme.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -118,10 +118,10 @@ func withLearnedWordID(id int) learnedwordOption {
 	}
 }
 
-// withLearnedWord sets the old LearnedWord of the mutation.
-func withLearnedWord(node *LearnedWord) learnedwordOption {
-	return func(m *LearnedWordMutation) {
-		m.oldValue = func(context.Context) (*LearnedWord, error) {
+// withLearnedLexeme sets the old LearnedLexeme of the mutation.
+func withLearnedLexeme(node *LearnedLexeme) learnedlexemeOption {
+	return func(m *LearnedLexemeMutation) {
+		m.oldValue = func(context.Context) (*LearnedLexeme, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -130,7 +130,7 @@ func withLearnedWord(node *LearnedWord) learnedwordOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m LearnedWordMutation) Client() *Client {
+func (m LearnedLexemeMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -138,7 +138,7 @@ func (m LearnedWordMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m LearnedWordMutation) Tx() (*Tx, error) {
+func (m LearnedLexemeMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -149,7 +149,7 @@ func (m LearnedWordMutation) Tx() (*Tx, error) {
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *LearnedWordMutation) ID() (id int, exists bool) {
+func (m *LearnedLexemeMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -160,7 +160,7 @@ func (m *LearnedWordMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *LearnedWordMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *LearnedLexemeMutation) IDs(ctx context.Context) ([]int, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -169,20 +169,20 @@ func (m *LearnedWordMutation) IDs(ctx context.Context) ([]int, error) {
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().LearnedWord.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().LearnedLexeme.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetUserID sets the "user_id" field.
-func (m *LearnedWordMutation) SetUserID(i int64) {
+func (m *LearnedLexemeMutation) SetUserID(i int64) {
 	m.user_id = &i
 	m.adduser_id = nil
 }
 
 // UserID returns the value of the "user_id" field in the mutation.
-func (m *LearnedWordMutation) UserID() (r int64, exists bool) {
+func (m *LearnedLexemeMutation) UserID() (r int64, exists bool) {
 	v := m.user_id
 	if v == nil {
 		return
@@ -190,10 +190,10 @@ func (m *LearnedWordMutation) UserID() (r int64, exists bool) {
 	return *v, true
 }
 
-// OldUserID returns the old "user_id" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldUserID returns the old "user_id" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldUserID(ctx context.Context) (v int64, err error) {
+func (m *LearnedLexemeMutation) OldUserID(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
 	}
@@ -208,7 +208,7 @@ func (m *LearnedWordMutation) OldUserID(ctx context.Context) (v int64, err error
 }
 
 // AddUserID adds i to the "user_id" field.
-func (m *LearnedWordMutation) AddUserID(i int64) {
+func (m *LearnedLexemeMutation) AddUserID(i int64) {
 	if m.adduser_id != nil {
 		*m.adduser_id += i
 	} else {
@@ -217,7 +217,7 @@ func (m *LearnedWordMutation) AddUserID(i int64) {
 }
 
 // AddedUserID returns the value that was added to the "user_id" field in this mutation.
-func (m *LearnedWordMutation) AddedUserID() (r int64, exists bool) {
+func (m *LearnedLexemeMutation) AddedUserID() (r int64, exists bool) {
 	v := m.adduser_id
 	if v == nil {
 		return
@@ -226,18 +226,18 @@ func (m *LearnedWordMutation) AddedUserID() (r int64, exists bool) {
 }
 
 // ResetUserID resets all changes to the "user_id" field.
-func (m *LearnedWordMutation) ResetUserID() {
+func (m *LearnedLexemeMutation) ResetUserID() {
 	m.user_id = nil
 	m.adduser_id = nil
 }
 
 // SetTerm sets the "term" field.
-func (m *LearnedWordMutation) SetTerm(s string) {
+func (m *LearnedLexemeMutation) SetTerm(s string) {
 	m.term = &s
 }
 
 // Term returns the value of the "term" field in the mutation.
-func (m *LearnedWordMutation) Term() (r string, exists bool) {
+func (m *LearnedLexemeMutation) Term() (r string, exists bool) {
 	v := m.term
 	if v == nil {
 		return
@@ -245,10 +245,10 @@ func (m *LearnedWordMutation) Term() (r string, exists bool) {
 	return *v, true
 }
 
-// OldTerm returns the old "term" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldTerm returns the old "term" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldTerm(ctx context.Context) (v string, err error) {
+func (m *LearnedLexemeMutation) OldTerm(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTerm is only allowed on UpdateOne operations")
 	}
@@ -263,17 +263,17 @@ func (m *LearnedWordMutation) OldTerm(ctx context.Context) (v string, err error)
 }
 
 // ResetTerm resets all changes to the "term" field.
-func (m *LearnedWordMutation) ResetTerm() {
+func (m *LearnedLexemeMutation) ResetTerm() {
 	m.term = nil
 }
 
 // SetNormalized sets the "normalized" field.
-func (m *LearnedWordMutation) SetNormalized(s string) {
+func (m *LearnedLexemeMutation) SetNormalized(s string) {
 	m.normalized = &s
 }
 
 // Normalized returns the value of the "normalized" field in the mutation.
-func (m *LearnedWordMutation) Normalized() (r string, exists bool) {
+func (m *LearnedLexemeMutation) Normalized() (r string, exists bool) {
 	v := m.normalized
 	if v == nil {
 		return
@@ -281,10 +281,10 @@ func (m *LearnedWordMutation) Normalized() (r string, exists bool) {
 	return *v, true
 }
 
-// OldNormalized returns the old "normalized" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldNormalized returns the old "normalized" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldNormalized(ctx context.Context) (v string, err error) {
+func (m *LearnedLexemeMutation) OldNormalized(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldNormalized is only allowed on UpdateOne operations")
 	}
@@ -299,17 +299,17 @@ func (m *LearnedWordMutation) OldNormalized(ctx context.Context) (v string, err 
 }
 
 // ResetNormalized resets all changes to the "normalized" field.
-func (m *LearnedWordMutation) ResetNormalized() {
+func (m *LearnedLexemeMutation) ResetNormalized() {
 	m.normalized = nil
 }
 
 // SetLanguage sets the "language" field.
-func (m *LearnedWordMutation) SetLanguage(s string) {
+func (m *LearnedLexemeMutation) SetLanguage(s string) {
 	m.language = &s
 }
 
 // Language returns the value of the "language" field in the mutation.
-func (m *LearnedWordMutation) Language() (r string, exists bool) {
+func (m *LearnedLexemeMutation) Language() (r string, exists bool) {
 	v := m.language
 	if v == nil {
 		return
@@ -317,10 +317,10 @@ func (m *LearnedWordMutation) Language() (r string, exists bool) {
 	return *v, true
 }
 
-// OldLanguage returns the old "language" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldLanguage returns the old "language" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldLanguage(ctx context.Context) (v string, err error) {
+func (m *LearnedLexemeMutation) OldLanguage(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldLanguage is only allowed on UpdateOne operations")
 	}
@@ -335,17 +335,17 @@ func (m *LearnedWordMutation) OldLanguage(ctx context.Context) (v string, err er
 }
 
 // ResetLanguage resets all changes to the "language" field.
-func (m *LearnedWordMutation) ResetLanguage() {
+func (m *LearnedLexemeMutation) ResetLanguage() {
 	m.language = nil
 }
 
 // SetWordID sets the "word_id" field.
-func (m *LearnedWordMutation) SetWordID(i int) {
+func (m *LearnedLexemeMutation) SetWordID(i int) {
 	m.word = &i
 }
 
 // WordID returns the value of the "word_id" field in the mutation.
-func (m *LearnedWordMutation) WordID() (r int, exists bool) {
+func (m *LearnedLexemeMutation) WordID() (r int, exists bool) {
 	v := m.word
 	if v == nil {
 		return
@@ -353,10 +353,10 @@ func (m *LearnedWordMutation) WordID() (r int, exists bool) {
 	return *v, true
 }
 
-// OldWordID returns the old "word_id" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldWordID returns the old "word_id" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldWordID(ctx context.Context) (v *int, err error) {
+func (m *LearnedLexemeMutation) OldWordID(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldWordID is only allowed on UpdateOne operations")
 	}
@@ -371,31 +371,31 @@ func (m *LearnedWordMutation) OldWordID(ctx context.Context) (v *int, err error)
 }
 
 // ClearWordID clears the value of the "word_id" field.
-func (m *LearnedWordMutation) ClearWordID() {
+func (m *LearnedLexemeMutation) ClearWordID() {
 	m.word = nil
-	m.clearedFields[learnedword.FieldWordID] = struct{}{}
+	m.clearedFields[learnedlexeme.FieldWordID] = struct{}{}
 }
 
 // WordIDCleared returns if the "word_id" field was cleared in this mutation.
-func (m *LearnedWordMutation) WordIDCleared() bool {
-	_, ok := m.clearedFields[learnedword.FieldWordID]
+func (m *LearnedLexemeMutation) WordIDCleared() bool {
+	_, ok := m.clearedFields[learnedlexeme.FieldWordID]
 	return ok
 }
 
 // ResetWordID resets all changes to the "word_id" field.
-func (m *LearnedWordMutation) ResetWordID() {
+func (m *LearnedLexemeMutation) ResetWordID() {
 	m.word = nil
-	delete(m.clearedFields, learnedword.FieldWordID)
+	delete(m.clearedFields, learnedlexeme.FieldWordID)
 }
 
 // SetMasteryListen sets the "mastery_listen" field.
-func (m *LearnedWordMutation) SetMasteryListen(i int16) {
+func (m *LearnedLexemeMutation) SetMasteryListen(i int16) {
 	m.mastery_listen = &i
 	m.addmastery_listen = nil
 }
 
 // MasteryListen returns the value of the "mastery_listen" field in the mutation.
-func (m *LearnedWordMutation) MasteryListen() (r int16, exists bool) {
+func (m *LearnedLexemeMutation) MasteryListen() (r int16, exists bool) {
 	v := m.mastery_listen
 	if v == nil {
 		return
@@ -403,10 +403,10 @@ func (m *LearnedWordMutation) MasteryListen() (r int16, exists bool) {
 	return *v, true
 }
 
-// OldMasteryListen returns the old "mastery_listen" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldMasteryListen returns the old "mastery_listen" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldMasteryListen(ctx context.Context) (v int16, err error) {
+func (m *LearnedLexemeMutation) OldMasteryListen(ctx context.Context) (v int16, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMasteryListen is only allowed on UpdateOne operations")
 	}
@@ -421,7 +421,7 @@ func (m *LearnedWordMutation) OldMasteryListen(ctx context.Context) (v int16, er
 }
 
 // AddMasteryListen adds i to the "mastery_listen" field.
-func (m *LearnedWordMutation) AddMasteryListen(i int16) {
+func (m *LearnedLexemeMutation) AddMasteryListen(i int16) {
 	if m.addmastery_listen != nil {
 		*m.addmastery_listen += i
 	} else {
@@ -430,7 +430,7 @@ func (m *LearnedWordMutation) AddMasteryListen(i int16) {
 }
 
 // AddedMasteryListen returns the value that was added to the "mastery_listen" field in this mutation.
-func (m *LearnedWordMutation) AddedMasteryListen() (r int16, exists bool) {
+func (m *LearnedLexemeMutation) AddedMasteryListen() (r int16, exists bool) {
 	v := m.addmastery_listen
 	if v == nil {
 		return
@@ -439,19 +439,19 @@ func (m *LearnedWordMutation) AddedMasteryListen() (r int16, exists bool) {
 }
 
 // ResetMasteryListen resets all changes to the "mastery_listen" field.
-func (m *LearnedWordMutation) ResetMasteryListen() {
+func (m *LearnedLexemeMutation) ResetMasteryListen() {
 	m.mastery_listen = nil
 	m.addmastery_listen = nil
 }
 
 // SetMasteryRead sets the "mastery_read" field.
-func (m *LearnedWordMutation) SetMasteryRead(i int16) {
+func (m *LearnedLexemeMutation) SetMasteryRead(i int16) {
 	m.mastery_read = &i
 	m.addmastery_read = nil
 }
 
 // MasteryRead returns the value of the "mastery_read" field in the mutation.
-func (m *LearnedWordMutation) MasteryRead() (r int16, exists bool) {
+func (m *LearnedLexemeMutation) MasteryRead() (r int16, exists bool) {
 	v := m.mastery_read
 	if v == nil {
 		return
@@ -459,10 +459,10 @@ func (m *LearnedWordMutation) MasteryRead() (r int16, exists bool) {
 	return *v, true
 }
 
-// OldMasteryRead returns the old "mastery_read" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldMasteryRead returns the old "mastery_read" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldMasteryRead(ctx context.Context) (v int16, err error) {
+func (m *LearnedLexemeMutation) OldMasteryRead(ctx context.Context) (v int16, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMasteryRead is only allowed on UpdateOne operations")
 	}
@@ -477,7 +477,7 @@ func (m *LearnedWordMutation) OldMasteryRead(ctx context.Context) (v int16, err 
 }
 
 // AddMasteryRead adds i to the "mastery_read" field.
-func (m *LearnedWordMutation) AddMasteryRead(i int16) {
+func (m *LearnedLexemeMutation) AddMasteryRead(i int16) {
 	if m.addmastery_read != nil {
 		*m.addmastery_read += i
 	} else {
@@ -486,7 +486,7 @@ func (m *LearnedWordMutation) AddMasteryRead(i int16) {
 }
 
 // AddedMasteryRead returns the value that was added to the "mastery_read" field in this mutation.
-func (m *LearnedWordMutation) AddedMasteryRead() (r int16, exists bool) {
+func (m *LearnedLexemeMutation) AddedMasteryRead() (r int16, exists bool) {
 	v := m.addmastery_read
 	if v == nil {
 		return
@@ -495,19 +495,19 @@ func (m *LearnedWordMutation) AddedMasteryRead() (r int16, exists bool) {
 }
 
 // ResetMasteryRead resets all changes to the "mastery_read" field.
-func (m *LearnedWordMutation) ResetMasteryRead() {
+func (m *LearnedLexemeMutation) ResetMasteryRead() {
 	m.mastery_read = nil
 	m.addmastery_read = nil
 }
 
 // SetMasterySpell sets the "mastery_spell" field.
-func (m *LearnedWordMutation) SetMasterySpell(i int16) {
+func (m *LearnedLexemeMutation) SetMasterySpell(i int16) {
 	m.mastery_spell = &i
 	m.addmastery_spell = nil
 }
 
 // MasterySpell returns the value of the "mastery_spell" field in the mutation.
-func (m *LearnedWordMutation) MasterySpell() (r int16, exists bool) {
+func (m *LearnedLexemeMutation) MasterySpell() (r int16, exists bool) {
 	v := m.mastery_spell
 	if v == nil {
 		return
@@ -515,10 +515,10 @@ func (m *LearnedWordMutation) MasterySpell() (r int16, exists bool) {
 	return *v, true
 }
 
-// OldMasterySpell returns the old "mastery_spell" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldMasterySpell returns the old "mastery_spell" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldMasterySpell(ctx context.Context) (v int16, err error) {
+func (m *LearnedLexemeMutation) OldMasterySpell(ctx context.Context) (v int16, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMasterySpell is only allowed on UpdateOne operations")
 	}
@@ -533,7 +533,7 @@ func (m *LearnedWordMutation) OldMasterySpell(ctx context.Context) (v int16, err
 }
 
 // AddMasterySpell adds i to the "mastery_spell" field.
-func (m *LearnedWordMutation) AddMasterySpell(i int16) {
+func (m *LearnedLexemeMutation) AddMasterySpell(i int16) {
 	if m.addmastery_spell != nil {
 		*m.addmastery_spell += i
 	} else {
@@ -542,7 +542,7 @@ func (m *LearnedWordMutation) AddMasterySpell(i int16) {
 }
 
 // AddedMasterySpell returns the value that was added to the "mastery_spell" field in this mutation.
-func (m *LearnedWordMutation) AddedMasterySpell() (r int16, exists bool) {
+func (m *LearnedLexemeMutation) AddedMasterySpell() (r int16, exists bool) {
 	v := m.addmastery_spell
 	if v == nil {
 		return
@@ -551,19 +551,19 @@ func (m *LearnedWordMutation) AddedMasterySpell() (r int16, exists bool) {
 }
 
 // ResetMasterySpell resets all changes to the "mastery_spell" field.
-func (m *LearnedWordMutation) ResetMasterySpell() {
+func (m *LearnedLexemeMutation) ResetMasterySpell() {
 	m.mastery_spell = nil
 	m.addmastery_spell = nil
 }
 
 // SetMasteryPronounce sets the "mastery_pronounce" field.
-func (m *LearnedWordMutation) SetMasteryPronounce(i int16) {
+func (m *LearnedLexemeMutation) SetMasteryPronounce(i int16) {
 	m.mastery_pronounce = &i
 	m.addmastery_pronounce = nil
 }
 
 // MasteryPronounce returns the value of the "mastery_pronounce" field in the mutation.
-func (m *LearnedWordMutation) MasteryPronounce() (r int16, exists bool) {
+func (m *LearnedLexemeMutation) MasteryPronounce() (r int16, exists bool) {
 	v := m.mastery_pronounce
 	if v == nil {
 		return
@@ -571,10 +571,10 @@ func (m *LearnedWordMutation) MasteryPronounce() (r int16, exists bool) {
 	return *v, true
 }
 
-// OldMasteryPronounce returns the old "mastery_pronounce" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldMasteryPronounce returns the old "mastery_pronounce" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldMasteryPronounce(ctx context.Context) (v int16, err error) {
+func (m *LearnedLexemeMutation) OldMasteryPronounce(ctx context.Context) (v int16, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMasteryPronounce is only allowed on UpdateOne operations")
 	}
@@ -589,7 +589,7 @@ func (m *LearnedWordMutation) OldMasteryPronounce(ctx context.Context) (v int16,
 }
 
 // AddMasteryPronounce adds i to the "mastery_pronounce" field.
-func (m *LearnedWordMutation) AddMasteryPronounce(i int16) {
+func (m *LearnedLexemeMutation) AddMasteryPronounce(i int16) {
 	if m.addmastery_pronounce != nil {
 		*m.addmastery_pronounce += i
 	} else {
@@ -598,7 +598,7 @@ func (m *LearnedWordMutation) AddMasteryPronounce(i int16) {
 }
 
 // AddedMasteryPronounce returns the value that was added to the "mastery_pronounce" field in this mutation.
-func (m *LearnedWordMutation) AddedMasteryPronounce() (r int16, exists bool) {
+func (m *LearnedLexemeMutation) AddedMasteryPronounce() (r int16, exists bool) {
 	v := m.addmastery_pronounce
 	if v == nil {
 		return
@@ -607,19 +607,19 @@ func (m *LearnedWordMutation) AddedMasteryPronounce() (r int16, exists bool) {
 }
 
 // ResetMasteryPronounce resets all changes to the "mastery_pronounce" field.
-func (m *LearnedWordMutation) ResetMasteryPronounce() {
+func (m *LearnedLexemeMutation) ResetMasteryPronounce() {
 	m.mastery_pronounce = nil
 	m.addmastery_pronounce = nil
 }
 
 // SetMasteryOverall sets the "mastery_overall" field.
-func (m *LearnedWordMutation) SetMasteryOverall(i int32) {
+func (m *LearnedLexemeMutation) SetMasteryOverall(i int32) {
 	m.mastery_overall = &i
 	m.addmastery_overall = nil
 }
 
 // MasteryOverall returns the value of the "mastery_overall" field in the mutation.
-func (m *LearnedWordMutation) MasteryOverall() (r int32, exists bool) {
+func (m *LearnedLexemeMutation) MasteryOverall() (r int32, exists bool) {
 	v := m.mastery_overall
 	if v == nil {
 		return
@@ -627,10 +627,10 @@ func (m *LearnedWordMutation) MasteryOverall() (r int32, exists bool) {
 	return *v, true
 }
 
-// OldMasteryOverall returns the old "mastery_overall" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldMasteryOverall returns the old "mastery_overall" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldMasteryOverall(ctx context.Context) (v int32, err error) {
+func (m *LearnedLexemeMutation) OldMasteryOverall(ctx context.Context) (v int32, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMasteryOverall is only allowed on UpdateOne operations")
 	}
@@ -645,7 +645,7 @@ func (m *LearnedWordMutation) OldMasteryOverall(ctx context.Context) (v int32, e
 }
 
 // AddMasteryOverall adds i to the "mastery_overall" field.
-func (m *LearnedWordMutation) AddMasteryOverall(i int32) {
+func (m *LearnedLexemeMutation) AddMasteryOverall(i int32) {
 	if m.addmastery_overall != nil {
 		*m.addmastery_overall += i
 	} else {
@@ -654,7 +654,7 @@ func (m *LearnedWordMutation) AddMasteryOverall(i int32) {
 }
 
 // AddedMasteryOverall returns the value that was added to the "mastery_overall" field in this mutation.
-func (m *LearnedWordMutation) AddedMasteryOverall() (r int32, exists bool) {
+func (m *LearnedLexemeMutation) AddedMasteryOverall() (r int32, exists bool) {
 	v := m.addmastery_overall
 	if v == nil {
 		return
@@ -663,18 +663,18 @@ func (m *LearnedWordMutation) AddedMasteryOverall() (r int32, exists bool) {
 }
 
 // ResetMasteryOverall resets all changes to the "mastery_overall" field.
-func (m *LearnedWordMutation) ResetMasteryOverall() {
+func (m *LearnedLexemeMutation) ResetMasteryOverall() {
 	m.mastery_overall = nil
 	m.addmastery_overall = nil
 }
 
 // SetReviewLastReviewAt sets the "review_last_review_at" field.
-func (m *LearnedWordMutation) SetReviewLastReviewAt(t time.Time) {
+func (m *LearnedLexemeMutation) SetReviewLastReviewAt(t time.Time) {
 	m.review_last_review_at = &t
 }
 
 // ReviewLastReviewAt returns the value of the "review_last_review_at" field in the mutation.
-func (m *LearnedWordMutation) ReviewLastReviewAt() (r time.Time, exists bool) {
+func (m *LearnedLexemeMutation) ReviewLastReviewAt() (r time.Time, exists bool) {
 	v := m.review_last_review_at
 	if v == nil {
 		return
@@ -682,10 +682,10 @@ func (m *LearnedWordMutation) ReviewLastReviewAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldReviewLastReviewAt returns the old "review_last_review_at" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldReviewLastReviewAt returns the old "review_last_review_at" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldReviewLastReviewAt(ctx context.Context) (v *time.Time, err error) {
+func (m *LearnedLexemeMutation) OldReviewLastReviewAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldReviewLastReviewAt is only allowed on UpdateOne operations")
 	}
@@ -700,30 +700,30 @@ func (m *LearnedWordMutation) OldReviewLastReviewAt(ctx context.Context) (v *tim
 }
 
 // ClearReviewLastReviewAt clears the value of the "review_last_review_at" field.
-func (m *LearnedWordMutation) ClearReviewLastReviewAt() {
+func (m *LearnedLexemeMutation) ClearReviewLastReviewAt() {
 	m.review_last_review_at = nil
-	m.clearedFields[learnedword.FieldReviewLastReviewAt] = struct{}{}
+	m.clearedFields[learnedlexeme.FieldReviewLastReviewAt] = struct{}{}
 }
 
 // ReviewLastReviewAtCleared returns if the "review_last_review_at" field was cleared in this mutation.
-func (m *LearnedWordMutation) ReviewLastReviewAtCleared() bool {
-	_, ok := m.clearedFields[learnedword.FieldReviewLastReviewAt]
+func (m *LearnedLexemeMutation) ReviewLastReviewAtCleared() bool {
+	_, ok := m.clearedFields[learnedlexeme.FieldReviewLastReviewAt]
 	return ok
 }
 
 // ResetReviewLastReviewAt resets all changes to the "review_last_review_at" field.
-func (m *LearnedWordMutation) ResetReviewLastReviewAt() {
+func (m *LearnedLexemeMutation) ResetReviewLastReviewAt() {
 	m.review_last_review_at = nil
-	delete(m.clearedFields, learnedword.FieldReviewLastReviewAt)
+	delete(m.clearedFields, learnedlexeme.FieldReviewLastReviewAt)
 }
 
 // SetReviewNextReviewAt sets the "review_next_review_at" field.
-func (m *LearnedWordMutation) SetReviewNextReviewAt(t time.Time) {
+func (m *LearnedLexemeMutation) SetReviewNextReviewAt(t time.Time) {
 	m.review_next_review_at = &t
 }
 
 // ReviewNextReviewAt returns the value of the "review_next_review_at" field in the mutation.
-func (m *LearnedWordMutation) ReviewNextReviewAt() (r time.Time, exists bool) {
+func (m *LearnedLexemeMutation) ReviewNextReviewAt() (r time.Time, exists bool) {
 	v := m.review_next_review_at
 	if v == nil {
 		return
@@ -731,10 +731,10 @@ func (m *LearnedWordMutation) ReviewNextReviewAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldReviewNextReviewAt returns the old "review_next_review_at" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldReviewNextReviewAt returns the old "review_next_review_at" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldReviewNextReviewAt(ctx context.Context) (v *time.Time, err error) {
+func (m *LearnedLexemeMutation) OldReviewNextReviewAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldReviewNextReviewAt is only allowed on UpdateOne operations")
 	}
@@ -749,31 +749,31 @@ func (m *LearnedWordMutation) OldReviewNextReviewAt(ctx context.Context) (v *tim
 }
 
 // ClearReviewNextReviewAt clears the value of the "review_next_review_at" field.
-func (m *LearnedWordMutation) ClearReviewNextReviewAt() {
+func (m *LearnedLexemeMutation) ClearReviewNextReviewAt() {
 	m.review_next_review_at = nil
-	m.clearedFields[learnedword.FieldReviewNextReviewAt] = struct{}{}
+	m.clearedFields[learnedlexeme.FieldReviewNextReviewAt] = struct{}{}
 }
 
 // ReviewNextReviewAtCleared returns if the "review_next_review_at" field was cleared in this mutation.
-func (m *LearnedWordMutation) ReviewNextReviewAtCleared() bool {
-	_, ok := m.clearedFields[learnedword.FieldReviewNextReviewAt]
+func (m *LearnedLexemeMutation) ReviewNextReviewAtCleared() bool {
+	_, ok := m.clearedFields[learnedlexeme.FieldReviewNextReviewAt]
 	return ok
 }
 
 // ResetReviewNextReviewAt resets all changes to the "review_next_review_at" field.
-func (m *LearnedWordMutation) ResetReviewNextReviewAt() {
+func (m *LearnedLexemeMutation) ResetReviewNextReviewAt() {
 	m.review_next_review_at = nil
-	delete(m.clearedFields, learnedword.FieldReviewNextReviewAt)
+	delete(m.clearedFields, learnedlexeme.FieldReviewNextReviewAt)
 }
 
 // SetReviewIntervalDays sets the "review_interval_days" field.
-func (m *LearnedWordMutation) SetReviewIntervalDays(i int32) {
+func (m *LearnedLexemeMutation) SetReviewIntervalDays(i int32) {
 	m.review_interval_days = &i
 	m.addreview_interval_days = nil
 }
 
 // ReviewIntervalDays returns the value of the "review_interval_days" field in the mutation.
-func (m *LearnedWordMutation) ReviewIntervalDays() (r int32, exists bool) {
+func (m *LearnedLexemeMutation) ReviewIntervalDays() (r int32, exists bool) {
 	v := m.review_interval_days
 	if v == nil {
 		return
@@ -781,10 +781,10 @@ func (m *LearnedWordMutation) ReviewIntervalDays() (r int32, exists bool) {
 	return *v, true
 }
 
-// OldReviewIntervalDays returns the old "review_interval_days" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldReviewIntervalDays returns the old "review_interval_days" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldReviewIntervalDays(ctx context.Context) (v int32, err error) {
+func (m *LearnedLexemeMutation) OldReviewIntervalDays(ctx context.Context) (v int32, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldReviewIntervalDays is only allowed on UpdateOne operations")
 	}
@@ -799,7 +799,7 @@ func (m *LearnedWordMutation) OldReviewIntervalDays(ctx context.Context) (v int3
 }
 
 // AddReviewIntervalDays adds i to the "review_interval_days" field.
-func (m *LearnedWordMutation) AddReviewIntervalDays(i int32) {
+func (m *LearnedLexemeMutation) AddReviewIntervalDays(i int32) {
 	if m.addreview_interval_days != nil {
 		*m.addreview_interval_days += i
 	} else {
@@ -808,7 +808,7 @@ func (m *LearnedWordMutation) AddReviewIntervalDays(i int32) {
 }
 
 // AddedReviewIntervalDays returns the value that was added to the "review_interval_days" field in this mutation.
-func (m *LearnedWordMutation) AddedReviewIntervalDays() (r int32, exists bool) {
+func (m *LearnedLexemeMutation) AddedReviewIntervalDays() (r int32, exists bool) {
 	v := m.addreview_interval_days
 	if v == nil {
 		return
@@ -817,19 +817,19 @@ func (m *LearnedWordMutation) AddedReviewIntervalDays() (r int32, exists bool) {
 }
 
 // ResetReviewIntervalDays resets all changes to the "review_interval_days" field.
-func (m *LearnedWordMutation) ResetReviewIntervalDays() {
+func (m *LearnedLexemeMutation) ResetReviewIntervalDays() {
 	m.review_interval_days = nil
 	m.addreview_interval_days = nil
 }
 
 // SetReviewFailCount sets the "review_fail_count" field.
-func (m *LearnedWordMutation) SetReviewFailCount(i int32) {
+func (m *LearnedLexemeMutation) SetReviewFailCount(i int32) {
 	m.review_fail_count = &i
 	m.addreview_fail_count = nil
 }
 
 // ReviewFailCount returns the value of the "review_fail_count" field in the mutation.
-func (m *LearnedWordMutation) ReviewFailCount() (r int32, exists bool) {
+func (m *LearnedLexemeMutation) ReviewFailCount() (r int32, exists bool) {
 	v := m.review_fail_count
 	if v == nil {
 		return
@@ -837,10 +837,10 @@ func (m *LearnedWordMutation) ReviewFailCount() (r int32, exists bool) {
 	return *v, true
 }
 
-// OldReviewFailCount returns the old "review_fail_count" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldReviewFailCount returns the old "review_fail_count" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldReviewFailCount(ctx context.Context) (v int32, err error) {
+func (m *LearnedLexemeMutation) OldReviewFailCount(ctx context.Context) (v int32, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldReviewFailCount is only allowed on UpdateOne operations")
 	}
@@ -855,7 +855,7 @@ func (m *LearnedWordMutation) OldReviewFailCount(ctx context.Context) (v int32, 
 }
 
 // AddReviewFailCount adds i to the "review_fail_count" field.
-func (m *LearnedWordMutation) AddReviewFailCount(i int32) {
+func (m *LearnedLexemeMutation) AddReviewFailCount(i int32) {
 	if m.addreview_fail_count != nil {
 		*m.addreview_fail_count += i
 	} else {
@@ -864,7 +864,7 @@ func (m *LearnedWordMutation) AddReviewFailCount(i int32) {
 }
 
 // AddedReviewFailCount returns the value that was added to the "review_fail_count" field in this mutation.
-func (m *LearnedWordMutation) AddedReviewFailCount() (r int32, exists bool) {
+func (m *LearnedLexemeMutation) AddedReviewFailCount() (r int32, exists bool) {
 	v := m.addreview_fail_count
 	if v == nil {
 		return
@@ -873,19 +873,19 @@ func (m *LearnedWordMutation) AddedReviewFailCount() (r int32, exists bool) {
 }
 
 // ResetReviewFailCount resets all changes to the "review_fail_count" field.
-func (m *LearnedWordMutation) ResetReviewFailCount() {
+func (m *LearnedLexemeMutation) ResetReviewFailCount() {
 	m.review_fail_count = nil
 	m.addreview_fail_count = nil
 }
 
 // SetQueryCount sets the "query_count" field.
-func (m *LearnedWordMutation) SetQueryCount(i int64) {
+func (m *LearnedLexemeMutation) SetQueryCount(i int64) {
 	m.query_count = &i
 	m.addquery_count = nil
 }
 
 // QueryCount returns the value of the "query_count" field in the mutation.
-func (m *LearnedWordMutation) QueryCount() (r int64, exists bool) {
+func (m *LearnedLexemeMutation) QueryCount() (r int64, exists bool) {
 	v := m.query_count
 	if v == nil {
 		return
@@ -893,10 +893,10 @@ func (m *LearnedWordMutation) QueryCount() (r int64, exists bool) {
 	return *v, true
 }
 
-// OldQueryCount returns the old "query_count" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldQueryCount returns the old "query_count" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldQueryCount(ctx context.Context) (v int64, err error) {
+func (m *LearnedLexemeMutation) OldQueryCount(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldQueryCount is only allowed on UpdateOne operations")
 	}
@@ -911,7 +911,7 @@ func (m *LearnedWordMutation) OldQueryCount(ctx context.Context) (v int64, err e
 }
 
 // AddQueryCount adds i to the "query_count" field.
-func (m *LearnedWordMutation) AddQueryCount(i int64) {
+func (m *LearnedLexemeMutation) AddQueryCount(i int64) {
 	if m.addquery_count != nil {
 		*m.addquery_count += i
 	} else {
@@ -920,7 +920,7 @@ func (m *LearnedWordMutation) AddQueryCount(i int64) {
 }
 
 // AddedQueryCount returns the value that was added to the "query_count" field in this mutation.
-func (m *LearnedWordMutation) AddedQueryCount() (r int64, exists bool) {
+func (m *LearnedLexemeMutation) AddedQueryCount() (r int64, exists bool) {
 	v := m.addquery_count
 	if v == nil {
 		return
@@ -929,18 +929,18 @@ func (m *LearnedWordMutation) AddedQueryCount() (r int64, exists bool) {
 }
 
 // ResetQueryCount resets all changes to the "query_count" field.
-func (m *LearnedWordMutation) ResetQueryCount() {
+func (m *LearnedLexemeMutation) ResetQueryCount() {
 	m.query_count = nil
 	m.addquery_count = nil
 }
 
 // SetNotes sets the "notes" field.
-func (m *LearnedWordMutation) SetNotes(s string) {
+func (m *LearnedLexemeMutation) SetNotes(s string) {
 	m.notes = &s
 }
 
 // Notes returns the value of the "notes" field in the mutation.
-func (m *LearnedWordMutation) Notes() (r string, exists bool) {
+func (m *LearnedLexemeMutation) Notes() (r string, exists bool) {
 	v := m.notes
 	if v == nil {
 		return
@@ -948,10 +948,10 @@ func (m *LearnedWordMutation) Notes() (r string, exists bool) {
 	return *v, true
 }
 
-// OldNotes returns the old "notes" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldNotes returns the old "notes" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldNotes(ctx context.Context) (v *string, err error) {
+func (m *LearnedLexemeMutation) OldNotes(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
 	}
@@ -966,31 +966,31 @@ func (m *LearnedWordMutation) OldNotes(ctx context.Context) (v *string, err erro
 }
 
 // ClearNotes clears the value of the "notes" field.
-func (m *LearnedWordMutation) ClearNotes() {
+func (m *LearnedLexemeMutation) ClearNotes() {
 	m.notes = nil
-	m.clearedFields[learnedword.FieldNotes] = struct{}{}
+	m.clearedFields[learnedlexeme.FieldNotes] = struct{}{}
 }
 
 // NotesCleared returns if the "notes" field was cleared in this mutation.
-func (m *LearnedWordMutation) NotesCleared() bool {
-	_, ok := m.clearedFields[learnedword.FieldNotes]
+func (m *LearnedLexemeMutation) NotesCleared() bool {
+	_, ok := m.clearedFields[learnedlexeme.FieldNotes]
 	return ok
 }
 
 // ResetNotes resets all changes to the "notes" field.
-func (m *LearnedWordMutation) ResetNotes() {
+func (m *LearnedLexemeMutation) ResetNotes() {
 	m.notes = nil
-	delete(m.clearedFields, learnedword.FieldNotes)
+	delete(m.clearedFields, learnedlexeme.FieldNotes)
 }
 
 // SetSentences sets the "sentences" field.
-func (m *LearnedWordMutation) SetSentences(e []entity.Sentence) {
+func (m *LearnedLexemeMutation) SetSentences(e []entity.Sentence) {
 	m.sentences = &e
 	m.appendsentences = nil
 }
 
 // Sentences returns the value of the "sentences" field in the mutation.
-func (m *LearnedWordMutation) Sentences() (r []entity.Sentence, exists bool) {
+func (m *LearnedLexemeMutation) Sentences() (r []entity.Sentence, exists bool) {
 	v := m.sentences
 	if v == nil {
 		return
@@ -998,10 +998,10 @@ func (m *LearnedWordMutation) Sentences() (r []entity.Sentence, exists bool) {
 	return *v, true
 }
 
-// OldSentences returns the old "sentences" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldSentences returns the old "sentences" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldSentences(ctx context.Context) (v []entity.Sentence, err error) {
+func (m *LearnedLexemeMutation) OldSentences(ctx context.Context) (v []entity.Sentence, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSentences is only allowed on UpdateOne operations")
 	}
@@ -1016,12 +1016,12 @@ func (m *LearnedWordMutation) OldSentences(ctx context.Context) (v []entity.Sent
 }
 
 // AppendSentences adds e to the "sentences" field.
-func (m *LearnedWordMutation) AppendSentences(e []entity.Sentence) {
+func (m *LearnedLexemeMutation) AppendSentences(e []entity.Sentence) {
 	m.appendsentences = append(m.appendsentences, e...)
 }
 
 // AppendedSentences returns the list of values that were appended to the "sentences" field in this mutation.
-func (m *LearnedWordMutation) AppendedSentences() ([]entity.Sentence, bool) {
+func (m *LearnedLexemeMutation) AppendedSentences() ([]entity.Sentence, bool) {
 	if len(m.appendsentences) == 0 {
 		return nil, false
 	}
@@ -1029,19 +1029,19 @@ func (m *LearnedWordMutation) AppendedSentences() ([]entity.Sentence, bool) {
 }
 
 // ResetSentences resets all changes to the "sentences" field.
-func (m *LearnedWordMutation) ResetSentences() {
+func (m *LearnedLexemeMutation) ResetSentences() {
 	m.sentences = nil
 	m.appendsentences = nil
 }
 
 // SetRelations sets the "relations" field.
-func (m *LearnedWordMutation) SetRelations(ewr []entity.LearnedWordRelation) {
-	m.relations = &ewr
+func (m *LearnedLexemeMutation) SetRelations(elr []entity.LearnedLexemeRelation) {
+	m.relations = &elr
 	m.appendrelations = nil
 }
 
 // Relations returns the value of the "relations" field in the mutation.
-func (m *LearnedWordMutation) Relations() (r []entity.LearnedWordRelation, exists bool) {
+func (m *LearnedLexemeMutation) Relations() (r []entity.LearnedLexemeRelation, exists bool) {
 	v := m.relations
 	if v == nil {
 		return
@@ -1049,10 +1049,10 @@ func (m *LearnedWordMutation) Relations() (r []entity.LearnedWordRelation, exist
 	return *v, true
 }
 
-// OldRelations returns the old "relations" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldRelations returns the old "relations" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldRelations(ctx context.Context) (v []entity.LearnedWordRelation, err error) {
+func (m *LearnedLexemeMutation) OldRelations(ctx context.Context) (v []entity.LearnedLexemeRelation, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldRelations is only allowed on UpdateOne operations")
 	}
@@ -1066,13 +1066,13 @@ func (m *LearnedWordMutation) OldRelations(ctx context.Context) (v []entity.Lear
 	return oldValue.Relations, nil
 }
 
-// AppendRelations adds ewr to the "relations" field.
-func (m *LearnedWordMutation) AppendRelations(ewr []entity.LearnedWordRelation) {
-	m.appendrelations = append(m.appendrelations, ewr...)
+// AppendRelations adds elr to the "relations" field.
+func (m *LearnedLexemeMutation) AppendRelations(elr []entity.LearnedLexemeRelation) {
+	m.appendrelations = append(m.appendrelations, elr...)
 }
 
 // AppendedRelations returns the list of values that were appended to the "relations" field in this mutation.
-func (m *LearnedWordMutation) AppendedRelations() ([]entity.LearnedWordRelation, bool) {
+func (m *LearnedLexemeMutation) AppendedRelations() ([]entity.LearnedLexemeRelation, bool) {
 	if len(m.appendrelations) == 0 {
 		return nil, false
 	}
@@ -1080,19 +1080,19 @@ func (m *LearnedWordMutation) AppendedRelations() ([]entity.LearnedWordRelation,
 }
 
 // ResetRelations resets all changes to the "relations" field.
-func (m *LearnedWordMutation) ResetRelations() {
+func (m *LearnedLexemeMutation) ResetRelations() {
 	m.relations = nil
 	m.appendrelations = nil
 }
 
 // SetTags sets the "tags" field.
-func (m *LearnedWordMutation) SetTags(s []string) {
+func (m *LearnedLexemeMutation) SetTags(s []string) {
 	m.tags = &s
 	m.appendtags = nil
 }
 
 // Tags returns the value of the "tags" field in the mutation.
-func (m *LearnedWordMutation) Tags() (r []string, exists bool) {
+func (m *LearnedLexemeMutation) Tags() (r []string, exists bool) {
 	v := m.tags
 	if v == nil {
 		return
@@ -1100,10 +1100,10 @@ func (m *LearnedWordMutation) Tags() (r []string, exists bool) {
 	return *v, true
 }
 
-// OldTags returns the old "tags" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldTags returns the old "tags" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldTags(ctx context.Context) (v []string, err error) {
+func (m *LearnedLexemeMutation) OldTags(ctx context.Context) (v []string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTags is only allowed on UpdateOne operations")
 	}
@@ -1118,12 +1118,12 @@ func (m *LearnedWordMutation) OldTags(ctx context.Context) (v []string, err erro
 }
 
 // AppendTags adds s to the "tags" field.
-func (m *LearnedWordMutation) AppendTags(s []string) {
+func (m *LearnedLexemeMutation) AppendTags(s []string) {
 	m.appendtags = append(m.appendtags, s...)
 }
 
 // AppendedTags returns the list of values that were appended to the "tags" field in this mutation.
-func (m *LearnedWordMutation) AppendedTags() ([]string, bool) {
+func (m *LearnedLexemeMutation) AppendedTags() ([]string, bool) {
 	if len(m.appendtags) == 0 {
 		return nil, false
 	}
@@ -1131,18 +1131,18 @@ func (m *LearnedWordMutation) AppendedTags() ([]string, bool) {
 }
 
 // ResetTags resets all changes to the "tags" field.
-func (m *LearnedWordMutation) ResetTags() {
+func (m *LearnedLexemeMutation) ResetTags() {
 	m.tags = nil
 	m.appendtags = nil
 }
 
 // SetCreatedBy sets the "created_by" field.
-func (m *LearnedWordMutation) SetCreatedBy(s string) {
+func (m *LearnedLexemeMutation) SetCreatedBy(s string) {
 	m.created_by = &s
 }
 
 // CreatedBy returns the value of the "created_by" field in the mutation.
-func (m *LearnedWordMutation) CreatedBy() (r string, exists bool) {
+func (m *LearnedLexemeMutation) CreatedBy() (r string, exists bool) {
 	v := m.created_by
 	if v == nil {
 		return
@@ -1150,10 +1150,10 @@ func (m *LearnedWordMutation) CreatedBy() (r string, exists bool) {
 	return *v, true
 }
 
-// OldCreatedBy returns the old "created_by" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldCreatedBy returns the old "created_by" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
+func (m *LearnedLexemeMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
 	}
@@ -1168,17 +1168,17 @@ func (m *LearnedWordMutation) OldCreatedBy(ctx context.Context) (v string, err e
 }
 
 // ResetCreatedBy resets all changes to the "created_by" field.
-func (m *LearnedWordMutation) ResetCreatedBy() {
+func (m *LearnedLexemeMutation) ResetCreatedBy() {
 	m.created_by = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (m *LearnedWordMutation) SetCreatedAt(t time.Time) {
+func (m *LearnedLexemeMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
 }
 
 // CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *LearnedWordMutation) CreatedAt() (r time.Time, exists bool) {
+func (m *LearnedLexemeMutation) CreatedAt() (r time.Time, exists bool) {
 	v := m.created_at
 	if v == nil {
 		return
@@ -1186,10 +1186,10 @@ func (m *LearnedWordMutation) CreatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldCreatedAt returns the old "created_at" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *LearnedLexemeMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
 	}
@@ -1204,17 +1204,17 @@ func (m *LearnedWordMutation) OldCreatedAt(ctx context.Context) (v time.Time, er
 }
 
 // ResetCreatedAt resets all changes to the "created_at" field.
-func (m *LearnedWordMutation) ResetCreatedAt() {
+func (m *LearnedLexemeMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (m *LearnedWordMutation) SetUpdatedAt(t time.Time) {
+func (m *LearnedLexemeMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
 }
 
 // UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *LearnedWordMutation) UpdatedAt() (r time.Time, exists bool) {
+func (m *LearnedLexemeMutation) UpdatedAt() (r time.Time, exists bool) {
 	v := m.updated_at
 	if v == nil {
 		return
@@ -1222,10 +1222,10 @@ func (m *LearnedWordMutation) UpdatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldUpdatedAt returns the old "updated_at" field's value of the LearnedWord entity.
-// If the LearnedWord object wasn't provided to the builder, the object is fetched from the database.
+// OldUpdatedAt returns the old "updated_at" field's value of the LearnedLexeme entity.
+// If the LearnedLexeme object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LearnedWordMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *LearnedLexemeMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
 	}
@@ -1240,25 +1240,25 @@ func (m *LearnedWordMutation) OldUpdatedAt(ctx context.Context) (v time.Time, er
 }
 
 // ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *LearnedWordMutation) ResetUpdatedAt() {
+func (m *LearnedLexemeMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
 // ClearWord clears the "word" edge to the Word entity.
-func (m *LearnedWordMutation) ClearWord() {
+func (m *LearnedLexemeMutation) ClearWord() {
 	m.clearedword = true
-	m.clearedFields[learnedword.FieldWordID] = struct{}{}
+	m.clearedFields[learnedlexeme.FieldWordID] = struct{}{}
 }
 
 // WordCleared reports if the "word" edge to the Word entity was cleared.
-func (m *LearnedWordMutation) WordCleared() bool {
+func (m *LearnedLexemeMutation) WordCleared() bool {
 	return m.WordIDCleared() || m.clearedword
 }
 
 // WordIDs returns the "word" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // WordID instead. It exists only for internal usage by the builders.
-func (m *LearnedWordMutation) WordIDs() (ids []int) {
+func (m *LearnedLexemeMutation) WordIDs() (ids []int) {
 	if id := m.word; id != nil {
 		ids = append(ids, *id)
 	}
@@ -1266,20 +1266,20 @@ func (m *LearnedWordMutation) WordIDs() (ids []int) {
 }
 
 // ResetWord resets all changes to the "word" edge.
-func (m *LearnedWordMutation) ResetWord() {
+func (m *LearnedLexemeMutation) ResetWord() {
 	m.word = nil
 	m.clearedword = false
 }
 
-// Where appends a list predicates to the LearnedWordMutation builder.
-func (m *LearnedWordMutation) Where(ps ...predicate.LearnedWord) {
+// Where appends a list predicates to the LearnedLexemeMutation builder.
+func (m *LearnedLexemeMutation) Where(ps ...predicate.LearnedLexeme) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the LearnedWordMutation builder. Using this method,
+// WhereP appends storage-level predicates to the LearnedLexemeMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *LearnedWordMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.LearnedWord, len(ps))
+func (m *LearnedLexemeMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.LearnedLexeme, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -1287,90 +1287,90 @@ func (m *LearnedWordMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *LearnedWordMutation) Op() Op {
+func (m *LearnedLexemeMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *LearnedWordMutation) SetOp(op Op) {
+func (m *LearnedLexemeMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (LearnedWord).
-func (m *LearnedWordMutation) Type() string {
+// Type returns the node type of this mutation (LearnedLexeme).
+func (m *LearnedLexemeMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *LearnedWordMutation) Fields() []string {
+func (m *LearnedLexemeMutation) Fields() []string {
 	fields := make([]string, 0, 22)
 	if m.user_id != nil {
-		fields = append(fields, learnedword.FieldUserID)
+		fields = append(fields, learnedlexeme.FieldUserID)
 	}
 	if m.term != nil {
-		fields = append(fields, learnedword.FieldTerm)
+		fields = append(fields, learnedlexeme.FieldTerm)
 	}
 	if m.normalized != nil {
-		fields = append(fields, learnedword.FieldNormalized)
+		fields = append(fields, learnedlexeme.FieldNormalized)
 	}
 	if m.language != nil {
-		fields = append(fields, learnedword.FieldLanguage)
+		fields = append(fields, learnedlexeme.FieldLanguage)
 	}
 	if m.word != nil {
-		fields = append(fields, learnedword.FieldWordID)
+		fields = append(fields, learnedlexeme.FieldWordID)
 	}
 	if m.mastery_listen != nil {
-		fields = append(fields, learnedword.FieldMasteryListen)
+		fields = append(fields, learnedlexeme.FieldMasteryListen)
 	}
 	if m.mastery_read != nil {
-		fields = append(fields, learnedword.FieldMasteryRead)
+		fields = append(fields, learnedlexeme.FieldMasteryRead)
 	}
 	if m.mastery_spell != nil {
-		fields = append(fields, learnedword.FieldMasterySpell)
+		fields = append(fields, learnedlexeme.FieldMasterySpell)
 	}
 	if m.mastery_pronounce != nil {
-		fields = append(fields, learnedword.FieldMasteryPronounce)
+		fields = append(fields, learnedlexeme.FieldMasteryPronounce)
 	}
 	if m.mastery_overall != nil {
-		fields = append(fields, learnedword.FieldMasteryOverall)
+		fields = append(fields, learnedlexeme.FieldMasteryOverall)
 	}
 	if m.review_last_review_at != nil {
-		fields = append(fields, learnedword.FieldReviewLastReviewAt)
+		fields = append(fields, learnedlexeme.FieldReviewLastReviewAt)
 	}
 	if m.review_next_review_at != nil {
-		fields = append(fields, learnedword.FieldReviewNextReviewAt)
+		fields = append(fields, learnedlexeme.FieldReviewNextReviewAt)
 	}
 	if m.review_interval_days != nil {
-		fields = append(fields, learnedword.FieldReviewIntervalDays)
+		fields = append(fields, learnedlexeme.FieldReviewIntervalDays)
 	}
 	if m.review_fail_count != nil {
-		fields = append(fields, learnedword.FieldReviewFailCount)
+		fields = append(fields, learnedlexeme.FieldReviewFailCount)
 	}
 	if m.query_count != nil {
-		fields = append(fields, learnedword.FieldQueryCount)
+		fields = append(fields, learnedlexeme.FieldQueryCount)
 	}
 	if m.notes != nil {
-		fields = append(fields, learnedword.FieldNotes)
+		fields = append(fields, learnedlexeme.FieldNotes)
 	}
 	if m.sentences != nil {
-		fields = append(fields, learnedword.FieldSentences)
+		fields = append(fields, learnedlexeme.FieldSentences)
 	}
 	if m.relations != nil {
-		fields = append(fields, learnedword.FieldRelations)
+		fields = append(fields, learnedlexeme.FieldRelations)
 	}
 	if m.tags != nil {
-		fields = append(fields, learnedword.FieldTags)
+		fields = append(fields, learnedlexeme.FieldTags)
 	}
 	if m.created_by != nil {
-		fields = append(fields, learnedword.FieldCreatedBy)
+		fields = append(fields, learnedlexeme.FieldCreatedBy)
 	}
 	if m.created_at != nil {
-		fields = append(fields, learnedword.FieldCreatedAt)
+		fields = append(fields, learnedlexeme.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
-		fields = append(fields, learnedword.FieldUpdatedAt)
+		fields = append(fields, learnedlexeme.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -1378,51 +1378,51 @@ func (m *LearnedWordMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *LearnedWordMutation) Field(name string) (ent.Value, bool) {
+func (m *LearnedLexemeMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case learnedword.FieldUserID:
+	case learnedlexeme.FieldUserID:
 		return m.UserID()
-	case learnedword.FieldTerm:
+	case learnedlexeme.FieldTerm:
 		return m.Term()
-	case learnedword.FieldNormalized:
+	case learnedlexeme.FieldNormalized:
 		return m.Normalized()
-	case learnedword.FieldLanguage:
+	case learnedlexeme.FieldLanguage:
 		return m.Language()
-	case learnedword.FieldWordID:
+	case learnedlexeme.FieldWordID:
 		return m.WordID()
-	case learnedword.FieldMasteryListen:
+	case learnedlexeme.FieldMasteryListen:
 		return m.MasteryListen()
-	case learnedword.FieldMasteryRead:
+	case learnedlexeme.FieldMasteryRead:
 		return m.MasteryRead()
-	case learnedword.FieldMasterySpell:
+	case learnedlexeme.FieldMasterySpell:
 		return m.MasterySpell()
-	case learnedword.FieldMasteryPronounce:
+	case learnedlexeme.FieldMasteryPronounce:
 		return m.MasteryPronounce()
-	case learnedword.FieldMasteryOverall:
+	case learnedlexeme.FieldMasteryOverall:
 		return m.MasteryOverall()
-	case learnedword.FieldReviewLastReviewAt:
+	case learnedlexeme.FieldReviewLastReviewAt:
 		return m.ReviewLastReviewAt()
-	case learnedword.FieldReviewNextReviewAt:
+	case learnedlexeme.FieldReviewNextReviewAt:
 		return m.ReviewNextReviewAt()
-	case learnedword.FieldReviewIntervalDays:
+	case learnedlexeme.FieldReviewIntervalDays:
 		return m.ReviewIntervalDays()
-	case learnedword.FieldReviewFailCount:
+	case learnedlexeme.FieldReviewFailCount:
 		return m.ReviewFailCount()
-	case learnedword.FieldQueryCount:
+	case learnedlexeme.FieldQueryCount:
 		return m.QueryCount()
-	case learnedword.FieldNotes:
+	case learnedlexeme.FieldNotes:
 		return m.Notes()
-	case learnedword.FieldSentences:
+	case learnedlexeme.FieldSentences:
 		return m.Sentences()
-	case learnedword.FieldRelations:
+	case learnedlexeme.FieldRelations:
 		return m.Relations()
-	case learnedword.FieldTags:
+	case learnedlexeme.FieldTags:
 		return m.Tags()
-	case learnedword.FieldCreatedBy:
+	case learnedlexeme.FieldCreatedBy:
 		return m.CreatedBy()
-	case learnedword.FieldCreatedAt:
+	case learnedlexeme.FieldCreatedAt:
 		return m.CreatedAt()
-	case learnedword.FieldUpdatedAt:
+	case learnedlexeme.FieldUpdatedAt:
 		return m.UpdatedAt()
 	}
 	return nil, false
@@ -1431,209 +1431,209 @@ func (m *LearnedWordMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *LearnedWordMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *LearnedLexemeMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case learnedword.FieldUserID:
+	case learnedlexeme.FieldUserID:
 		return m.OldUserID(ctx)
-	case learnedword.FieldTerm:
+	case learnedlexeme.FieldTerm:
 		return m.OldTerm(ctx)
-	case learnedword.FieldNormalized:
+	case learnedlexeme.FieldNormalized:
 		return m.OldNormalized(ctx)
-	case learnedword.FieldLanguage:
+	case learnedlexeme.FieldLanguage:
 		return m.OldLanguage(ctx)
-	case learnedword.FieldWordID:
+	case learnedlexeme.FieldWordID:
 		return m.OldWordID(ctx)
-	case learnedword.FieldMasteryListen:
+	case learnedlexeme.FieldMasteryListen:
 		return m.OldMasteryListen(ctx)
-	case learnedword.FieldMasteryRead:
+	case learnedlexeme.FieldMasteryRead:
 		return m.OldMasteryRead(ctx)
-	case learnedword.FieldMasterySpell:
+	case learnedlexeme.FieldMasterySpell:
 		return m.OldMasterySpell(ctx)
-	case learnedword.FieldMasteryPronounce:
+	case learnedlexeme.FieldMasteryPronounce:
 		return m.OldMasteryPronounce(ctx)
-	case learnedword.FieldMasteryOverall:
+	case learnedlexeme.FieldMasteryOverall:
 		return m.OldMasteryOverall(ctx)
-	case learnedword.FieldReviewLastReviewAt:
+	case learnedlexeme.FieldReviewLastReviewAt:
 		return m.OldReviewLastReviewAt(ctx)
-	case learnedword.FieldReviewNextReviewAt:
+	case learnedlexeme.FieldReviewNextReviewAt:
 		return m.OldReviewNextReviewAt(ctx)
-	case learnedword.FieldReviewIntervalDays:
+	case learnedlexeme.FieldReviewIntervalDays:
 		return m.OldReviewIntervalDays(ctx)
-	case learnedword.FieldReviewFailCount:
+	case learnedlexeme.FieldReviewFailCount:
 		return m.OldReviewFailCount(ctx)
-	case learnedword.FieldQueryCount:
+	case learnedlexeme.FieldQueryCount:
 		return m.OldQueryCount(ctx)
-	case learnedword.FieldNotes:
+	case learnedlexeme.FieldNotes:
 		return m.OldNotes(ctx)
-	case learnedword.FieldSentences:
+	case learnedlexeme.FieldSentences:
 		return m.OldSentences(ctx)
-	case learnedword.FieldRelations:
+	case learnedlexeme.FieldRelations:
 		return m.OldRelations(ctx)
-	case learnedword.FieldTags:
+	case learnedlexeme.FieldTags:
 		return m.OldTags(ctx)
-	case learnedword.FieldCreatedBy:
+	case learnedlexeme.FieldCreatedBy:
 		return m.OldCreatedBy(ctx)
-	case learnedword.FieldCreatedAt:
+	case learnedlexeme.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
-	case learnedword.FieldUpdatedAt:
+	case learnedlexeme.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	}
-	return nil, fmt.Errorf("unknown LearnedWord field %s", name)
+	return nil, fmt.Errorf("unknown LearnedLexeme field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *LearnedWordMutation) SetField(name string, value ent.Value) error {
+func (m *LearnedLexemeMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case learnedword.FieldUserID:
+	case learnedlexeme.FieldUserID:
 		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUserID(v)
 		return nil
-	case learnedword.FieldTerm:
+	case learnedlexeme.FieldTerm:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTerm(v)
 		return nil
-	case learnedword.FieldNormalized:
+	case learnedlexeme.FieldNormalized:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetNormalized(v)
 		return nil
-	case learnedword.FieldLanguage:
+	case learnedlexeme.FieldLanguage:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLanguage(v)
 		return nil
-	case learnedword.FieldWordID:
+	case learnedlexeme.FieldWordID:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetWordID(v)
 		return nil
-	case learnedword.FieldMasteryListen:
+	case learnedlexeme.FieldMasteryListen:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMasteryListen(v)
 		return nil
-	case learnedword.FieldMasteryRead:
+	case learnedlexeme.FieldMasteryRead:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMasteryRead(v)
 		return nil
-	case learnedword.FieldMasterySpell:
+	case learnedlexeme.FieldMasterySpell:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMasterySpell(v)
 		return nil
-	case learnedword.FieldMasteryPronounce:
+	case learnedlexeme.FieldMasteryPronounce:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMasteryPronounce(v)
 		return nil
-	case learnedword.FieldMasteryOverall:
+	case learnedlexeme.FieldMasteryOverall:
 		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMasteryOverall(v)
 		return nil
-	case learnedword.FieldReviewLastReviewAt:
+	case learnedlexeme.FieldReviewLastReviewAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetReviewLastReviewAt(v)
 		return nil
-	case learnedword.FieldReviewNextReviewAt:
+	case learnedlexeme.FieldReviewNextReviewAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetReviewNextReviewAt(v)
 		return nil
-	case learnedword.FieldReviewIntervalDays:
+	case learnedlexeme.FieldReviewIntervalDays:
 		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetReviewIntervalDays(v)
 		return nil
-	case learnedword.FieldReviewFailCount:
+	case learnedlexeme.FieldReviewFailCount:
 		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetReviewFailCount(v)
 		return nil
-	case learnedword.FieldQueryCount:
+	case learnedlexeme.FieldQueryCount:
 		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetQueryCount(v)
 		return nil
-	case learnedword.FieldNotes:
+	case learnedlexeme.FieldNotes:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetNotes(v)
 		return nil
-	case learnedword.FieldSentences:
+	case learnedlexeme.FieldSentences:
 		v, ok := value.([]entity.Sentence)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSentences(v)
 		return nil
-	case learnedword.FieldRelations:
-		v, ok := value.([]entity.LearnedWordRelation)
+	case learnedlexeme.FieldRelations:
+		v, ok := value.([]entity.LearnedLexemeRelation)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRelations(v)
 		return nil
-	case learnedword.FieldTags:
+	case learnedlexeme.FieldTags:
 		v, ok := value.([]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTags(v)
 		return nil
-	case learnedword.FieldCreatedBy:
+	case learnedlexeme.FieldCreatedBy:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedBy(v)
 		return nil
-	case learnedword.FieldCreatedAt:
+	case learnedlexeme.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
 		return nil
-	case learnedword.FieldUpdatedAt:
+	case learnedlexeme.FieldUpdatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -1641,39 +1641,39 @@ func (m *LearnedWordMutation) SetField(name string, value ent.Value) error {
 		m.SetUpdatedAt(v)
 		return nil
 	}
-	return fmt.Errorf("unknown LearnedWord field %s", name)
+	return fmt.Errorf("unknown LearnedLexeme field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *LearnedWordMutation) AddedFields() []string {
+func (m *LearnedLexemeMutation) AddedFields() []string {
 	var fields []string
 	if m.adduser_id != nil {
-		fields = append(fields, learnedword.FieldUserID)
+		fields = append(fields, learnedlexeme.FieldUserID)
 	}
 	if m.addmastery_listen != nil {
-		fields = append(fields, learnedword.FieldMasteryListen)
+		fields = append(fields, learnedlexeme.FieldMasteryListen)
 	}
 	if m.addmastery_read != nil {
-		fields = append(fields, learnedword.FieldMasteryRead)
+		fields = append(fields, learnedlexeme.FieldMasteryRead)
 	}
 	if m.addmastery_spell != nil {
-		fields = append(fields, learnedword.FieldMasterySpell)
+		fields = append(fields, learnedlexeme.FieldMasterySpell)
 	}
 	if m.addmastery_pronounce != nil {
-		fields = append(fields, learnedword.FieldMasteryPronounce)
+		fields = append(fields, learnedlexeme.FieldMasteryPronounce)
 	}
 	if m.addmastery_overall != nil {
-		fields = append(fields, learnedword.FieldMasteryOverall)
+		fields = append(fields, learnedlexeme.FieldMasteryOverall)
 	}
 	if m.addreview_interval_days != nil {
-		fields = append(fields, learnedword.FieldReviewIntervalDays)
+		fields = append(fields, learnedlexeme.FieldReviewIntervalDays)
 	}
 	if m.addreview_fail_count != nil {
-		fields = append(fields, learnedword.FieldReviewFailCount)
+		fields = append(fields, learnedlexeme.FieldReviewFailCount)
 	}
 	if m.addquery_count != nil {
-		fields = append(fields, learnedword.FieldQueryCount)
+		fields = append(fields, learnedlexeme.FieldQueryCount)
 	}
 	return fields
 }
@@ -1681,25 +1681,25 @@ func (m *LearnedWordMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *LearnedWordMutation) AddedField(name string) (ent.Value, bool) {
+func (m *LearnedLexemeMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case learnedword.FieldUserID:
+	case learnedlexeme.FieldUserID:
 		return m.AddedUserID()
-	case learnedword.FieldMasteryListen:
+	case learnedlexeme.FieldMasteryListen:
 		return m.AddedMasteryListen()
-	case learnedword.FieldMasteryRead:
+	case learnedlexeme.FieldMasteryRead:
 		return m.AddedMasteryRead()
-	case learnedword.FieldMasterySpell:
+	case learnedlexeme.FieldMasterySpell:
 		return m.AddedMasterySpell()
-	case learnedword.FieldMasteryPronounce:
+	case learnedlexeme.FieldMasteryPronounce:
 		return m.AddedMasteryPronounce()
-	case learnedword.FieldMasteryOverall:
+	case learnedlexeme.FieldMasteryOverall:
 		return m.AddedMasteryOverall()
-	case learnedword.FieldReviewIntervalDays:
+	case learnedlexeme.FieldReviewIntervalDays:
 		return m.AddedReviewIntervalDays()
-	case learnedword.FieldReviewFailCount:
+	case learnedlexeme.FieldReviewFailCount:
 		return m.AddedReviewFailCount()
-	case learnedword.FieldQueryCount:
+	case learnedlexeme.FieldQueryCount:
 		return m.AddedQueryCount()
 	}
 	return nil, false
@@ -1708,65 +1708,65 @@ func (m *LearnedWordMutation) AddedField(name string) (ent.Value, bool) {
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *LearnedWordMutation) AddField(name string, value ent.Value) error {
+func (m *LearnedLexemeMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case learnedword.FieldUserID:
+	case learnedlexeme.FieldUserID:
 		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddUserID(v)
 		return nil
-	case learnedword.FieldMasteryListen:
+	case learnedlexeme.FieldMasteryListen:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddMasteryListen(v)
 		return nil
-	case learnedword.FieldMasteryRead:
+	case learnedlexeme.FieldMasteryRead:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddMasteryRead(v)
 		return nil
-	case learnedword.FieldMasterySpell:
+	case learnedlexeme.FieldMasterySpell:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddMasterySpell(v)
 		return nil
-	case learnedword.FieldMasteryPronounce:
+	case learnedlexeme.FieldMasteryPronounce:
 		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddMasteryPronounce(v)
 		return nil
-	case learnedword.FieldMasteryOverall:
+	case learnedlexeme.FieldMasteryOverall:
 		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddMasteryOverall(v)
 		return nil
-	case learnedword.FieldReviewIntervalDays:
+	case learnedlexeme.FieldReviewIntervalDays:
 		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddReviewIntervalDays(v)
 		return nil
-	case learnedword.FieldReviewFailCount:
+	case learnedlexeme.FieldReviewFailCount:
 		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddReviewFailCount(v)
 		return nil
-	case learnedword.FieldQueryCount:
+	case learnedlexeme.FieldQueryCount:
 		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -1774,143 +1774,143 @@ func (m *LearnedWordMutation) AddField(name string, value ent.Value) error {
 		m.AddQueryCount(v)
 		return nil
 	}
-	return fmt.Errorf("unknown LearnedWord numeric field %s", name)
+	return fmt.Errorf("unknown LearnedLexeme numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *LearnedWordMutation) ClearedFields() []string {
+func (m *LearnedLexemeMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(learnedword.FieldWordID) {
-		fields = append(fields, learnedword.FieldWordID)
+	if m.FieldCleared(learnedlexeme.FieldWordID) {
+		fields = append(fields, learnedlexeme.FieldWordID)
 	}
-	if m.FieldCleared(learnedword.FieldReviewLastReviewAt) {
-		fields = append(fields, learnedword.FieldReviewLastReviewAt)
+	if m.FieldCleared(learnedlexeme.FieldReviewLastReviewAt) {
+		fields = append(fields, learnedlexeme.FieldReviewLastReviewAt)
 	}
-	if m.FieldCleared(learnedword.FieldReviewNextReviewAt) {
-		fields = append(fields, learnedword.FieldReviewNextReviewAt)
+	if m.FieldCleared(learnedlexeme.FieldReviewNextReviewAt) {
+		fields = append(fields, learnedlexeme.FieldReviewNextReviewAt)
 	}
-	if m.FieldCleared(learnedword.FieldNotes) {
-		fields = append(fields, learnedword.FieldNotes)
+	if m.FieldCleared(learnedlexeme.FieldNotes) {
+		fields = append(fields, learnedlexeme.FieldNotes)
 	}
 	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *LearnedWordMutation) FieldCleared(name string) bool {
+func (m *LearnedLexemeMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *LearnedWordMutation) ClearField(name string) error {
+func (m *LearnedLexemeMutation) ClearField(name string) error {
 	switch name {
-	case learnedword.FieldWordID:
+	case learnedlexeme.FieldWordID:
 		m.ClearWordID()
 		return nil
-	case learnedword.FieldReviewLastReviewAt:
+	case learnedlexeme.FieldReviewLastReviewAt:
 		m.ClearReviewLastReviewAt()
 		return nil
-	case learnedword.FieldReviewNextReviewAt:
+	case learnedlexeme.FieldReviewNextReviewAt:
 		m.ClearReviewNextReviewAt()
 		return nil
-	case learnedword.FieldNotes:
+	case learnedlexeme.FieldNotes:
 		m.ClearNotes()
 		return nil
 	}
-	return fmt.Errorf("unknown LearnedWord nullable field %s", name)
+	return fmt.Errorf("unknown LearnedLexeme nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *LearnedWordMutation) ResetField(name string) error {
+func (m *LearnedLexemeMutation) ResetField(name string) error {
 	switch name {
-	case learnedword.FieldUserID:
+	case learnedlexeme.FieldUserID:
 		m.ResetUserID()
 		return nil
-	case learnedword.FieldTerm:
+	case learnedlexeme.FieldTerm:
 		m.ResetTerm()
 		return nil
-	case learnedword.FieldNormalized:
+	case learnedlexeme.FieldNormalized:
 		m.ResetNormalized()
 		return nil
-	case learnedword.FieldLanguage:
+	case learnedlexeme.FieldLanguage:
 		m.ResetLanguage()
 		return nil
-	case learnedword.FieldWordID:
+	case learnedlexeme.FieldWordID:
 		m.ResetWordID()
 		return nil
-	case learnedword.FieldMasteryListen:
+	case learnedlexeme.FieldMasteryListen:
 		m.ResetMasteryListen()
 		return nil
-	case learnedword.FieldMasteryRead:
+	case learnedlexeme.FieldMasteryRead:
 		m.ResetMasteryRead()
 		return nil
-	case learnedword.FieldMasterySpell:
+	case learnedlexeme.FieldMasterySpell:
 		m.ResetMasterySpell()
 		return nil
-	case learnedword.FieldMasteryPronounce:
+	case learnedlexeme.FieldMasteryPronounce:
 		m.ResetMasteryPronounce()
 		return nil
-	case learnedword.FieldMasteryOverall:
+	case learnedlexeme.FieldMasteryOverall:
 		m.ResetMasteryOverall()
 		return nil
-	case learnedword.FieldReviewLastReviewAt:
+	case learnedlexeme.FieldReviewLastReviewAt:
 		m.ResetReviewLastReviewAt()
 		return nil
-	case learnedword.FieldReviewNextReviewAt:
+	case learnedlexeme.FieldReviewNextReviewAt:
 		m.ResetReviewNextReviewAt()
 		return nil
-	case learnedword.FieldReviewIntervalDays:
+	case learnedlexeme.FieldReviewIntervalDays:
 		m.ResetReviewIntervalDays()
 		return nil
-	case learnedword.FieldReviewFailCount:
+	case learnedlexeme.FieldReviewFailCount:
 		m.ResetReviewFailCount()
 		return nil
-	case learnedword.FieldQueryCount:
+	case learnedlexeme.FieldQueryCount:
 		m.ResetQueryCount()
 		return nil
-	case learnedword.FieldNotes:
+	case learnedlexeme.FieldNotes:
 		m.ResetNotes()
 		return nil
-	case learnedword.FieldSentences:
+	case learnedlexeme.FieldSentences:
 		m.ResetSentences()
 		return nil
-	case learnedword.FieldRelations:
+	case learnedlexeme.FieldRelations:
 		m.ResetRelations()
 		return nil
-	case learnedword.FieldTags:
+	case learnedlexeme.FieldTags:
 		m.ResetTags()
 		return nil
-	case learnedword.FieldCreatedBy:
+	case learnedlexeme.FieldCreatedBy:
 		m.ResetCreatedBy()
 		return nil
-	case learnedword.FieldCreatedAt:
+	case learnedlexeme.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
-	case learnedword.FieldUpdatedAt:
+	case learnedlexeme.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
 	}
-	return fmt.Errorf("unknown LearnedWord field %s", name)
+	return fmt.Errorf("unknown LearnedLexeme field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *LearnedWordMutation) AddedEdges() []string {
+func (m *LearnedLexemeMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
 	if m.word != nil {
-		edges = append(edges, learnedword.EdgeWord)
+		edges = append(edges, learnedlexeme.EdgeWord)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *LearnedWordMutation) AddedIDs(name string) []ent.Value {
+func (m *LearnedLexemeMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case learnedword.EdgeWord:
+	case learnedlexeme.EdgeWord:
 		if id := m.word; id != nil {
 			return []ent.Value{*id}
 		}
@@ -1919,31 +1919,31 @@ func (m *LearnedWordMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *LearnedWordMutation) RemovedEdges() []string {
+func (m *LearnedLexemeMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *LearnedWordMutation) RemovedIDs(name string) []ent.Value {
+func (m *LearnedLexemeMutation) RemovedIDs(name string) []ent.Value {
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *LearnedWordMutation) ClearedEdges() []string {
+func (m *LearnedLexemeMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
 	if m.clearedword {
-		edges = append(edges, learnedword.EdgeWord)
+		edges = append(edges, learnedlexeme.EdgeWord)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *LearnedWordMutation) EdgeCleared(name string) bool {
+func (m *LearnedLexemeMutation) EdgeCleared(name string) bool {
 	switch name {
-	case learnedword.EdgeWord:
+	case learnedlexeme.EdgeWord:
 		return m.clearedword
 	}
 	return false
@@ -1951,58 +1951,58 @@ func (m *LearnedWordMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *LearnedWordMutation) ClearEdge(name string) error {
+func (m *LearnedLexemeMutation) ClearEdge(name string) error {
 	switch name {
-	case learnedword.EdgeWord:
+	case learnedlexeme.EdgeWord:
 		m.ClearWord()
 		return nil
 	}
-	return fmt.Errorf("unknown LearnedWord unique edge %s", name)
+	return fmt.Errorf("unknown LearnedLexeme unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *LearnedWordMutation) ResetEdge(name string) error {
+func (m *LearnedLexemeMutation) ResetEdge(name string) error {
 	switch name {
-	case learnedword.EdgeWord:
+	case learnedlexeme.EdgeWord:
 		m.ResetWord()
 		return nil
 	}
-	return fmt.Errorf("unknown LearnedWord edge %s", name)
+	return fmt.Errorf("unknown LearnedLexeme edge %s", name)
 }
 
 // WordMutation represents an operation that mutates the Word nodes in the graph.
 type WordMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *int
-	text                 *string
-	normalized           *string
-	language             *string
-	word_type            *string
-	lemma                *string
-	phonetics            *[]entity.WordPhonetic
-	appendphonetics      []entity.WordPhonetic
-	definitions          *[]entity.WordDefinition
-	appenddefinitions    []entity.WordDefinition
-	phrases              *[]entity.Phrase
-	appendphrases        []entity.Phrase
-	sentences            *[]entity.Sentence
-	appendsentences      []entity.Sentence
-	relations            *[]entity.WordRelation
-	appendrelations      []entity.WordRelation
-	categories           *[]string
-	appendcategories     []string
-	created_at           *time.Time
-	updated_at           *time.Time
-	clearedFields        map[string]struct{}
-	learned_words        map[int]struct{}
-	removedlearned_words map[int]struct{}
-	clearedlearned_words bool
-	done                 bool
-	oldValue             func(context.Context) (*Word, error)
-	predicates           []predicate.Word
+	op                     Op
+	typ                    string
+	id                     *int
+	text                   *string
+	normalized             *string
+	language               *string
+	word_type              *string
+	lemma                  *string
+	phonetics              *[]entity.WordPhonetic
+	appendphonetics        []entity.WordPhonetic
+	definitions            *[]entity.WordDefinition
+	appenddefinitions      []entity.WordDefinition
+	phrases                *[]entity.Phrase
+	appendphrases          []entity.Phrase
+	sentences              *[]entity.Sentence
+	appendsentences        []entity.Sentence
+	relations              *[]entity.WordRelation
+	appendrelations        []entity.WordRelation
+	categories             *[]string
+	appendcategories       []string
+	created_at             *time.Time
+	updated_at             *time.Time
+	clearedFields          map[string]struct{}
+	learned_lexemes        map[int]struct{}
+	removedlearned_lexemes map[int]struct{}
+	clearedlearned_lexemes bool
+	done                   bool
+	oldValue               func(context.Context) (*Word, error)
+	predicates             []predicate.Word
 }
 
 var _ ent.Mutation = (*WordMutation)(nil)
@@ -2674,58 +2674,58 @@ func (m *WordMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// AddLearnedWordIDs adds the "learned_words" edge to the LearnedWord entity by ids.
-func (m *WordMutation) AddLearnedWordIDs(ids ...int) {
-	if m.learned_words == nil {
-		m.learned_words = make(map[int]struct{})
+// AddLearnedLexemeIDs adds the "learned_lexemes" edge to the LearnedLexeme entity by ids.
+func (m *WordMutation) AddLearnedLexemeIDs(ids ...int) {
+	if m.learned_lexemes == nil {
+		m.learned_lexemes = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.learned_words[ids[i]] = struct{}{}
+		m.learned_lexemes[ids[i]] = struct{}{}
 	}
 }
 
-// ClearLearnedWords clears the "learned_words" edge to the LearnedWord entity.
-func (m *WordMutation) ClearLearnedWords() {
-	m.clearedlearned_words = true
+// ClearLearnedLexemes clears the "learned_lexemes" edge to the LearnedLexeme entity.
+func (m *WordMutation) ClearLearnedLexemes() {
+	m.clearedlearned_lexemes = true
 }
 
-// LearnedWordsCleared reports if the "learned_words" edge to the LearnedWord entity was cleared.
-func (m *WordMutation) LearnedWordsCleared() bool {
-	return m.clearedlearned_words
+// LearnedLexemesCleared reports if the "learned_lexemes" edge to the LearnedLexeme entity was cleared.
+func (m *WordMutation) LearnedLexemesCleared() bool {
+	return m.clearedlearned_lexemes
 }
 
-// RemoveLearnedWordIDs removes the "learned_words" edge to the LearnedWord entity by IDs.
-func (m *WordMutation) RemoveLearnedWordIDs(ids ...int) {
-	if m.removedlearned_words == nil {
-		m.removedlearned_words = make(map[int]struct{})
+// RemoveLearnedLexemeIDs removes the "learned_lexemes" edge to the LearnedLexeme entity by IDs.
+func (m *WordMutation) RemoveLearnedLexemeIDs(ids ...int) {
+	if m.removedlearned_lexemes == nil {
+		m.removedlearned_lexemes = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m.learned_words, ids[i])
-		m.removedlearned_words[ids[i]] = struct{}{}
+		delete(m.learned_lexemes, ids[i])
+		m.removedlearned_lexemes[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedLearnedWords returns the removed IDs of the "learned_words" edge to the LearnedWord entity.
-func (m *WordMutation) RemovedLearnedWordsIDs() (ids []int) {
-	for id := range m.removedlearned_words {
+// RemovedLearnedLexemes returns the removed IDs of the "learned_lexemes" edge to the LearnedLexeme entity.
+func (m *WordMutation) RemovedLearnedLexemesIDs() (ids []int) {
+	for id := range m.removedlearned_lexemes {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// LearnedWordsIDs returns the "learned_words" edge IDs in the mutation.
-func (m *WordMutation) LearnedWordsIDs() (ids []int) {
-	for id := range m.learned_words {
+// LearnedLexemesIDs returns the "learned_lexemes" edge IDs in the mutation.
+func (m *WordMutation) LearnedLexemesIDs() (ids []int) {
+	for id := range m.learned_lexemes {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetLearnedWords resets all changes to the "learned_words" edge.
-func (m *WordMutation) ResetLearnedWords() {
-	m.learned_words = nil
-	m.clearedlearned_words = false
-	m.removedlearned_words = nil
+// ResetLearnedLexemes resets all changes to the "learned_lexemes" edge.
+func (m *WordMutation) ResetLearnedLexemes() {
+	m.learned_lexemes = nil
+	m.clearedlearned_lexemes = false
+	m.removedlearned_lexemes = nil
 }
 
 // Where appends a list predicates to the WordMutation builder.
@@ -3075,8 +3075,8 @@ func (m *WordMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *WordMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.learned_words != nil {
-		edges = append(edges, word.EdgeLearnedWords)
+	if m.learned_lexemes != nil {
+		edges = append(edges, word.EdgeLearnedLexemes)
 	}
 	return edges
 }
@@ -3085,9 +3085,9 @@ func (m *WordMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *WordMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case word.EdgeLearnedWords:
-		ids := make([]ent.Value, 0, len(m.learned_words))
-		for id := range m.learned_words {
+	case word.EdgeLearnedLexemes:
+		ids := make([]ent.Value, 0, len(m.learned_lexemes))
+		for id := range m.learned_lexemes {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3098,8 +3098,8 @@ func (m *WordMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *WordMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removedlearned_words != nil {
-		edges = append(edges, word.EdgeLearnedWords)
+	if m.removedlearned_lexemes != nil {
+		edges = append(edges, word.EdgeLearnedLexemes)
 	}
 	return edges
 }
@@ -3108,9 +3108,9 @@ func (m *WordMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *WordMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case word.EdgeLearnedWords:
-		ids := make([]ent.Value, 0, len(m.removedlearned_words))
-		for id := range m.removedlearned_words {
+	case word.EdgeLearnedLexemes:
+		ids := make([]ent.Value, 0, len(m.removedlearned_lexemes))
+		for id := range m.removedlearned_lexemes {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3121,8 +3121,8 @@ func (m *WordMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *WordMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedlearned_words {
-		edges = append(edges, word.EdgeLearnedWords)
+	if m.clearedlearned_lexemes {
+		edges = append(edges, word.EdgeLearnedLexemes)
 	}
 	return edges
 }
@@ -3131,8 +3131,8 @@ func (m *WordMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *WordMutation) EdgeCleared(name string) bool {
 	switch name {
-	case word.EdgeLearnedWords:
-		return m.clearedlearned_words
+	case word.EdgeLearnedLexemes:
+		return m.clearedlearned_lexemes
 	}
 	return false
 }
@@ -3149,8 +3149,8 @@ func (m *WordMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *WordMutation) ResetEdge(name string) error {
 	switch name {
-	case word.EdgeLearnedWords:
-		m.ResetLearnedWords()
+	case word.EdgeLearnedLexemes:
+		m.ResetLearnedLexemes()
 		return nil
 	}
 	return fmt.Errorf("unknown Word edge %s", name)

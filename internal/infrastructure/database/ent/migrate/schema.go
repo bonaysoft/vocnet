@@ -42,7 +42,7 @@ var (
 		PrimaryKey: []*schema.Column{LearnedWordsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "learned_words_words_learned_words",
+				Symbol:     "learned_words_words_learned_lexemes",
 				Columns:    []*schema.Column{LearnedWordsColumns[22]},
 				RefColumns: []*schema.Column{WordsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -50,12 +50,12 @@ var (
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "learnedword_user_id_language_term",
+				Name:    "learnedlexeme_user_id_language_term",
 				Unique:  true,
 				Columns: []*schema.Column{LearnedWordsColumns[1], LearnedWordsColumns[4], LearnedWordsColumns[2]},
 			},
 			{
-				Name:    "learnedword_language_normalized",
+				Name:    "learnedlexeme_language_normalized",
 				Unique:  false,
 				Columns: []*schema.Column{LearnedWordsColumns[4], LearnedWordsColumns[3]},
 			},

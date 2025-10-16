@@ -14,13 +14,13 @@ import (
 	"entgo.io/ent/schema/index"
 )
 
-// LearnedWord holds the schema definition for the user_words table.
-type LearnedWord struct {
+// LearnedLexeme holds the schema definition for the user lexemes table.
+type LearnedLexeme struct {
 	ent.Schema
 }
 
-// Fields of the LearnedWord.
-func (LearnedWord) Fields() []ent.Field {
+// Fields of the LearnedLexeme.
+func (LearnedLexeme) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int64("user_id"),
 		field.String("term").NotEmpty(),
@@ -40,8 +40,8 @@ func (LearnedWord) Fields() []ent.Field {
 		field.String("notes").Optional().Nillable(),
 		field.JSON("sentences", []entity.Sentence{}).
 			Default([]entity.Sentence{}),
-		field.JSON("relations", []entity.LearnedWordRelation{}).
-			Default([]entity.LearnedWordRelation{}),
+		field.JSON("relations", []entity.LearnedLexemeRelation{}).
+			Default([]entity.LearnedLexemeRelation{}),
 		field.JSON("tags", []string{}).
 			Default([]string{}).
 			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
@@ -55,26 +55,26 @@ func (LearnedWord) Fields() []ent.Field {
 	}
 }
 
-// Edges of the LearnedWord.
-func (LearnedWord) Edges() []ent.Edge {
+// Edges of the LearnedLexeme.
+func (LearnedLexeme) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("word", Word.Type).
-			Ref("learned_words").
+			Ref("learned_lexemes").
 			Field("word_id").
 			Unique(),
 	}
 }
 
-// Indexes of the Word.
-func (LearnedWord) Indexes() []ent.Index {
+// Indexes of the Lexeme.
+func (LearnedLexeme) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("user_id", "language", "term").Unique(),
 		index.Fields("language", "normalized"),
 	}
 }
 
-// Annotations of the LearnedWord.
-func (LearnedWord) Annotations() []schema.Annotation {
+// Annotations of the LearnedLexeme.
+func (LearnedLexeme) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entsql.Annotation{
 			Table: "learned_words",

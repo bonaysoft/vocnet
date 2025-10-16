@@ -505,21 +505,21 @@ func UpdatedAtLTE(v time.Time) predicate.Word {
 	return predicate.Word(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
-// HasLearnedWords applies the HasEdge predicate on the "learned_words" edge.
-func HasLearnedWords() predicate.Word {
+// HasLearnedLexemes applies the HasEdge predicate on the "learned_lexemes" edge.
+func HasLearnedLexemes() predicate.Word {
 	return predicate.Word(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, LearnedWordsTable, LearnedWordsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, LearnedLexemesTable, LearnedLexemesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasLearnedWordsWith applies the HasEdge predicate on the "learned_words" edge with a given conditions (other predicates).
-func HasLearnedWordsWith(preds ...predicate.LearnedWord) predicate.Word {
+// HasLearnedLexemesWith applies the HasEdge predicate on the "learned_lexemes" edge with a given conditions (other predicates).
+func HasLearnedLexemesWith(preds ...predicate.LearnedLexeme) predicate.Word {
 	return predicate.Word(func(s *sql.Selector) {
-		step := newLearnedWordsStep()
+		step := newLearnedLexemesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

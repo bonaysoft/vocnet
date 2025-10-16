@@ -7,44 +7,44 @@ import "google/protobuf/empty.proto";
 import "learning/v1/learning.proto";
 import "validate/validate.proto";
 
-// User word management service for personal vocabulary learning
+// User lexeme management service for personal vocabulary learning
 service LearningService {
-  // CollectWord collect a term to user's vocabulary (creates global word if needed)
-  rpc CollectWord(CollectWordRequest) returns (LearnedWord) {}
+  // CollectLexeme collects a term to user's vocabulary (creates global lexeme if needed)
+  rpc CollectLexeme(CollectLexemeRequest) returns (LearnedLexeme) {}
 
-  // UncollectWord removes a word from user's vocabulary
-  rpc UncollectWord(common.v1.IDRequest) returns (google.protobuf.Empty) {}
+  // UncollectLexeme removes a lexeme from user's vocabulary
+  rpc UncollectLexeme(common.v1.IDRequest) returns (google.protobuf.Empty) {}
 
-  // List user's words with filtering and sorting
-  rpc ListLearnedWords(ListLearnedWordsRequest) returns (ListLearnedWordsResponse) {}
+  // List user's lexemes with filtering and sorting
+  rpc ListLearnedLexemes(ListLearnedLexemesRequest) returns (ListLearnedLexemesResponse) {}
 
   // Update mastery level and learning status
-  rpc UpdateMastery(UpdateMasteryRequest) returns (LearnedWord) {}
+  rpc UpdateMastery(UpdateMasteryRequest) returns (LearnedLexeme) {}
 }
 
-// CollectWord request - main API for adding words to user vocabulary
-message CollectWordRequest {
-  LearnedWord word = 1;
+// CollectLexeme request - main API for adding lexemes to user vocabulary
+message CollectLexemeRequest {
+  LearnedLexeme lexeme = 1;
 }
 
-// UpdateLearnedWordMasteryRequest request
+// UpdateLearnedLexemeMasteryRequest request
 message UpdateMasteryRequest {
-  int64 word_id = 1 [(validate.rules).int64.gt = 0];
+  int64 lexeme_id = 1 [(validate.rules).int64.gt = 0];
   learning.v1.MasteryBreakdown mastery = 2;
   string notes = 3;
 }
 
-// ListLearnedWordsRequest request with comprehensive filtering
-message ListLearnedWordsRequest {
+// ListLearnedLexemesRequest request with comprehensive filtering
+message ListLearnedLexemesRequest {
   // pagination parameters
   common.v1.PaginationRequest pagination = 1;
   // filtering options using CEL expressions
   string filter = 2;
-  // ordering options. e.g. "word asc", "mastery.overall desc"
+  // ordering options. e.g. "lexeme asc", "mastery.overall desc"
   string order_by = 3;
 }
 
-message ListLearnedWordsResponse {
+message ListLearnedLexemesResponse {
   common.v1.PaginationResponse pagination = 1;
-  repeated LearnedWord words = 2;
+  repeated LearnedLexeme lexemes = 2;
 }

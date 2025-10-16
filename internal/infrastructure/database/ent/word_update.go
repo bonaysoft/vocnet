@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/eslsoft/vocnet/internal/entity"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedlexeme"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/predicate"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 )
@@ -185,19 +185,19 @@ func (wu *WordUpdate) SetUpdatedAt(t time.Time) *WordUpdate {
 	return wu
 }
 
-// AddLearnedWordIDs adds the "learned_words" edge to the LearnedWord entity by IDs.
-func (wu *WordUpdate) AddLearnedWordIDs(ids ...int) *WordUpdate {
-	wu.mutation.AddLearnedWordIDs(ids...)
+// AddLearnedLexemeIDs adds the "learned_lexemes" edge to the LearnedLexeme entity by IDs.
+func (wu *WordUpdate) AddLearnedLexemeIDs(ids ...int) *WordUpdate {
+	wu.mutation.AddLearnedLexemeIDs(ids...)
 	return wu
 }
 
-// AddLearnedWords adds the "learned_words" edges to the LearnedWord entity.
-func (wu *WordUpdate) AddLearnedWords(l ...*LearnedWord) *WordUpdate {
+// AddLearnedLexemes adds the "learned_lexemes" edges to the LearnedLexeme entity.
+func (wu *WordUpdate) AddLearnedLexemes(l ...*LearnedLexeme) *WordUpdate {
 	ids := make([]int, len(l))
 	for i := range l {
 		ids[i] = l[i].ID
 	}
-	return wu.AddLearnedWordIDs(ids...)
+	return wu.AddLearnedLexemeIDs(ids...)
 }
 
 // Mutation returns the WordMutation object of the builder.
@@ -205,25 +205,25 @@ func (wu *WordUpdate) Mutation() *WordMutation {
 	return wu.mutation
 }
 
-// ClearLearnedWords clears all "learned_words" edges to the LearnedWord entity.
-func (wu *WordUpdate) ClearLearnedWords() *WordUpdate {
-	wu.mutation.ClearLearnedWords()
+// ClearLearnedLexemes clears all "learned_lexemes" edges to the LearnedLexeme entity.
+func (wu *WordUpdate) ClearLearnedLexemes() *WordUpdate {
+	wu.mutation.ClearLearnedLexemes()
 	return wu
 }
 
-// RemoveLearnedWordIDs removes the "learned_words" edge to LearnedWord entities by IDs.
-func (wu *WordUpdate) RemoveLearnedWordIDs(ids ...int) *WordUpdate {
-	wu.mutation.RemoveLearnedWordIDs(ids...)
+// RemoveLearnedLexemeIDs removes the "learned_lexemes" edge to LearnedLexeme entities by IDs.
+func (wu *WordUpdate) RemoveLearnedLexemeIDs(ids ...int) *WordUpdate {
+	wu.mutation.RemoveLearnedLexemeIDs(ids...)
 	return wu
 }
 
-// RemoveLearnedWords removes "learned_words" edges to LearnedWord entities.
-func (wu *WordUpdate) RemoveLearnedWords(l ...*LearnedWord) *WordUpdate {
+// RemoveLearnedLexemes removes "learned_lexemes" edges to LearnedLexeme entities.
+func (wu *WordUpdate) RemoveLearnedLexemes(l ...*LearnedLexeme) *WordUpdate {
 	ids := make([]int, len(l))
 	for i := range l {
 		ids[i] = l[i].ID
 	}
-	return wu.RemoveLearnedWordIDs(ids...)
+	return wu.RemoveLearnedLexemeIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -353,28 +353,28 @@ func (wu *WordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := wu.mutation.UpdatedAt(); ok {
 		_spec.SetField(word.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if wu.mutation.LearnedWordsCleared() {
+	if wu.mutation.LearnedLexemesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   word.LearnedWordsTable,
-			Columns: []string{word.LearnedWordsColumn},
+			Table:   word.LearnedLexemesTable,
+			Columns: []string{word.LearnedLexemesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(learnedword.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(learnedlexeme.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := wu.mutation.RemovedLearnedWordsIDs(); len(nodes) > 0 && !wu.mutation.LearnedWordsCleared() {
+	if nodes := wu.mutation.RemovedLearnedLexemesIDs(); len(nodes) > 0 && !wu.mutation.LearnedLexemesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   word.LearnedWordsTable,
-			Columns: []string{word.LearnedWordsColumn},
+			Table:   word.LearnedLexemesTable,
+			Columns: []string{word.LearnedLexemesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(learnedword.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(learnedlexeme.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -382,15 +382,15 @@ func (wu *WordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := wu.mutation.LearnedWordsIDs(); len(nodes) > 0 {
+	if nodes := wu.mutation.LearnedLexemesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   word.LearnedWordsTable,
-			Columns: []string{word.LearnedWordsColumn},
+			Table:   word.LearnedLexemesTable,
+			Columns: []string{word.LearnedLexemesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(learnedword.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(learnedlexeme.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -572,19 +572,19 @@ func (wuo *WordUpdateOne) SetUpdatedAt(t time.Time) *WordUpdateOne {
 	return wuo
 }
 
-// AddLearnedWordIDs adds the "learned_words" edge to the LearnedWord entity by IDs.
-func (wuo *WordUpdateOne) AddLearnedWordIDs(ids ...int) *WordUpdateOne {
-	wuo.mutation.AddLearnedWordIDs(ids...)
+// AddLearnedLexemeIDs adds the "learned_lexemes" edge to the LearnedLexeme entity by IDs.
+func (wuo *WordUpdateOne) AddLearnedLexemeIDs(ids ...int) *WordUpdateOne {
+	wuo.mutation.AddLearnedLexemeIDs(ids...)
 	return wuo
 }
 
-// AddLearnedWords adds the "learned_words" edges to the LearnedWord entity.
-func (wuo *WordUpdateOne) AddLearnedWords(l ...*LearnedWord) *WordUpdateOne {
+// AddLearnedLexemes adds the "learned_lexemes" edges to the LearnedLexeme entity.
+func (wuo *WordUpdateOne) AddLearnedLexemes(l ...*LearnedLexeme) *WordUpdateOne {
 	ids := make([]int, len(l))
 	for i := range l {
 		ids[i] = l[i].ID
 	}
-	return wuo.AddLearnedWordIDs(ids...)
+	return wuo.AddLearnedLexemeIDs(ids...)
 }
 
 // Mutation returns the WordMutation object of the builder.
@@ -592,25 +592,25 @@ func (wuo *WordUpdateOne) Mutation() *WordMutation {
 	return wuo.mutation
 }
 
-// ClearLearnedWords clears all "learned_words" edges to the LearnedWord entity.
-func (wuo *WordUpdateOne) ClearLearnedWords() *WordUpdateOne {
-	wuo.mutation.ClearLearnedWords()
+// ClearLearnedLexemes clears all "learned_lexemes" edges to the LearnedLexeme entity.
+func (wuo *WordUpdateOne) ClearLearnedLexemes() *WordUpdateOne {
+	wuo.mutation.ClearLearnedLexemes()
 	return wuo
 }
 
-// RemoveLearnedWordIDs removes the "learned_words" edge to LearnedWord entities by IDs.
-func (wuo *WordUpdateOne) RemoveLearnedWordIDs(ids ...int) *WordUpdateOne {
-	wuo.mutation.RemoveLearnedWordIDs(ids...)
+// RemoveLearnedLexemeIDs removes the "learned_lexemes" edge to LearnedLexeme entities by IDs.
+func (wuo *WordUpdateOne) RemoveLearnedLexemeIDs(ids ...int) *WordUpdateOne {
+	wuo.mutation.RemoveLearnedLexemeIDs(ids...)
 	return wuo
 }
 
-// RemoveLearnedWords removes "learned_words" edges to LearnedWord entities.
-func (wuo *WordUpdateOne) RemoveLearnedWords(l ...*LearnedWord) *WordUpdateOne {
+// RemoveLearnedLexemes removes "learned_lexemes" edges to LearnedLexeme entities.
+func (wuo *WordUpdateOne) RemoveLearnedLexemes(l ...*LearnedLexeme) *WordUpdateOne {
 	ids := make([]int, len(l))
 	for i := range l {
 		ids[i] = l[i].ID
 	}
-	return wuo.RemoveLearnedWordIDs(ids...)
+	return wuo.RemoveLearnedLexemeIDs(ids...)
 }
 
 // Where appends a list predicates to the WordUpdate builder.
@@ -770,28 +770,28 @@ func (wuo *WordUpdateOne) sqlSave(ctx context.Context) (_node *Word, err error) 
 	if value, ok := wuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(word.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if wuo.mutation.LearnedWordsCleared() {
+	if wuo.mutation.LearnedLexemesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   word.LearnedWordsTable,
-			Columns: []string{word.LearnedWordsColumn},
+			Table:   word.LearnedLexemesTable,
+			Columns: []string{word.LearnedLexemesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(learnedword.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(learnedlexeme.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := wuo.mutation.RemovedLearnedWordsIDs(); len(nodes) > 0 && !wuo.mutation.LearnedWordsCleared() {
+	if nodes := wuo.mutation.RemovedLearnedLexemesIDs(); len(nodes) > 0 && !wuo.mutation.LearnedLexemesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   word.LearnedWordsTable,
-			Columns: []string{word.LearnedWordsColumn},
+			Table:   word.LearnedLexemesTable,
+			Columns: []string{word.LearnedLexemesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(learnedword.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(learnedlexeme.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -799,15 +799,15 @@ func (wuo *WordUpdateOne) sqlSave(ctx context.Context) (_node *Word, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := wuo.mutation.LearnedWordsIDs(); len(nodes) > 0 {
+	if nodes := wuo.mutation.LearnedLexemesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   word.LearnedWordsTable,
-			Columns: []string{word.LearnedWordsColumn},
+			Table:   word.LearnedLexemesTable,
+			Columns: []string{word.LearnedLexemesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(learnedword.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(learnedlexeme.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

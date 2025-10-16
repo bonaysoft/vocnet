@@ -12,8 +12,8 @@ import (
 	"github.com/eslsoft/vocnet/internal/entity"
 )
 
-func FromPbLearnedWord(in *learningv1.LearnedWord) *entity.LearnedWord {
-	return &entity.LearnedWord{
+func FromPbLearnedLexeme(in *learningv1.LearnedLexeme) *entity.LearnedLexeme {
+	return &entity.LearnedLexeme{
 		ID:       in.GetId(),
 		Term:     strings.TrimSpace(in.Spec.GetTerm()),
 		Language: FromPbLanguage(in.Spec.GetLanguage()),
@@ -28,8 +28,8 @@ func FromPbLearnedWord(in *learningv1.LearnedWord) *entity.LearnedWord {
 				SourceRef: strings.TrimSpace(s.GetSourceRef()),
 			}
 		}),
-		Relations: lo.Map(in.Spec.GetRelations(), func(rel *learningv1.LearnedWordRelation, _ int) entity.LearnedWordRelation {
-			return entity.LearnedWordRelation{
+		Relations: lo.Map(in.Spec.GetRelations(), func(rel *learningv1.LearnedLexemeRelation, _ int) entity.LearnedLexemeRelation {
+			return entity.LearnedLexemeRelation{
 				Word:         rel.GetWord(),
 				RelationType: int32(rel.GetRelationType()),
 				Note:         rel.GetNote(),
@@ -38,10 +38,10 @@ func FromPbLearnedWord(in *learningv1.LearnedWord) *entity.LearnedWord {
 	}
 }
 
-func ToPbLearnedWord(in *entity.LearnedWord) *learningv1.LearnedWord {
-	out := &learningv1.LearnedWord{
+func ToPbLearnedLexeme(in *entity.LearnedLexeme) *learningv1.LearnedLexeme {
+	out := &learningv1.LearnedLexeme{
 		Id: in.ID,
-		Spec: &learningv1.LearnedWordSpec{
+		Spec: &learningv1.LearnedLexemeSpec{
 			Term:     in.Term,
 			Language: ToPbLanguage(in.Language),
 			Sentences: lo.Map(in.Sentences, func(s entity.Sentence, _ int) *dictv1.Sentence {
@@ -51,8 +51,8 @@ func ToPbLearnedWord(in *entity.LearnedWord) *learningv1.LearnedWord {
 					SourceRef: s.SourceRef,
 				}
 			}),
-			Relations: lo.Map(in.Relations, func(rel entity.LearnedWordRelation, _ int) *learningv1.LearnedWordRelation {
-				return &learningv1.LearnedWordRelation{
+			Relations: lo.Map(in.Relations, func(rel entity.LearnedLexemeRelation, _ int) *learningv1.LearnedLexemeRelation {
+				return &learningv1.LearnedLexemeRelation{
 					Word:         rel.Word,
 					RelationType: commonv1.RelationType(rel.RelationType),
 					Note:         rel.Note,
@@ -62,7 +62,7 @@ func ToPbLearnedWord(in *entity.LearnedWord) *learningv1.LearnedWord {
 			}),
 			// Notes: in.Notes,
 		},
-		Status: &learningv1.LearnedWordStatus{
+		Status: &learningv1.LearnedLexemeStatus{
 			Mastery:      ToPbMastery(in.Mastery),
 			ReviewTiming: ToPbReview(in.Review),
 			QueryCount:   in.QueryCount,

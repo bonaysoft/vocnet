@@ -41,17 +41,17 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// EdgeLearnedWords holds the string denoting the learned_words edge name in mutations.
-	EdgeLearnedWords = "learned_words"
+	// EdgeLearnedLexemes holds the string denoting the learned_lexemes edge name in mutations.
+	EdgeLearnedLexemes = "learned_lexemes"
 	// Table holds the table name of the word in the database.
 	Table = "words"
-	// LearnedWordsTable is the table that holds the learned_words relation/edge.
-	LearnedWordsTable = "learned_words"
-	// LearnedWordsInverseTable is the table name for the LearnedWord entity.
-	// It exists in this package in order to avoid circular dependency with the "learnedword" package.
-	LearnedWordsInverseTable = "learned_words"
-	// LearnedWordsColumn is the table column denoting the learned_words relation/edge.
-	LearnedWordsColumn = "word_id"
+	// LearnedLexemesTable is the table that holds the learned_lexemes relation/edge.
+	LearnedLexemesTable = "learned_words"
+	// LearnedLexemesInverseTable is the table name for the LearnedLexeme entity.
+	// It exists in this package in order to avoid circular dependency with the "learnedlexeme" package.
+	LearnedLexemesInverseTable = "learned_words"
+	// LearnedLexemesColumn is the table column denoting the learned_lexemes relation/edge.
+	LearnedLexemesColumn = "word_id"
 )
 
 // Columns holds all SQL columns for word fields.
@@ -154,23 +154,23 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByLearnedWordsCount orders the results by learned_words count.
-func ByLearnedWordsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByLearnedLexemesCount orders the results by learned_lexemes count.
+func ByLearnedLexemesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newLearnedWordsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newLearnedLexemesStep(), opts...)
 	}
 }
 
-// ByLearnedWords orders the results by learned_words terms.
-func ByLearnedWords(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByLearnedLexemes orders the results by learned_lexemes terms.
+func ByLearnedLexemes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newLearnedWordsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newLearnedLexemesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newLearnedWordsStep() *sqlgraph.Step {
+func newLearnedLexemesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(LearnedWordsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, LearnedWordsTable, LearnedWordsColumn),
+		sqlgraph.To(LearnedLexemesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, LearnedLexemesTable, LearnedLexemesColumn),
 	)
 }

@@ -15,7 +15,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedlexeme"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 )
 
@@ -24,8 +24,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// LearnedWord is the client for interacting with the LearnedWord builders.
-	LearnedWord *LearnedWordClient
+	// LearnedLexeme is the client for interacting with the LearnedLexeme builders.
+	LearnedLexeme *LearnedLexemeClient
 	// Word is the client for interacting with the Word builders.
 	Word *WordClient
 }
@@ -39,7 +39,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.LearnedWord = NewLearnedWordClient(c.config)
+	c.LearnedLexeme = NewLearnedLexemeClient(c.config)
 	c.Word = NewWordClient(c.config)
 }
 
@@ -131,10 +131,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:         ctx,
-		config:      cfg,
-		LearnedWord: NewLearnedWordClient(cfg),
-		Word:        NewWordClient(cfg),
+		ctx:           ctx,
+		config:        cfg,
+		LearnedLexeme: NewLearnedLexemeClient(cfg),
+		Word:          NewWordClient(cfg),
 	}, nil
 }
 
@@ -152,17 +152,17 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:         ctx,
-		config:      cfg,
-		LearnedWord: NewLearnedWordClient(cfg),
-		Word:        NewWordClient(cfg),
+		ctx:           ctx,
+		config:        cfg,
+		LearnedLexeme: NewLearnedLexemeClient(cfg),
+		Word:          NewWordClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		LearnedWord.
+//		LearnedLexeme.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -184,22 +184,22 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.LearnedWord.Use(hooks...)
+	c.LearnedLexeme.Use(hooks...)
 	c.Word.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.LearnedWord.Intercept(interceptors...)
+	c.LearnedLexeme.Intercept(interceptors...)
 	c.Word.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
-	case *LearnedWordMutation:
-		return c.LearnedWord.mutate(ctx, m)
+	case *LearnedLexemeMutation:
+		return c.LearnedLexeme.mutate(ctx, m)
 	case *WordMutation:
 		return c.Word.mutate(ctx, m)
 	default:
@@ -207,107 +207,107 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	}
 }
 
-// LearnedWordClient is a client for the LearnedWord schema.
-type LearnedWordClient struct {
+// LearnedLexemeClient is a client for the LearnedLexeme schema.
+type LearnedLexemeClient struct {
 	config
 }
 
-// NewLearnedWordClient returns a client for the LearnedWord from the given config.
-func NewLearnedWordClient(c config) *LearnedWordClient {
-	return &LearnedWordClient{config: c}
+// NewLearnedLexemeClient returns a client for the LearnedLexeme from the given config.
+func NewLearnedLexemeClient(c config) *LearnedLexemeClient {
+	return &LearnedLexemeClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `learnedword.Hooks(f(g(h())))`.
-func (c *LearnedWordClient) Use(hooks ...Hook) {
-	c.hooks.LearnedWord = append(c.hooks.LearnedWord, hooks...)
+// A call to `Use(f, g, h)` equals to `learnedlexeme.Hooks(f(g(h())))`.
+func (c *LearnedLexemeClient) Use(hooks ...Hook) {
+	c.hooks.LearnedLexeme = append(c.hooks.LearnedLexeme, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `learnedword.Intercept(f(g(h())))`.
-func (c *LearnedWordClient) Intercept(interceptors ...Interceptor) {
-	c.inters.LearnedWord = append(c.inters.LearnedWord, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `learnedlexeme.Intercept(f(g(h())))`.
+func (c *LearnedLexemeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LearnedLexeme = append(c.inters.LearnedLexeme, interceptors...)
 }
 
-// Create returns a builder for creating a LearnedWord entity.
-func (c *LearnedWordClient) Create() *LearnedWordCreate {
-	mutation := newLearnedWordMutation(c.config, OpCreate)
-	return &LearnedWordCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a LearnedLexeme entity.
+func (c *LearnedLexemeClient) Create() *LearnedLexemeCreate {
+	mutation := newLearnedLexemeMutation(c.config, OpCreate)
+	return &LearnedLexemeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of LearnedWord entities.
-func (c *LearnedWordClient) CreateBulk(builders ...*LearnedWordCreate) *LearnedWordCreateBulk {
-	return &LearnedWordCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of LearnedLexeme entities.
+func (c *LearnedLexemeClient) CreateBulk(builders ...*LearnedLexemeCreate) *LearnedLexemeCreateBulk {
+	return &LearnedLexemeCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *LearnedWordClient) MapCreateBulk(slice any, setFunc func(*LearnedWordCreate, int)) *LearnedWordCreateBulk {
+func (c *LearnedLexemeClient) MapCreateBulk(slice any, setFunc func(*LearnedLexemeCreate, int)) *LearnedLexemeCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &LearnedWordCreateBulk{err: fmt.Errorf("calling to LearnedWordClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &LearnedLexemeCreateBulk{err: fmt.Errorf("calling to LearnedLexemeClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*LearnedWordCreate, rv.Len())
+	builders := make([]*LearnedLexemeCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &LearnedWordCreateBulk{config: c.config, builders: builders}
+	return &LearnedLexemeCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for LearnedWord.
-func (c *LearnedWordClient) Update() *LearnedWordUpdate {
-	mutation := newLearnedWordMutation(c.config, OpUpdate)
-	return &LearnedWordUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for LearnedLexeme.
+func (c *LearnedLexemeClient) Update() *LearnedLexemeUpdate {
+	mutation := newLearnedLexemeMutation(c.config, OpUpdate)
+	return &LearnedLexemeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *LearnedWordClient) UpdateOne(lw *LearnedWord) *LearnedWordUpdateOne {
-	mutation := newLearnedWordMutation(c.config, OpUpdateOne, withLearnedWord(lw))
-	return &LearnedWordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *LearnedLexemeClient) UpdateOne(ll *LearnedLexeme) *LearnedLexemeUpdateOne {
+	mutation := newLearnedLexemeMutation(c.config, OpUpdateOne, withLearnedLexeme(ll))
+	return &LearnedLexemeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *LearnedWordClient) UpdateOneID(id int) *LearnedWordUpdateOne {
-	mutation := newLearnedWordMutation(c.config, OpUpdateOne, withLearnedWordID(id))
-	return &LearnedWordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *LearnedLexemeClient) UpdateOneID(id int) *LearnedLexemeUpdateOne {
+	mutation := newLearnedLexemeMutation(c.config, OpUpdateOne, withLearnedLexemeID(id))
+	return &LearnedLexemeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for LearnedWord.
-func (c *LearnedWordClient) Delete() *LearnedWordDelete {
-	mutation := newLearnedWordMutation(c.config, OpDelete)
-	return &LearnedWordDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for LearnedLexeme.
+func (c *LearnedLexemeClient) Delete() *LearnedLexemeDelete {
+	mutation := newLearnedLexemeMutation(c.config, OpDelete)
+	return &LearnedLexemeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *LearnedWordClient) DeleteOne(lw *LearnedWord) *LearnedWordDeleteOne {
-	return c.DeleteOneID(lw.ID)
+func (c *LearnedLexemeClient) DeleteOne(ll *LearnedLexeme) *LearnedLexemeDeleteOne {
+	return c.DeleteOneID(ll.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *LearnedWordClient) DeleteOneID(id int) *LearnedWordDeleteOne {
-	builder := c.Delete().Where(learnedword.ID(id))
+func (c *LearnedLexemeClient) DeleteOneID(id int) *LearnedLexemeDeleteOne {
+	builder := c.Delete().Where(learnedlexeme.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &LearnedWordDeleteOne{builder}
+	return &LearnedLexemeDeleteOne{builder}
 }
 
-// Query returns a query builder for LearnedWord.
-func (c *LearnedWordClient) Query() *LearnedWordQuery {
-	return &LearnedWordQuery{
+// Query returns a query builder for LearnedLexeme.
+func (c *LearnedLexemeClient) Query() *LearnedLexemeQuery {
+	return &LearnedLexemeQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeLearnedWord},
+		ctx:    &QueryContext{Type: TypeLearnedLexeme},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a LearnedWord entity by its id.
-func (c *LearnedWordClient) Get(ctx context.Context, id int) (*LearnedWord, error) {
-	return c.Query().Where(learnedword.ID(id)).Only(ctx)
+// Get returns a LearnedLexeme entity by its id.
+func (c *LearnedLexemeClient) Get(ctx context.Context, id int) (*LearnedLexeme, error) {
+	return c.Query().Where(learnedlexeme.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *LearnedWordClient) GetX(ctx context.Context, id int) *LearnedWord {
+func (c *LearnedLexemeClient) GetX(ctx context.Context, id int) *LearnedLexeme {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -315,44 +315,44 @@ func (c *LearnedWordClient) GetX(ctx context.Context, id int) *LearnedWord {
 	return obj
 }
 
-// QueryWord queries the word edge of a LearnedWord.
-func (c *LearnedWordClient) QueryWord(lw *LearnedWord) *WordQuery {
+// QueryWord queries the word edge of a LearnedLexeme.
+func (c *LearnedLexemeClient) QueryWord(ll *LearnedLexeme) *WordQuery {
 	query := (&WordClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := lw.ID
+		id := ll.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(learnedword.Table, learnedword.FieldID, id),
+			sqlgraph.From(learnedlexeme.Table, learnedlexeme.FieldID, id),
 			sqlgraph.To(word.Table, word.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, learnedword.WordTable, learnedword.WordColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, learnedlexeme.WordTable, learnedlexeme.WordColumn),
 		)
-		fromV = sqlgraph.Neighbors(lw.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(ll.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *LearnedWordClient) Hooks() []Hook {
-	return c.hooks.LearnedWord
+func (c *LearnedLexemeClient) Hooks() []Hook {
+	return c.hooks.LearnedLexeme
 }
 
 // Interceptors returns the client interceptors.
-func (c *LearnedWordClient) Interceptors() []Interceptor {
-	return c.inters.LearnedWord
+func (c *LearnedLexemeClient) Interceptors() []Interceptor {
+	return c.inters.LearnedLexeme
 }
 
-func (c *LearnedWordClient) mutate(ctx context.Context, m *LearnedWordMutation) (Value, error) {
+func (c *LearnedLexemeClient) mutate(ctx context.Context, m *LearnedLexemeMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&LearnedWordCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&LearnedLexemeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&LearnedWordUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&LearnedLexemeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&LearnedWordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&LearnedLexemeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&LearnedWordDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&LearnedLexemeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown LearnedWord mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown LearnedLexeme mutation op: %q", m.Op())
 	}
 }
 
@@ -464,15 +464,15 @@ func (c *WordClient) GetX(ctx context.Context, id int) *Word {
 	return obj
 }
 
-// QueryLearnedWords queries the learned_words edge of a Word.
-func (c *WordClient) QueryLearnedWords(w *Word) *LearnedWordQuery {
-	query := (&LearnedWordClient{config: c.config}).Query()
+// QueryLearnedLexemes queries the learned_lexemes edge of a Word.
+func (c *WordClient) QueryLearnedLexemes(w *Word) *LearnedLexemeQuery {
+	query := (&LearnedLexemeClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := w.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(word.Table, word.FieldID, id),
-			sqlgraph.To(learnedword.Table, learnedword.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, word.LearnedWordsTable, word.LearnedWordsColumn),
+			sqlgraph.To(learnedlexeme.Table, learnedlexeme.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, word.LearnedLexemesTable, word.LearnedLexemesColumn),
 		)
 		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
 		return fromV, nil
@@ -508,9 +508,9 @@ func (c *WordClient) mutate(ctx context.Context, m *WordMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		LearnedWord, Word []ent.Hook
+		LearnedLexeme, Word []ent.Hook
 	}
 	inters struct {
-		LearnedWord, Word []ent.Interceptor
+		LearnedLexeme, Word []ent.Interceptor
 	}
 )

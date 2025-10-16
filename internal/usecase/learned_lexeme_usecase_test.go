@@ -13,33 +13,33 @@ import (
 	"github.com/eslsoft/vocnet/internal/repository"
 )
 
-type fakeLearnedWordRepo struct {
+type fakeLearnedLexemeRepo struct {
 	mu    sync.RWMutex
 	seq   int64
-	items map[int64]*entity.LearnedWord
+	items map[int64]*entity.LearnedLexeme
 }
 
-func newFakeLearnedWordRepo() *fakeLearnedWordRepo {
-	return &fakeLearnedWordRepo{items: make(map[int64]*entity.LearnedWord)}
+func newFakeLearnedLexemeRepo() *fakeLearnedLexemeRepo {
+	return &fakeLearnedLexemeRepo{items: make(map[int64]*entity.LearnedLexeme)}
 }
 
-func (r *fakeLearnedWordRepo) Create(ctx context.Context, uw *entity.LearnedWord) (*entity.LearnedWord, error) {
+func (r *fakeLearnedLexemeRepo) Create(ctx context.Context, uw *entity.LearnedLexeme) (*entity.LearnedLexeme, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, ok := r.lookupLocked(uw.UserID, uw.Term); ok {
-		return nil, entity.ErrDuplicateLearnedWord
+		return nil, entity.ErrDuplicateLearnedLexeme
 	}
 	r.seq++
-	copy := cloneLearnedWord(uw)
+	copy := cloneLearnedLexeme(uw)
 	copy.ID = r.seq
 	r.items[copy.ID] = copy
-	return cloneLearnedWord(copy), nil
+	return cloneLearnedLexeme(copy), nil
 }
 
-func (r *fakeLearnedWordRepo) Update(ctx context.Context, uw *entity.LearnedWord) (*entity.LearnedWord, error) {
+func (r *fakeLearnedLexemeRepo) Update(ctx context.Context, uw *entity.LearnedLexeme) (*entity.LearnedLexeme, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -47,17 +47,17 @@ func (r *fakeLearnedWordRepo) Update(ctx context.Context, uw *entity.LearnedWord
 	defer r.mu.Unlock()
 	existing, ok := r.items[uw.ID]
 	if !ok || existing.UserID != uw.UserID {
-		return nil, entity.ErrLearnedWordNotFound
+		return nil, entity.ErrLearnedLexemeNotFound
 	}
 	if other, ok := r.lookupLocked(uw.UserID, uw.Term); ok && other.ID != uw.ID {
-		return nil, entity.ErrDuplicateLearnedWord
+		return nil, entity.ErrDuplicateLearnedLexeme
 	}
-	copy := cloneLearnedWord(uw)
+	copy := cloneLearnedLexeme(uw)
 	r.items[copy.ID] = copy
-	return cloneLearnedWord(copy), nil
+	return cloneLearnedLexeme(copy), nil
 }
 
-func (r *fakeLearnedWordRepo) GetByID(ctx context.Context, userID, id int64) (*entity.LearnedWord, error) {
+func (r *fakeLearnedLexemeRepo) GetByID(ctx context.Context, userID, id int64) (*entity.LearnedLexeme, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -65,24 +65,24 @@ func (r *fakeLearnedWordRepo) GetByID(ctx context.Context, userID, id int64) (*e
 	defer r.mu.RUnlock()
 	item, ok := r.items[id]
 	if !ok || item.UserID != userID {
-		return nil, entity.ErrLearnedWordNotFound
+		return nil, entity.ErrLearnedLexemeNotFound
 	}
-	return cloneLearnedWord(item), nil
+	return cloneLearnedLexeme(item), nil
 }
 
-func (r *fakeLearnedWordRepo) FindByWord(ctx context.Context, userID int64, word string) (*entity.LearnedWord, error) {
+func (r *fakeLearnedLexemeRepo) FindByTerm(ctx context.Context, userID int64, term string) (*entity.LearnedLexeme, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	if item, ok := r.lookupLocked(userID, word); ok {
-		return cloneLearnedWord(item), nil
+	if item, ok := r.lookupLocked(userID, term); ok {
+		return cloneLearnedLexeme(item), nil
 	}
 	return nil, nil
 }
 
-func (r *fakeLearnedWordRepo) List(ctx context.Context, query *repository.ListLearnedWordQuery) ([]entity.LearnedWord, int64, error) {
+func (r *fakeLearnedLexemeRepo) List(ctx context.Context, query *repository.ListLearnedLexemeQuery) ([]entity.LearnedLexeme, int64, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, 0, err
 	}
@@ -93,7 +93,7 @@ func (r *fakeLearnedWordRepo) List(ctx context.Context, query *repository.ListLe
 	defer r.mu.RUnlock()
 
 	keyword := strings.ToLower(strings.TrimSpace(extractKeyword(query.Filter)))
-	var filtered []*entity.LearnedWord
+	var filtered []*entity.LearnedLexeme
 	for _, item := range r.items {
 		if item.UserID != query.UserID {
 			continue
@@ -103,7 +103,7 @@ func (r *fakeLearnedWordRepo) List(ctx context.Context, query *repository.ListLe
 				continue
 			}
 		}
-		filtered = append(filtered, cloneLearnedWord(item))
+		filtered = append(filtered, cloneLearnedLexeme(item))
 	}
 
 	sort.Slice(filtered, func(i, j int) bool {
@@ -124,7 +124,7 @@ func (r *fakeLearnedWordRepo) List(ctx context.Context, query *repository.ListLe
 	}
 	start := int((pageNo - 1) * pageSize)
 	if start >= len(filtered) {
-		return []entity.LearnedWord{}, total, nil
+		return []entity.LearnedLexeme{}, total, nil
 	}
 	if start < 0 {
 		start = 0
@@ -133,16 +133,16 @@ func (r *fakeLearnedWordRepo) List(ctx context.Context, query *repository.ListLe
 	if end > len(filtered) {
 		end = len(filtered)
 	}
-	result := make([]entity.LearnedWord, 0, end-start)
+	result := make([]entity.LearnedLexeme, 0, end-start)
 	for _, item := range filtered[start:end] {
-		if clone := cloneLearnedWord(item); clone != nil {
+		if clone := cloneLearnedLexeme(item); clone != nil {
 			result = append(result, *clone)
 		}
 	}
 	return result, total, nil
 }
 
-func (r *fakeLearnedWordRepo) Delete(ctx context.Context, userID, id int64) error {
+func (r *fakeLearnedLexemeRepo) Delete(ctx context.Context, userID, id int64) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -150,17 +150,17 @@ func (r *fakeLearnedWordRepo) Delete(ctx context.Context, userID, id int64) erro
 	defer r.mu.Unlock()
 	item, ok := r.items[id]
 	if !ok || item.UserID != userID {
-		return entity.ErrLearnedWordNotFound
+		return entity.ErrLearnedLexemeNotFound
 	}
 	delete(r.items, id)
 	return nil
 }
 
-func (r *fakeLearnedWordRepo) lookupLocked(userID int64, word string) (*entity.LearnedWord, bool) {
-	if word == "" {
+func (r *fakeLearnedLexemeRepo) lookupLocked(userID int64, term string) (*entity.LearnedLexeme, bool) {
+	if term == "" {
 		return nil, false
 	}
-	needle := strings.ToLower(word)
+	needle := strings.ToLower(term)
 	for _, item := range r.items {
 		if item.UserID == userID && strings.ToLower(item.Term) == needle {
 			return item, true
@@ -169,7 +169,7 @@ func (r *fakeLearnedWordRepo) lookupLocked(userID int64, word string) (*entity.L
 	return nil, false
 }
 
-func cloneLearnedWord(src *entity.LearnedWord) *entity.LearnedWord {
+func cloneLearnedLexeme(src *entity.LearnedLexeme) *entity.LearnedLexeme {
 	if src == nil {
 		return nil
 	}
@@ -178,30 +178,30 @@ func cloneLearnedWord(src *entity.LearnedWord) *entity.LearnedWord {
 		copy.Sentences = append([]entity.Sentence(nil), src.Sentences...)
 	}
 	if src.Relations != nil {
-		copy.Relations = append([]entity.LearnedWordRelation(nil), src.Relations...)
+		copy.Relations = append([]entity.LearnedLexemeRelation(nil), src.Relations...)
 	}
 	return &copy
 }
 
-func TestCollectWordCreatesNewEntry(t *testing.T) {
-	repo := newFakeLearnedWordRepo()
-	uc := NewLearnedWordUsecase(repo)
-	impl := uc.(*learnedWordUsecase)
+func TestCollectLexemeCreatesNewEntry(t *testing.T) {
+	repo := newFakeLearnedLexemeRepo()
+	uc := NewLearnedLexemeUsecase(repo)
+	impl := uc.(*learnedLexemeUsecase)
 	fixed := time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC)
 	impl.clock = func() time.Time { return fixed }
 
-	got, err := uc.CollectWord(context.Background(), 42, &entity.LearnedWord{Term: "Hello", CreatedBy: "tester"})
+	got, err := uc.CollectLexeme(context.Background(), 42, &entity.LearnedLexeme{Term: "Hello", CreatedBy: "tester"})
 	if err != nil {
-		t.Fatalf("CollectWord returned error: %v", err)
+		t.Fatalf("CollectLexeme returned error: %v", err)
 	}
 	if got == nil {
-		t.Fatal("CollectWord returned nil result")
+		t.Fatal("CollectLexeme returned nil result")
 	}
 	if got.ID == 0 {
 		t.Errorf("expected ID to be set, got %d", got.ID)
 	}
 	if got.Term != "Hello" {
-		t.Errorf("expected word to be 'Hello', got %q", got.Term)
+		t.Errorf("expected lexeme to be 'Hello', got %q", got.Term)
 	}
 	if got.QueryCount != 1 {
 		t.Errorf("expected query count to default to 1, got %d", got.QueryCount)
@@ -214,24 +214,24 @@ func TestCollectWordCreatesNewEntry(t *testing.T) {
 	}
 }
 
-func TestCollectWordDuplicateUpdatesExisting(t *testing.T) {
-	repo := newFakeLearnedWordRepo()
-	uc := NewLearnedWordUsecase(repo)
-	impl := uc.(*learnedWordUsecase)
+func TestCollectLexemeDuplicateUpdatesExisting(t *testing.T) {
+	repo := newFakeLearnedLexemeRepo()
+	uc := NewLearnedLexemeUsecase(repo)
+	impl := uc.(*learnedLexemeUsecase)
 	first := time.Date(2024, 1, 2, 8, 0, 0, 0, time.UTC)
 	impl.clock = func() time.Time { return first }
 
-	_, err := uc.CollectWord(context.Background(), 1, &entity.LearnedWord{Term: "Apple"})
+	_, err := uc.CollectLexeme(context.Background(), 1, &entity.LearnedLexeme{Term: "Apple"})
 	if err != nil {
-		t.Fatalf("CollectWord initial call failed: %v", err)
+		t.Fatalf("CollectLexeme initial call failed: %v", err)
 	}
 
 	second := time.Date(2024, 1, 3, 9, 0, 0, 0, time.UTC)
 	impl.clock = func() time.Time { return second }
 	updatedMastery := entity.MasteryBreakdown{Overall: 250}
-	res, err := uc.CollectWord(context.Background(), 1, &entity.LearnedWord{Term: "Apple", Notes: "updated", Mastery: updatedMastery, Language: "fr"})
+	res, err := uc.CollectLexeme(context.Background(), 1, &entity.LearnedLexeme{Term: "Apple", Notes: "updated", Mastery: updatedMastery, Language: "fr"})
 	if err != nil {
-		t.Fatalf("CollectWord duplicate failed: %v", err)
+		t.Fatalf("CollectLexeme duplicate failed: %v", err)
 	}
 	if res.QueryCount != 2 {
 		t.Errorf("expected query count to increment to 2, got %d", res.QueryCount)
@@ -251,14 +251,14 @@ func TestCollectWordDuplicateUpdatesExisting(t *testing.T) {
 }
 
 func TestUpdateMastery(t *testing.T) {
-	repo := newFakeLearnedWordRepo()
-	uc := NewLearnedWordUsecase(repo)
-	impl := uc.(*learnedWordUsecase)
+	repo := newFakeLearnedLexemeRepo()
+	uc := NewLearnedLexemeUsecase(repo)
+	impl := uc.(*learnedLexemeUsecase)
 	impl.clock = func() time.Time { return time.Date(2024, 1, 4, 10, 0, 0, 0, time.UTC) }
 
-	created, err := uc.CollectWord(context.Background(), 9, &entity.LearnedWord{Term: "Bridge"})
+	created, err := uc.CollectLexeme(context.Background(), 9, &entity.LearnedLexeme{Term: "Bridge"})
 	if err != nil {
-		t.Fatalf("CollectWord failed: %v", err)
+		t.Fatalf("CollectLexeme failed: %v", err)
 	}
 
 	reviewTime := entity.ReviewTiming{IntervalDays: 2}
@@ -279,23 +279,23 @@ func TestUpdateMastery(t *testing.T) {
 	}
 }
 
-func TestListLearnedWordsFiltersByKeyword(t *testing.T) {
-	repo := newFakeLearnedWordRepo()
-	uc := NewLearnedWordUsecase(repo)
-	impl := uc.(*learnedWordUsecase)
+func TestListLearnedLexemesFiltersByKeyword(t *testing.T) {
+	repo := newFakeLearnedLexemeRepo()
+	uc := NewLearnedLexemeUsecase(repo)
+	impl := uc.(*learnedLexemeUsecase)
 	impl.clock = time.Now
 
-	_, _ = uc.CollectWord(context.Background(), 5, &entity.LearnedWord{Term: "Comet", Notes: "space"})
-	_, _ = uc.CollectWord(context.Background(), 5, &entity.LearnedWord{Term: "Forest", Notes: "trees"})
+	_, _ = uc.CollectLexeme(context.Background(), 5, &entity.LearnedLexeme{Term: "Comet", Notes: "space"})
+	_, _ = uc.CollectLexeme(context.Background(), 5, &entity.LearnedLexeme{Term: "Forest", Notes: "trees"})
 
-	query := &repository.ListLearnedWordQuery{
+	query := &repository.ListLearnedLexemeQuery{
 		Pagination:  repository.Pagination{PageNo: 1, PageSize: 10},
 		FilterOrder: repository.FilterOrder{Filter: "keyword == \"tre\""},
 		UserID:      5,
 	}
-	items, total, err := uc.ListLearnedWords(context.Background(), query)
+	items, total, err := uc.ListLearnedLexemes(context.Background(), query)
 	if err != nil {
-		t.Fatalf("ListLearnedWords returned error: %v", err)
+		t.Fatalf("ListLearnedLexemes returned error: %v", err)
 	}
 	if total != 1 {
 		t.Fatalf("expected total 1, got %d", total)

@@ -22,7 +22,7 @@ type Word struct {
 // Edges of the Word.
 func (Word) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("learned_words", LearnedWord.Type),
+		edge.To("learned_lexemes", LearnedLexeme.Type),
 	}
 }
 

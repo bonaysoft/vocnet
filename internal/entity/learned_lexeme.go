@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-// LearnedWord represents a user's personalised vocabulary entry.
-type LearnedWord struct {
+// LearnedLexeme represents a user's personalised vocabulary entry.
+type LearnedLexeme struct {
 	ID         int64
 	UserID     int64
 	Term       string
@@ -17,7 +17,7 @@ type LearnedWord struct {
 	Notes      string
 	Tags       []string
 	Sentences  []Sentence
-	Relations  []LearnedWordRelation
+	Relations  []LearnedLexemeRelation
 	WordID     *int64
 	CreatedBy  string
 	CreatedAt  time.Time
@@ -33,7 +33,7 @@ type MasteryBreakdown struct {
 	Overall   int32
 }
 
-// ReviewTiming represents spaced repetition metadata for a user word.
+// ReviewTiming represents spaced repetition metadata for a user lexeme.
 type ReviewTiming struct {
 	LastReviewAt time.Time
 	NextReviewAt time.Time
@@ -41,8 +41,8 @@ type ReviewTiming struct {
 	FailCount    int32
 }
 
-// LearnedWordRelation links a user word to another concept in their vocabulary graph.
-type LearnedWordRelation struct {
+// LearnedLexemeRelation links a user lexeme to another concept in their vocabulary graph.
+type LearnedLexemeRelation struct {
 	Word         string    `json:"word"`
 	RelationType int32     `json:"relation_type"`
 	Note         string    `json:"note,omitempty"`
@@ -52,7 +52,7 @@ type LearnedWordRelation struct {
 }
 
 // Normalize ensures defaults & constraints before persistence.
-func (uw *LearnedWord) Normalize(now time.Time) {
+func (uw *LearnedLexeme) Normalize(now time.Time) {
 	uw.Term = strings.TrimSpace(uw.Term)
 	if uw.CreatedAt.IsZero() {
 		uw.CreatedAt = now
@@ -65,7 +65,7 @@ func (uw *LearnedWord) Normalize(now time.Time) {
 		uw.Sentences = []Sentence{}
 	}
 	if uw.Relations == nil {
-		uw.Relations = []LearnedWordRelation{}
+		uw.Relations = []LearnedLexemeRelation{}
 	}
 	if uw.Tags == nil {
 		uw.Tags = []string{}

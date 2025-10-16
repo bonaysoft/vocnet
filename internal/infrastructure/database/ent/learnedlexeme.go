@@ -11,12 +11,12 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/eslsoft/vocnet/internal/entity"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedlexeme"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 )
 
-// LearnedWord is the model entity for the LearnedWord schema.
-type LearnedWord struct {
+// LearnedLexeme is the model entity for the LearnedLexeme schema.
+type LearnedLexeme struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
@@ -55,7 +55,7 @@ type LearnedWord struct {
 	// Sentences holds the value of the "sentences" field.
 	Sentences []entity.Sentence `json:"sentences,omitempty"`
 	// Relations holds the value of the "relations" field.
-	Relations []entity.LearnedWordRelation `json:"relations,omitempty"`
+	Relations []entity.LearnedLexemeRelation `json:"relations,omitempty"`
 	// Tags holds the value of the "tags" field.
 	Tags []string `json:"tags,omitempty"`
 	// CreatedBy holds the value of the "created_by" field.
@@ -65,13 +65,13 @@ type LearnedWord struct {
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the LearnedWordQuery when eager-loading is set.
-	Edges        LearnedWordEdges `json:"edges"`
+	// The values are being populated by the LearnedLexemeQuery when eager-loading is set.
+	Edges        LearnedLexemeEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// LearnedWordEdges holds the relations/edges for other nodes in the graph.
-type LearnedWordEdges struct {
+// LearnedLexemeEdges holds the relations/edges for other nodes in the graph.
+type LearnedLexemeEdges struct {
 	// Word holds the value of the word edge.
 	Word *Word `json:"word,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -81,7 +81,7 @@ type LearnedWordEdges struct {
 
 // WordOrErr returns the Word value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e LearnedWordEdges) WordOrErr() (*Word, error) {
+func (e LearnedLexemeEdges) WordOrErr() (*Word, error) {
 	if e.Word != nil {
 		return e.Word, nil
 	} else if e.loadedTypes[0] {
@@ -91,17 +91,17 @@ func (e LearnedWordEdges) WordOrErr() (*Word, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*LearnedWord) scanValues(columns []string) ([]any, error) {
+func (*LearnedLexeme) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case learnedword.FieldSentences, learnedword.FieldRelations, learnedword.FieldTags:
+		case learnedlexeme.FieldSentences, learnedlexeme.FieldRelations, learnedlexeme.FieldTags:
 			values[i] = new([]byte)
-		case learnedword.FieldID, learnedword.FieldUserID, learnedword.FieldWordID, learnedword.FieldMasteryListen, learnedword.FieldMasteryRead, learnedword.FieldMasterySpell, learnedword.FieldMasteryPronounce, learnedword.FieldMasteryOverall, learnedword.FieldReviewIntervalDays, learnedword.FieldReviewFailCount, learnedword.FieldQueryCount:
+		case learnedlexeme.FieldID, learnedlexeme.FieldUserID, learnedlexeme.FieldWordID, learnedlexeme.FieldMasteryListen, learnedlexeme.FieldMasteryRead, learnedlexeme.FieldMasterySpell, learnedlexeme.FieldMasteryPronounce, learnedlexeme.FieldMasteryOverall, learnedlexeme.FieldReviewIntervalDays, learnedlexeme.FieldReviewFailCount, learnedlexeme.FieldQueryCount:
 			values[i] = new(sql.NullInt64)
-		case learnedword.FieldTerm, learnedword.FieldNormalized, learnedword.FieldLanguage, learnedword.FieldNotes, learnedword.FieldCreatedBy:
+		case learnedlexeme.FieldTerm, learnedlexeme.FieldNormalized, learnedlexeme.FieldLanguage, learnedlexeme.FieldNotes, learnedlexeme.FieldCreatedBy:
 			values[i] = new(sql.NullString)
-		case learnedword.FieldReviewLastReviewAt, learnedword.FieldReviewNextReviewAt, learnedword.FieldCreatedAt, learnedword.FieldUpdatedAt:
+		case learnedlexeme.FieldReviewLastReviewAt, learnedlexeme.FieldReviewNextReviewAt, learnedlexeme.FieldCreatedAt, learnedlexeme.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -111,278 +111,278 @@ func (*LearnedWord) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the LearnedWord fields.
-func (lw *LearnedWord) assignValues(columns []string, values []any) error {
+// to the LearnedLexeme fields.
+func (ll *LearnedLexeme) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case learnedword.FieldID:
+		case learnedlexeme.FieldID:
 			value, ok := values[i].(*sql.NullInt64)
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			lw.ID = int(value.Int64)
-		case learnedword.FieldUserID:
+			ll.ID = int(value.Int64)
+		case learnedlexeme.FieldUserID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value.Valid {
-				lw.UserID = value.Int64
+				ll.UserID = value.Int64
 			}
-		case learnedword.FieldTerm:
+		case learnedlexeme.FieldTerm:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field term", values[i])
 			} else if value.Valid {
-				lw.Term = value.String
+				ll.Term = value.String
 			}
-		case learnedword.FieldNormalized:
+		case learnedlexeme.FieldNormalized:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field normalized", values[i])
 			} else if value.Valid {
-				lw.Normalized = value.String
+				ll.Normalized = value.String
 			}
-		case learnedword.FieldLanguage:
+		case learnedlexeme.FieldLanguage:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field language", values[i])
 			} else if value.Valid {
-				lw.Language = value.String
+				ll.Language = value.String
 			}
-		case learnedword.FieldWordID:
+		case learnedlexeme.FieldWordID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field word_id", values[i])
 			} else if value.Valid {
-				lw.WordID = new(int)
-				*lw.WordID = int(value.Int64)
+				ll.WordID = new(int)
+				*ll.WordID = int(value.Int64)
 			}
-		case learnedword.FieldMasteryListen:
+		case learnedlexeme.FieldMasteryListen:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field mastery_listen", values[i])
 			} else if value.Valid {
-				lw.MasteryListen = int16(value.Int64)
+				ll.MasteryListen = int16(value.Int64)
 			}
-		case learnedword.FieldMasteryRead:
+		case learnedlexeme.FieldMasteryRead:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field mastery_read", values[i])
 			} else if value.Valid {
-				lw.MasteryRead = int16(value.Int64)
+				ll.MasteryRead = int16(value.Int64)
 			}
-		case learnedword.FieldMasterySpell:
+		case learnedlexeme.FieldMasterySpell:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field mastery_spell", values[i])
 			} else if value.Valid {
-				lw.MasterySpell = int16(value.Int64)
+				ll.MasterySpell = int16(value.Int64)
 			}
-		case learnedword.FieldMasteryPronounce:
+		case learnedlexeme.FieldMasteryPronounce:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field mastery_pronounce", values[i])
 			} else if value.Valid {
-				lw.MasteryPronounce = int16(value.Int64)
+				ll.MasteryPronounce = int16(value.Int64)
 			}
-		case learnedword.FieldMasteryOverall:
+		case learnedlexeme.FieldMasteryOverall:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field mastery_overall", values[i])
 			} else if value.Valid {
-				lw.MasteryOverall = int32(value.Int64)
+				ll.MasteryOverall = int32(value.Int64)
 			}
-		case learnedword.FieldReviewLastReviewAt:
+		case learnedlexeme.FieldReviewLastReviewAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field review_last_review_at", values[i])
 			} else if value.Valid {
-				lw.ReviewLastReviewAt = new(time.Time)
-				*lw.ReviewLastReviewAt = value.Time
+				ll.ReviewLastReviewAt = new(time.Time)
+				*ll.ReviewLastReviewAt = value.Time
 			}
-		case learnedword.FieldReviewNextReviewAt:
+		case learnedlexeme.FieldReviewNextReviewAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field review_next_review_at", values[i])
 			} else if value.Valid {
-				lw.ReviewNextReviewAt = new(time.Time)
-				*lw.ReviewNextReviewAt = value.Time
+				ll.ReviewNextReviewAt = new(time.Time)
+				*ll.ReviewNextReviewAt = value.Time
 			}
-		case learnedword.FieldReviewIntervalDays:
+		case learnedlexeme.FieldReviewIntervalDays:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field review_interval_days", values[i])
 			} else if value.Valid {
-				lw.ReviewIntervalDays = int32(value.Int64)
+				ll.ReviewIntervalDays = int32(value.Int64)
 			}
-		case learnedword.FieldReviewFailCount:
+		case learnedlexeme.FieldReviewFailCount:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field review_fail_count", values[i])
 			} else if value.Valid {
-				lw.ReviewFailCount = int32(value.Int64)
+				ll.ReviewFailCount = int32(value.Int64)
 			}
-		case learnedword.FieldQueryCount:
+		case learnedlexeme.FieldQueryCount:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field query_count", values[i])
 			} else if value.Valid {
-				lw.QueryCount = value.Int64
+				ll.QueryCount = value.Int64
 			}
-		case learnedword.FieldNotes:
+		case learnedlexeme.FieldNotes:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field notes", values[i])
 			} else if value.Valid {
-				lw.Notes = new(string)
-				*lw.Notes = value.String
+				ll.Notes = new(string)
+				*ll.Notes = value.String
 			}
-		case learnedword.FieldSentences:
+		case learnedlexeme.FieldSentences:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field sentences", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &lw.Sentences); err != nil {
+				if err := json.Unmarshal(*value, &ll.Sentences); err != nil {
 					return fmt.Errorf("unmarshal field sentences: %w", err)
 				}
 			}
-		case learnedword.FieldRelations:
+		case learnedlexeme.FieldRelations:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field relations", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &lw.Relations); err != nil {
+				if err := json.Unmarshal(*value, &ll.Relations); err != nil {
 					return fmt.Errorf("unmarshal field relations: %w", err)
 				}
 			}
-		case learnedword.FieldTags:
+		case learnedlexeme.FieldTags:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &lw.Tags); err != nil {
+				if err := json.Unmarshal(*value, &ll.Tags); err != nil {
 					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
-		case learnedword.FieldCreatedBy:
+		case learnedlexeme.FieldCreatedBy:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field created_by", values[i])
 			} else if value.Valid {
-				lw.CreatedBy = value.String
+				ll.CreatedBy = value.String
 			}
-		case learnedword.FieldCreatedAt:
+		case learnedlexeme.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				lw.CreatedAt = value.Time
+				ll.CreatedAt = value.Time
 			}
-		case learnedword.FieldUpdatedAt:
+		case learnedlexeme.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				lw.UpdatedAt = value.Time
+				ll.UpdatedAt = value.Time
 			}
 		default:
-			lw.selectValues.Set(columns[i], values[i])
+			ll.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the LearnedWord.
+// Value returns the ent.Value that was dynamically selected and assigned to the LearnedLexeme.
 // This includes values selected through modifiers, order, etc.
-func (lw *LearnedWord) Value(name string) (ent.Value, error) {
-	return lw.selectValues.Get(name)
+func (ll *LearnedLexeme) Value(name string) (ent.Value, error) {
+	return ll.selectValues.Get(name)
 }
 
-// QueryWord queries the "word" edge of the LearnedWord entity.
-func (lw *LearnedWord) QueryWord() *WordQuery {
-	return NewLearnedWordClient(lw.config).QueryWord(lw)
+// QueryWord queries the "word" edge of the LearnedLexeme entity.
+func (ll *LearnedLexeme) QueryWord() *WordQuery {
+	return NewLearnedLexemeClient(ll.config).QueryWord(ll)
 }
 
-// Update returns a builder for updating this LearnedWord.
-// Note that you need to call LearnedWord.Unwrap() before calling this method if this LearnedWord
+// Update returns a builder for updating this LearnedLexeme.
+// Note that you need to call LearnedLexeme.Unwrap() before calling this method if this LearnedLexeme
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (lw *LearnedWord) Update() *LearnedWordUpdateOne {
-	return NewLearnedWordClient(lw.config).UpdateOne(lw)
+func (ll *LearnedLexeme) Update() *LearnedLexemeUpdateOne {
+	return NewLearnedLexemeClient(ll.config).UpdateOne(ll)
 }
 
-// Unwrap unwraps the LearnedWord entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the LearnedLexeme entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (lw *LearnedWord) Unwrap() *LearnedWord {
-	_tx, ok := lw.config.driver.(*txDriver)
+func (ll *LearnedLexeme) Unwrap() *LearnedLexeme {
+	_tx, ok := ll.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: LearnedWord is not a transactional entity")
+		panic("ent: LearnedLexeme is not a transactional entity")
 	}
-	lw.config.driver = _tx.drv
-	return lw
+	ll.config.driver = _tx.drv
+	return ll
 }
 
 // String implements the fmt.Stringer.
-func (lw *LearnedWord) String() string {
+func (ll *LearnedLexeme) String() string {
 	var builder strings.Builder
-	builder.WriteString("LearnedWord(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", lw.ID))
+	builder.WriteString("LearnedLexeme(")
+	builder.WriteString(fmt.Sprintf("id=%v, ", ll.ID))
 	builder.WriteString("user_id=")
-	builder.WriteString(fmt.Sprintf("%v", lw.UserID))
+	builder.WriteString(fmt.Sprintf("%v", ll.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("term=")
-	builder.WriteString(lw.Term)
+	builder.WriteString(ll.Term)
 	builder.WriteString(", ")
 	builder.WriteString("normalized=")
-	builder.WriteString(lw.Normalized)
+	builder.WriteString(ll.Normalized)
 	builder.WriteString(", ")
 	builder.WriteString("language=")
-	builder.WriteString(lw.Language)
+	builder.WriteString(ll.Language)
 	builder.WriteString(", ")
-	if v := lw.WordID; v != nil {
+	if v := ll.WordID; v != nil {
 		builder.WriteString("word_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
 	builder.WriteString("mastery_listen=")
-	builder.WriteString(fmt.Sprintf("%v", lw.MasteryListen))
+	builder.WriteString(fmt.Sprintf("%v", ll.MasteryListen))
 	builder.WriteString(", ")
 	builder.WriteString("mastery_read=")
-	builder.WriteString(fmt.Sprintf("%v", lw.MasteryRead))
+	builder.WriteString(fmt.Sprintf("%v", ll.MasteryRead))
 	builder.WriteString(", ")
 	builder.WriteString("mastery_spell=")
-	builder.WriteString(fmt.Sprintf("%v", lw.MasterySpell))
+	builder.WriteString(fmt.Sprintf("%v", ll.MasterySpell))
 	builder.WriteString(", ")
 	builder.WriteString("mastery_pronounce=")
-	builder.WriteString(fmt.Sprintf("%v", lw.MasteryPronounce))
+	builder.WriteString(fmt.Sprintf("%v", ll.MasteryPronounce))
 	builder.WriteString(", ")
 	builder.WriteString("mastery_overall=")
-	builder.WriteString(fmt.Sprintf("%v", lw.MasteryOverall))
+	builder.WriteString(fmt.Sprintf("%v", ll.MasteryOverall))
 	builder.WriteString(", ")
-	if v := lw.ReviewLastReviewAt; v != nil {
+	if v := ll.ReviewLastReviewAt; v != nil {
 		builder.WriteString("review_last_review_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
-	if v := lw.ReviewNextReviewAt; v != nil {
+	if v := ll.ReviewNextReviewAt; v != nil {
 		builder.WriteString("review_next_review_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
 	builder.WriteString("review_interval_days=")
-	builder.WriteString(fmt.Sprintf("%v", lw.ReviewIntervalDays))
+	builder.WriteString(fmt.Sprintf("%v", ll.ReviewIntervalDays))
 	builder.WriteString(", ")
 	builder.WriteString("review_fail_count=")
-	builder.WriteString(fmt.Sprintf("%v", lw.ReviewFailCount))
+	builder.WriteString(fmt.Sprintf("%v", ll.ReviewFailCount))
 	builder.WriteString(", ")
 	builder.WriteString("query_count=")
-	builder.WriteString(fmt.Sprintf("%v", lw.QueryCount))
+	builder.WriteString(fmt.Sprintf("%v", ll.QueryCount))
 	builder.WriteString(", ")
-	if v := lw.Notes; v != nil {
+	if v := ll.Notes; v != nil {
 		builder.WriteString("notes=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("sentences=")
-	builder.WriteString(fmt.Sprintf("%v", lw.Sentences))
+	builder.WriteString(fmt.Sprintf("%v", ll.Sentences))
 	builder.WriteString(", ")
 	builder.WriteString("relations=")
-	builder.WriteString(fmt.Sprintf("%v", lw.Relations))
+	builder.WriteString(fmt.Sprintf("%v", ll.Relations))
 	builder.WriteString(", ")
 	builder.WriteString("tags=")
-	builder.WriteString(fmt.Sprintf("%v", lw.Tags))
+	builder.WriteString(fmt.Sprintf("%v", ll.Tags))
 	builder.WriteString(", ")
 	builder.WriteString("created_by=")
-	builder.WriteString(lw.CreatedBy)
+	builder.WriteString(ll.CreatedBy)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(lw.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(ll.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(lw.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(ll.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-// LearnedWords is a parsable slice of LearnedWord.
-type LearnedWords []*LearnedWord
+// LearnedLexemes is a parsable slice of LearnedLexeme.
+type LearnedLexemes []*LearnedLexeme

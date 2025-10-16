@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedlexeme"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 )
 
@@ -74,8 +74,8 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			learnedword.Table: learnedword.ValidColumn,
-			word.Table:        word.ValidColumn,
+			learnedlexeme.Table: learnedlexeme.ValidColumn,
+			word.Table:          word.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

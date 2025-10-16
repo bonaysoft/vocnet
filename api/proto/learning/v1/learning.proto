@@ -6,27 +6,27 @@ import "common/v1/types.proto";
 import "dict/v1/word.proto";
 import "google/protobuf/timestamp.proto";
 
-// User's personal word record with learning context
-message LearnedWord {
+// User's personal lexeme record with learning context
+message LearnedLexeme {
   int64 id = 1;
-  LearnedWordSpec spec = 2;
-  LearnedWordStatus status = 3;
+  LearnedLexemeSpec spec = 2;
+  LearnedLexemeStatus status = 3;
 }
 
-// Spec is user-provided data for the word
-message LearnedWordSpec {
+// Spec is user-provided data for the lexeme
+message LearnedLexemeSpec {
   string term = 1;
   common.v1.Language language = 2; // Language of the word
   int32 mastery_level = 3; // Mastery level (0-5), self-assessed by user
 
-  repeated LearnedWordRelation relations = 5; // Relationships to other words
+  repeated LearnedLexemeRelation relations = 5; // Relationships to other lexemes
   repeated dict.v1.Sentence sentences = 6; // Contextual example sentences
   repeated string tags = 7; // User-defined tags
   repeated string notes = 8; // User's personal notes
 }
 
 // Status is read-only, maintained by the system
-message LearnedWordStatus {
+message LearnedLexemeStatus {
   MasteryBreakdown mastery = 3; // Detailed mastery scores
   ReviewTiming review_timing = 4; // Review scheduling info
   int64 query_count = 5; // How many times user looked up this word
@@ -53,8 +53,8 @@ message ReviewTiming {
   int32 fail_count = 4; // Consecutive failure count
 }
 
-// Word-to-word relationship for building vocabulary networks
-message LearnedWordRelation {
+// Lexeme-to-lexeme relationship for building vocabulary networks
+message LearnedLexemeRelation {
   string word = 1;
   common.v1.RelationType relation_type = 2; // Type of relationship
   string note = 3; // User's note about this relation

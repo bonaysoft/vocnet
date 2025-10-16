@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedword"
+	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/learnedlexeme"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/predicate"
 	"github.com/eslsoft/vocnet/internal/infrastructure/database/ent/word"
 )
@@ -20,11 +20,11 @@ import (
 // WordQuery is the builder for querying Word entities.
 type WordQuery struct {
 	config
-	ctx              *QueryContext
-	order            []word.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.Word
-	withLearnedWords *LearnedWordQuery
+	ctx                *QueryContext
+	order              []word.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.Word
+	withLearnedLexemes *LearnedLexemeQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -61,9 +61,9 @@ func (wq *WordQuery) Order(o ...word.OrderOption) *WordQuery {
 	return wq
 }
 
-// QueryLearnedWords chains the current query on the "learned_words" edge.
-func (wq *WordQuery) QueryLearnedWords() *LearnedWordQuery {
-	query := (&LearnedWordClient{config: wq.config}).Query()
+// QueryLearnedLexemes chains the current query on the "learned_lexemes" edge.
+func (wq *WordQuery) QueryLearnedLexemes() *LearnedLexemeQuery {
+	query := (&LearnedLexemeClient{config: wq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := wq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -74,8 +74,8 @@ func (wq *WordQuery) QueryLearnedWords() *LearnedWordQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(word.Table, word.FieldID, selector),
-			sqlgraph.To(learnedword.Table, learnedword.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, word.LearnedWordsTable, word.LearnedWordsColumn),
+			sqlgraph.To(learnedlexeme.Table, learnedlexeme.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, word.LearnedLexemesTable, word.LearnedLexemesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(wq.driver.Dialect(), step)
 		return fromU, nil
@@ -270,26 +270,26 @@ func (wq *WordQuery) Clone() *WordQuery {
 		return nil
 	}
 	return &WordQuery{
-		config:           wq.config,
-		ctx:              wq.ctx.Clone(),
-		order:            append([]word.OrderOption{}, wq.order...),
-		inters:           append([]Interceptor{}, wq.inters...),
-		predicates:       append([]predicate.Word{}, wq.predicates...),
-		withLearnedWords: wq.withLearnedWords.Clone(),
+		config:             wq.config,
+		ctx:                wq.ctx.Clone(),
+		order:              append([]word.OrderOption{}, wq.order...),
+		inters:             append([]Interceptor{}, wq.inters...),
+		predicates:         append([]predicate.Word{}, wq.predicates...),
+		withLearnedLexemes: wq.withLearnedLexemes.Clone(),
 		// clone intermediate query.
 		sql:  wq.sql.Clone(),
 		path: wq.path,
 	}
 }
 
-// WithLearnedWords tells the query-builder to eager-load the nodes that are connected to
-// the "learned_words" edge. The optional arguments are used to configure the query builder of the edge.
-func (wq *WordQuery) WithLearnedWords(opts ...func(*LearnedWordQuery)) *WordQuery {
-	query := (&LearnedWordClient{config: wq.config}).Query()
+// WithLearnedLexemes tells the query-builder to eager-load the nodes that are connected to
+// the "learned_lexemes" edge. The optional arguments are used to configure the query builder of the edge.
+func (wq *WordQuery) WithLearnedLexemes(opts ...func(*LearnedLexemeQuery)) *WordQuery {
+	query := (&LearnedLexemeClient{config: wq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	wq.withLearnedWords = query
+	wq.withLearnedLexemes = query
 	return wq
 }
 
@@ -372,7 +372,7 @@ func (wq *WordQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Word, e
 		nodes       = []*Word{}
 		_spec       = wq.querySpec()
 		loadedTypes = [1]bool{
-			wq.withLearnedWords != nil,
+			wq.withLearnedLexemes != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -393,17 +393,17 @@ func (wq *WordQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Word, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := wq.withLearnedWords; query != nil {
-		if err := wq.loadLearnedWords(ctx, query, nodes,
-			func(n *Word) { n.Edges.LearnedWords = []*LearnedWord{} },
-			func(n *Word, e *LearnedWord) { n.Edges.LearnedWords = append(n.Edges.LearnedWords, e) }); err != nil {
+	if query := wq.withLearnedLexemes; query != nil {
+		if err := wq.loadLearnedLexemes(ctx, query, nodes,
+			func(n *Word) { n.Edges.LearnedLexemes = []*LearnedLexeme{} },
+			func(n *Word, e *LearnedLexeme) { n.Edges.LearnedLexemes = append(n.Edges.LearnedLexemes, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (wq *WordQuery) loadLearnedWords(ctx context.Context, query *LearnedWordQuery, nodes []*Word, init func(*Word), assign func(*Word, *LearnedWord)) error {
+func (wq *WordQuery) loadLearnedLexemes(ctx context.Context, query *LearnedLexemeQuery, nodes []*Word, init func(*Word), assign func(*Word, *LearnedLexeme)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*Word)
 	for i := range nodes {
@@ -414,10 +414,10 @@ func (wq *WordQuery) loadLearnedWords(ctx context.Context, query *LearnedWordQue
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(learnedword.FieldWordID)
+		query.ctx.AppendFieldOnce(learnedlexeme.FieldWordID)
 	}
-	query.Where(predicate.LearnedWord(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(word.LearnedWordsColumn), fks...))
+	query.Where(predicate.LearnedLexeme(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(word.LearnedLexemesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

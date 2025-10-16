@@ -6,8 +6,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// LearnedWord is the predicate function for learnedword builders.
-type LearnedWord func(*sql.Selector)
+// LearnedLexeme is the predicate function for learnedlexeme builders.
+type LearnedLexeme func(*sql.Selector)
 
 // Word is the predicate function for word builders.
 type Word func(*sql.Selector)

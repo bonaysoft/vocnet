@@ -34,17 +34,17 @@ var listWordsSchema = filterexpr.ResourceSchema{
 	},
 }
 
-var listLearnedWordsSchema = filterexpr.ResourceSchema{
+var listLearnedLexemesSchema = filterexpr.ResourceSchema{
 	Filter: map[string]filterexpr.FilterField{
 		"keyword": {
 			Kind: filterexpr.KindString,
 			Ops:  map[filterexpr.Op]string{filterexpr.OpEQ: "Keyword"},
 		},
-		"word": {
+		"lexeme": {
 			Kind: filterexpr.KindString,
 			Ops: map[filterexpr.Op]string{
 				filterexpr.OpSW: "Keyword",
-				filterexpr.OpIN: "Words",
+				filterexpr.OpIN: "Lexemes",
 			},
 		},
 		"tag": {
@@ -64,7 +64,7 @@ var listLearnedWordsSchema = filterexpr.ResourceSchema{
 		Fields: map[string]filterexpr.OrderField{
 			"created_at":      {Expr: "created_at", Nulls: "last"},
 			"updated_at":      {Expr: "updated_at", Nulls: "last"},
-			"word":            {Expr: "word", Nulls: "last"},
+			"lexeme":          {Expr: "lexeme", Nulls: "last"},
 			"mastery_overall": {Expr: "mastery_overall", Nulls: "last"},
 			"id":              {Expr: "id", Nulls: "last"},
 		},
